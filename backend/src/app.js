@@ -27,7 +27,6 @@ app.get("/", (req, res) => {
       });
 });
 
-// 404 handler for undefined routes
 app.use((req, res, next) => {
       res.status(404).json({
             success: false,
@@ -37,6 +36,9 @@ app.use((req, res, next) => {
       });
 });
 
-app.use(errorHandler);
+app.use((err, req, res, next) => {
+      console.error("Global Error:", err);
+      errorHandler(err, req, res, next);
+});
 
 export default app;

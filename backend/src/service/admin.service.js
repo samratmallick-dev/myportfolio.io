@@ -5,167 +5,167 @@ import { generateOTP } from "../utilities/email/generateOTP.js";
 import { sendEmail } from "../utilities/email/sendEmail.js";
 
 class AdminService {
-  async initializeAdmin(adminData) {
-    const existingAdmin = await adminRepository.findByEmail(adminData.email);
-    if (existingAdmin) {
-      throw ApiError.badRequest("Admin already exists");
-    }
+      async initializeAdmin(adminData) {
+            const existingAdmin = await adminRepository.findByEmail(adminData.email);
+            if (existingAdmin) {
+                  throw ApiError.badRequest("Admin already exists");
+            }
 
-    const admin = await adminRepository.create(adminData);
-    return admin;
-  }
+            const admin = await adminRepository.create(adminData);
+            return admin;
+      }
 
-  async login(loginData) {
-    const { email, password } = loginData;
+      async login(loginData) {
+            const { email, password } = loginData;
 
-    const admin = await adminRepository.findByEmail(email);
-    if (!admin) {
-      throw ApiError.unauthorized("Invalid credentials");
-    }
+            const admin = await adminRepository.findByEmail(email);
+            if (!admin) {
+                  throw ApiError.unauthorized("Invalid credentials");
+            }
 
-    const isPasswordValid = await admin.comparePassword(password);
-    if (!isPasswordValid) {
-      throw ApiError.unauthorized("Invalid credentials");
-    }
+            const isPasswordValid = await admin.comparePassword(password);
+            if (!isPasswordValid) {
+                  throw ApiError.unauthorized("Invalid credentials");
+            }
 
-    if (!admin.isActive) {
-      throw ApiError.unauthorized("Account is deactivated");
-    }
+            if (!admin.isActive) {
+                  throw ApiError.unauthorized("Account is deactivated");
+            }
 
-    await adminRepository.updateLastLogin(admin._id);
+            await adminRepository.updateLastLogin(admin._id);
 
-    const token = this.generateToken(admin._id);
+            const token = this.generateToken(admin._id);
 
-    return {
-      admin,
-      token,
-    };
-  }
+            return {
+                  admin,
+                  token,
+            };
+      }
 
-  async getAdminUser(adminId) {
-    const admin = await adminRepository.findById(adminId);
-    if (!admin) {
-      throw ApiError.notFound("Admin not found");
-    }
+      async getAdminUser(adminId) {
+            const admin = await adminRepository.findById(adminId);
+            if (!admin) {
+                  throw ApiError.notFound("Admin not found");
+            }
 
-    if (!admin.isActive) {
-      throw ApiError.unauthorized("Account is deactivated");
-    }
+            if (!admin.isActive) {
+                  throw ApiError.unauthorized("Account is deactivated");
+            }
 
-    return admin;
-  }
+            return admin;
+      }
 
-  async generateOTPForEmailUpdate(email) {
-    const admin = await adminRepository.findById(email.adminId);
-    if (!admin) {
-      throw ApiError.notFound("Admin not found");
-    }
+      async generateOTPForEmailUpdate(email) {
+            const admin = await adminRepository.findById(email.adminId);
+            if (!admin) {
+                  throw ApiError.notFound("Admin not found");
+            }
 
-    const otp = generateOTP();
-    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+            const otp = generateOTP();
+            const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-    await adminRepository.updateById(admin._id, {
-      otp,
-      otpExpiry,
-      newEmail: email.newEmail,
-    });
+            await adminRepository.updateById(admin._id, {
+                  otp,
+                  otpExpiry,
+                  newEmail: email.newEmail,
+            });
 
-    await sendEmail({
-      to: email.newEmail,
-      subject: "Email Update OTP",
-      text: `Your OTP for email update is: ${otp}. It will expire in 10 minutes.`,
-    });
+            await sendEmail({
+                  to: email.newEmail,
+                  subject: "Email Update OTP",
+                  text: `Your OTP for email update is: ${otp}. It will expire in 10 minutes.`,
+            });
 
-    return { message: "OTP sent to new email" };
-  }
+            return { message: "OTP sent to new email" };
+      }
 
-  async verifyOTPAndUpdateEmail(adminId, otp) {
-    const admin = await adminRepository.findById(adminId);
-    if (!admin) {
-      throw ApiError.notFound("Admin not found");
-    }
+      async verifyOTPAndUpdateEmail(adminId, otp) {
+            const admin = await adminRepository.findById(adminId);
+            if (!admin) {
+                  throw ApiError.notFound("Admin not found");
+            }
 
-    if (!admin.otp || !admin.otpExpiry) {
-      throw ApiError.badRequest("No OTP request found");
-    }
+            if (!admin.otp || !admin.otpExpiry) {
+                  throw ApiError.badRequest("No OTP request found");
+            }
 
-    if (admin.otp !== otp) {
-      throw ApiError.badRequest("Invalid OTP");
-    }
+            if (admin.otp !== otp) {
+                  throw ApiError.badRequest("Invalid OTP");
+            }
 
-    if (admin.otpExpiry < new Date()) {
-      throw ApiError.badRequest("OTP expired");
-    }
+            if (admin.otpExpiry < new Date()) {
+                  throw ApiError.badRequest("OTP expired");
+            }
 
-    const updatedAdmin = await adminRepository.updateById(adminId, {
-      email: admin.newEmail,
-      otp: undefined,
-      otpExpiry: undefined,
-      newEmail: undefined,
-    });
+            const updatedAdmin = await adminRepository.updateById(adminId, {
+                  email: admin.newEmail,
+                  otp: undefined,
+                  otpExpiry: undefined,
+                  newEmail: undefined,
+            });
 
-    return updatedAdmin;
-  }
+            return updatedAdmin;
+      }
 
-  async generateOTPForPasswordReset(email) {
-    const admin = await adminRepository.findByEmail(email.email);
-    if (!admin) {
-      throw ApiError.notFound("Admin not found");
-    }
+      async generateOTPForPasswordReset(email) {
+            const admin = await adminRepository.findByEmail(email.email);
+            if (!admin) {
+                  throw ApiError.notFound("Admin not found");
+            }
 
-    const otp = generateOTP();
-    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+            const otp = generateOTP();
+            const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-    await adminRepository.updateById(admin._id, {
-      otp,
-      otpExpiry,
-    });
+            await adminRepository.updateById(admin._id, {
+                  otp,
+                  otpExpiry,
+            });
 
-    await sendEmail({
-      to: admin.email,
-      subject: "Password Reset OTP",
-      text: `Your OTP for password reset is: ${otp}. It will expire in 10 minutes.`,
-    });
+            await sendEmail({
+                  to: admin.email,
+                  subject: "Password Reset OTP",
+                  text: `Your OTP for password reset is: ${otp}. It will expire in 10 minutes.`,
+            });
 
-    return { message: "OTP sent to email" };
-  }
+            return { message: "OTP sent to email" };
+      }
 
-  async verifyOTPAndUpdatePassword(adminId, otp, newPassword) {
-    const admin = await adminRepository.findById(adminId);
-    if (!admin) {
-      throw ApiError.notFound("Admin not found");
-    }
+      async verifyOTPAndUpdatePassword(adminId, otp, newPassword) {
+            const admin = await adminRepository.findById(adminId);
+            if (!admin) {
+                  throw ApiError.notFound("Admin not found");
+            }
 
-    if (!admin.otp || !admin.otpExpiry) {
-      throw ApiError.badRequest("No OTP request found");
-    }
+            if (!admin.otp || !admin.otpExpiry) {
+                  throw ApiError.badRequest("No OTP request found");
+            }
 
-    if (admin.otp !== otp) {
-      throw ApiError.badRequest("Invalid OTP");
-    }
+            if (admin.otp !== otp) {
+                  throw ApiError.badRequest("Invalid OTP");
+            }
 
-    if (admin.otpExpiry < new Date()) {
-      throw ApiError.badRequest("OTP expired");
-    }
+            if (admin.otpExpiry < new Date()) {
+                  throw ApiError.badRequest("OTP expired");
+            }
 
-    const updatedAdmin = await adminRepository.updateById(adminId, {
-      password: newPassword,
-      otp: undefined,
-      otpExpiry: undefined,
-    });
+            const updatedAdmin = await adminRepository.updateById(adminId, {
+                  password: newPassword,
+                  otp: undefined,
+                  otpExpiry: undefined,
+            });
 
-    return updatedAdmin;
-  }
+            return updatedAdmin;
+      }
 
-  generateToken(adminId) {
-    return jwt.sign({ adminId }, process.env.JWT_SECRET || "fallback_secret_key", {
-      expiresIn: process.env.JWT_EXPIRE || "7d",
-    });
-  }
+      generateToken(adminId) {
+            return jwt.sign({ adminId }, process.env.JWT_SECRET || "fallback_secret_key", {
+                  expiresIn: process.env.JWT_EXPIRE || "7d",
+            });
+      }
 
-  verifyToken(token) {
-    return jwt.verify(token, process.env.JWT_SECRET || "fallback_secret_key");
-  }
+      verifyToken(token) {
+            return jwt.verify(token, process.env.JWT_SECRET || "fallback_secret_key");
+      }
 }
 
 export default new AdminService();
