@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import aboutprofileimage from "@/assets/aboutprofileimage.png";
+// import aboutprofileimage from "@/assets/aboutprofileimage.png";
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchAboutData } from '@/store/about.slice';
 import AboutSkeleton from '../loaders/AboutSkeleton';
@@ -24,7 +24,7 @@ const AboutMe = () => {
                   <div className="container mx-auto px-4 flex gap-10 lg:flex-row flex-col items-center">
                         <div className='md:basis-[35%] basis-full mx-auto flex items-center justify-center'>
                               <img
-                                    src={currentDatabaseData?.aboutImage || aboutprofileimage}
+                                    src={currentDatabaseData?.aboutImage}
                                     alt="About Me"
                                     className="md:w-96 md:h-96 w-56 h-56 object-center  rounded-full shadow-lg border-4 border-primary/10"
                               />
