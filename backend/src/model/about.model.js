@@ -1,69 +1,20 @@
 import mongoose from "mongoose";
 
 const aboutSchema = new mongoose.Schema({
-      title: {
+      paragraphs: {
             type: String,
             required: true,
             trim: true,
       },
-      description: {
-            type: String,
-            required: true,
-            trim: true,
-      },
-      profileImage: {
+      aboutImage: {
             public_id: {
                   type: String,
-                  required: true,
+                  required: false,
             },
             url: {
                   type: String,
-                  required: true,
+                  required: false,
             },
-      },
-      experience: {
-            years: {
-                  type: Number,
-                  required: true,
-            },
-            description: {
-                  type: String,
-                  trim: true,
-            },
-      },
-      skills: [{
-            name: {
-                  type: String,
-                  required: true,
-                  trim: true,
-            },
-            level: {
-                  type: Number,
-                  min: 0,
-                  max: 100,
-                  default: 0,
-            },
-      }],
-      personalInfo: {
-            age: {
-                  type: Number,
-            },
-            location: {
-                  type: String,
-                  trim: true,
-            },
-            email: {
-                  type: String,
-                  trim: true,
-            },
-            phone: {
-                  type: String,
-                  trim: true,
-            },
-            languages: [{
-                  type: String,
-                  trim: true,
-            }],
       },
       isActive: {
             type: Boolean,

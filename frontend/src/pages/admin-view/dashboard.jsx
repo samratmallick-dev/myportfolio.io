@@ -6,13 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import * as Icons from 'lucide-react';
 
-import { fetchHeroData } from '@/store/hero.slice';
-import { fetchAboutData } from '@/store/about.slice';
-import { getAllEducation } from '@/store/education.slice';
-import { getAllSkillCategories } from '@/store/skills.slice';
-import { getAllProjects, getFeaturedProjects } from '@/store/project.slice';
-import { getAllServices } from '@/store/services.slice';
-import { getAllMessages, getContactDetails } from '@/store/contact.slice';
+// import { fetchHeroData } from '@/store/hero.slice';
+// import { fetchAboutData } from '@/store/about.slice';
+// import { getAllEducation } from '@/store/education.slice';
+// import { getAllSkillCategories } from '@/store/skills.slice';
+// import { getAllProjects, getFeaturedProjects } from '@/store/project.slice';
+// import { getAllServices } from '@/store/services.slice';
+// import { getAllMessages, getContactDetails } from '@/store/contact.slice';
 
 const AdminViewDashboard = () => {
       const dispatch = useDispatch();

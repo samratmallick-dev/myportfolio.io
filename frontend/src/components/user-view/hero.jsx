@@ -29,9 +29,9 @@ const Hero = ({
                   <div className="container mx-auto px-4 z-10 text-center">
                         <div className="animate-fade-in">
                               <img
-                                    src={data?.profileImage}
+                                    src={data?.profileImage?.url}
                                     alt={data?.name || "Profile"}
-                                    className="w-60 h-60 object-contain rounded-full mx-auto mb-8 lg:mt-0 mt-6 border-4 border-primary/20 animate-float"
+                                    className="w-60 h-60 md:object-contain object-cover object-center rounded-full mx-auto mb-8 lg:mt-0 mt-6 border-4 border-primary/20 animate-float"
                               />
                               <h1 className="text-5xl md:text-7xl font-bold mb-6 text-gradient">
                                     {data?.name || "Samrat Mallick"}

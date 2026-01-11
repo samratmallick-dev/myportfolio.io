@@ -2,10 +2,12 @@ import CommonForm from '@/components/common/form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { adminEducationFormIndex } from '@/config/allFormIndex';
 import {
-      createEducation,
-      deleteEducation,
-      getAllEducation,
-      updateEducation,
+      createEducationData,
+      deleteEducationData,
+      getAllEducationData,
+      updateEducationData,
+      clearError,
+      clearSuccess,
 } from '@/store/education.slice';
 import React, { Fragment, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -26,11 +28,25 @@ const AdminViewEducation = () => {
       const [editMode, setEditMode] = useState(false);
       const [editId, setEditId] = useState(null);
       const dispatch = useDispatch();
-      // const { educationData, isLoading } = useSelector((state) => state.education);
+      const { educationData, isLoading, error, success } = useSelector((state) => state.education);
 
-      // useEffect(() => {
-      //       dispatch(getAllEducation());
-      // }, [dispatch]);
+      useEffect(() => {
+            dispatch(getAllEducationData());
+      }, [dispatch]);
+
+      useEffect(() => {
+            if (success) {
+                  toast.success(editMode ? "Education entry updated successfully!" : "Education entry created successfully!");
+                  dispatch(clearSuccess());
+                  setEditMode(false);
+                  setEditId(null);
+                  setFormData(initialFormData);
+            }
+            if (error) {
+                  toast.error(error?.message || "Failed to save education entry.");
+                  dispatch(clearError());
+            }
+      }, [success, error, dispatch, editMode]);
 
       const handleChange = (name, value) => {
             setFormData((prev) => ({
@@ -41,20 +57,11 @@ const AdminViewEducation = () => {
 
       const handleSubmit = async (e) => {
             e.preventDefault();
-            // try {
-            //       if (editMode) {
-            //             await dispatch(updateEducation({ id: editId, formData })).unwrap();
-            //             toast.success('Education entry updated successfully!');
-            //       } else {
-            //             await dispatch(createEducation(formData)).unwrap();
-            //             toast.success('Education entry created successfully!');
-            //       }
-            //       dispatch(getAllEducation());
-            //       resetForm();
-            // } catch (err) {
-            //       toast.error(err?.message || 'Failed to save education entry.', err);
-            //       console.error('Error saving education entry:', err);
-            // }
+            if (editMode) {
+                  dispatch(updateEducationData({ id: editId, educationData: formData }));
+            } else {
+                  dispatch(createEducationData(formData));
+            }
       };
 
       const handleEdit = (item) => {
@@ -70,14 +77,9 @@ const AdminViewEducation = () => {
       };
 
       const handleDelete = async (id) => {
-            // try {
-            //       await dispatch(deleteEducation(id)).unwrap();
-            //       toast.success('Education entry deleted successfully!');
-            //       dispatch(getAllEducation());
-            // } catch (err) {
-            //       toast.error(err?.message || 'Failed to delete education entry.', err);
-            //       console.error('Error deleting education entry:', err);
-            // }
+            if (window.confirm("Are you sure you want to delete this education entry?")) {
+                  dispatch(deleteEducationData(id));
+            }
       };
 
       const resetForm = () => {
@@ -86,8 +88,6 @@ const AdminViewEducation = () => {
             setEditId(null);
       };
 
-      const educationData = []
-      const isLoading = false;
       return (
             <Fragment>
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
@@ -97,13 +97,13 @@ const AdminViewEducation = () => {
                                           <CardTitle>Education List</CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                          {isLoading && !educationData.length ? (
+                                          {isLoading && (!educationData || !educationData.length) ? (
                                                 <div className="space-y-4">
                                                       <Skeleton className="h-10 w-full" />
                                                       <Skeleton className="h-24 w-full" />
                                                       <Skeleton className="h-10 w-32" />
                                                 </div>
-                                          ) : educationData.length > 0 ? (
+                                          ) : educationData && educationData.length > 0 ? (
                                                 <ul className="space-y-4">
                                                       {educationData.map((item) => (
                                                             <li key={item._id} className="p-4 border rounded-md space-y-4">
@@ -120,14 +120,14 @@ const AdminViewEducation = () => {
 
                                                                   <div className="flex gap-2 mt-2">
                                                                         <Button
-                                                                              variant={'outline'}
-                                                                              className={'mr-2 hover:bg-primary/60 text-muted-foreground hover:text-white transition-colors duration-300 ease-out'}
+                                                                              variant="outline"
+                                                                              className="mr-2 hover:bg-primary/60 text-muted-foreground hover:text-white transition-colors duration-300 ease-out"
                                                                               onClick={() => handleEdit(item)}
                                                                         >
                                                                               Edit
                                                                         </Button>
                                                                         <Button
-                                                                              variant={'destructive'}
+                                                                              variant="destructive"
                                                                               onClick={() => handleDelete(item._id)}
                                                                         >
                                                                               Delete

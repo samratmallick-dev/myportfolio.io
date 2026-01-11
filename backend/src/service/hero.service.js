@@ -6,6 +6,11 @@ class HeroService {
       async addUpdateHeroContent(heroData, profileImage) {
             let heroContent = await heroRepository.findActive();
 
+            // Handle title as array
+            if (heroData.title && typeof heroData.title === 'string') {
+                  heroData.title = heroData.title.split(',').map(title => title.trim()).filter(title => title);
+            }
+
             if (profileImage) {
                   const cloudinaryResponse = await uploadToCloudinary(profileImage, "hero/profile");
                   heroData.profileImage = {
@@ -48,6 +53,11 @@ class HeroService {
 
             if (!existingHero) {
                   throw ApiError.notFound("Hero content not found");
+            }
+
+            // Handle title as array
+            if (heroData.title && typeof heroData.title === 'string') {
+                  heroData.title = heroData.title.split(',').map(title => title.trim()).filter(title => title);
             }
 
             if (profileImage) {

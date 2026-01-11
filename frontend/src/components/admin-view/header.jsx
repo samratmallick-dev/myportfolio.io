@@ -2,7 +2,6 @@ import React, { Fragment } from 'react';
 import { Button } from '../ui/button';
 import * as Icons from 'lucide-react';
 import { ThemeToggle } from '../common/theme-toggle';
-import { Link } from 'react-router-dom';
 
 const AdminHeader = ({ onMenuClick, isMobile, pageTitle }) => (
       <header className="backdrop-blur-sm" style={{ borderBottom: '1px solid var(--border)' }}>

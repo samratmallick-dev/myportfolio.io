@@ -1,17 +1,8 @@
 import educationRepository from "../repository/education.repository.js";
 import ApiError from "../utilities/error/apiError.js";
-import { uploadToCloudinary } from "../utilities/cloudinary/upload.js";
 
 class EducationService {
-      async createEducation(educationData, logo) {
-            if (logo) {
-                  const cloudinaryResponse = await uploadToCloudinary(logo, "education/logos");
-                  educationData.logo = {
-                        public_id: cloudinaryResponse.public_id,
-                        url: cloudinaryResponse.secure_url,
-                  };
-            }
-
+      async createEducation(educationData) {
             const education = await educationRepository.create(educationData);
             return education;
       }
@@ -35,19 +26,11 @@ class EducationService {
             return education;
       }
 
-      async updateEducation(id, educationData, logo) {
+      async updateEducation(id, educationData) {
             const existingEducation = await educationRepository.findById(id);
 
             if (!existingEducation) {
                   throw ApiError.notFound("Education not found");
-            }
-
-            if (logo) {
-                  const cloudinaryResponse = await uploadToCloudinary(logo, "education/logos");
-                  educationData.logo = {
-                        public_id: cloudinaryResponse.public_id,
-                        url: cloudinaryResponse.secure_url,
-                  };
             }
 
             const updatedEducation = await educationRepository.updateById(id, educationData);

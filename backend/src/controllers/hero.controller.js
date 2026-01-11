@@ -5,7 +5,7 @@ import { asyncHandler } from "../utilities/error/asyncHandler.js";
 class HeroController {
       addUpdateHeroContent = asyncHandler(async (req, res) => {
             const heroData = req.body;
-            const profileImage = req.files?.profileImage?.[0];
+            const profileImage = req.file;
 
             const hero = await heroService.addUpdateHeroContent(heroData, profileImage);
 
@@ -26,7 +26,7 @@ class HeroController {
       updateHeroContent = asyncHandler(async (req, res) => {
             const { id } = req.params;
             const heroData = req.body;
-            const profileImage = req.files?.profileImage?.[0];
+            const profileImage = req.file;
             const hero = await heroService.updateHeroContent(id, heroData, profileImage);
             sendSuccess(res, "Hero content updated successfully", hero);
       });

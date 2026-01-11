@@ -5,9 +5,9 @@ import { asyncHandler } from "../utilities/error/asyncHandler.js";
 class AboutController {
       addUpdateAboutContent = asyncHandler(async (req, res) => {
             const aboutData = req.body;
-            const profileImage = req.files?.profileImage?.[0];
+            const aboutImage = req.file;
 
-            const about = await aboutService.addUpdateAboutContent(aboutData, profileImage);
+            const about = await aboutService.addUpdateAboutContent(aboutData, aboutImage);
 
             sendSuccess(res, "About content updated successfully", about);
       });
@@ -28,9 +28,9 @@ class AboutController {
       updateAboutContent = asyncHandler(async (req, res) => {
             const { id } = req.params;
             const aboutData = req.body;
-            const profileImage = req.files?.profileImage?.[0];
+            const aboutImage = req.file;
 
-            const about = await aboutService.updateAboutContent(id, aboutData, profileImage);
+            const about = await aboutService.updateAboutContent(id, aboutData, aboutImage);
 
             sendSuccess(res, "About content updated successfully", about);
       });

@@ -5,8 +5,7 @@ import { upload } from "../../middleware/upload.middleware.js";
 
 const router = Router();
 
-// Temporarily disable authentication for testing
-router.post("/add-and-update-hero-content", heroController.addUpdateHeroContent);
+router.post("/add-and-update-hero-content", authenticate, upload.single("profileImage"), heroController.addUpdateHeroContent);
 router.get("/get-hero-content", heroController.getHeroContent);
 router.get("/get-hero-content/:id", heroController.getHeroContentById);
 router.put("/update-hero-content/:id", authenticate, upload.single("profileImage"), heroController.updateHeroContent);

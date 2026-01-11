@@ -3,12 +3,12 @@ import ApiError from "../utilities/error/apiError.js";
 import { uploadToCloudinary } from "../utilities/cloudinary/upload.js";
 
 class AboutService {
-      async addUpdateAboutContent(aboutData, profileImage) {
+      async addUpdateAboutContent(aboutData, aboutImage) {
             let aboutContent = await aboutRepository.findActive();
 
-            if (profileImage) {
-                  const cloudinaryResponse = await uploadToCloudinary(profileImage, "about/profile");
-                  aboutData.profileImage = {
+            if (aboutImage) {
+                  const cloudinaryResponse = await uploadToCloudinary(aboutImage, "about/profile");
+                  aboutData.aboutImage = {
                         public_id: cloudinaryResponse.public_id,
                         url: cloudinaryResponse.secure_url,
                   };
@@ -43,16 +43,16 @@ class AboutService {
             return aboutContent;
       }
 
-      async updateAboutContent(id, aboutData, profileImage) {
+      async updateAboutContent(id, aboutData, aboutImage) {
             const existingAbout = await aboutRepository.findById(id);
 
             if (!existingAbout) {
                   throw ApiError.notFound("About content not found");
             }
 
-            if (profileImage) {
-                  const cloudinaryResponse = await uploadToCloudinary(profileImage, "about/profile");
-                  aboutData.profileImage = {
+            if (aboutImage) {
+                  const cloudinaryResponse = await uploadToCloudinary(aboutImage, "about/profile");
+                  aboutData.aboutImage = {
                         public_id: cloudinaryResponse.public_id,
                         url: cloudinaryResponse.secure_url,
                   };

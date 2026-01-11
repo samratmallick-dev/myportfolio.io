@@ -92,7 +92,7 @@ const CommonForm = ({
                                           onChange={type === 'file' ? handleFileChange : handleChange}
                                           value={type !== 'file' ? values[name] : undefined}
                                           checked={type === 'checkbox' ? values[name] : undefined}
-                                          className={`${type === 'number' ? 'hide-number-arrows' : ''} ${type === 'checkbox' ? 'absolute left-20 mx-2 w-4 h-4' : ''} ${isPasswordField ? 'pr-10' : ''}`}
+                                          className={`${type === 'number' ? 'hide-number-arrows' : ''} ${type === 'checkbox' ? 'absolute left-25 -top-5 mx-2 w-4 h-4' : ''} ${isPasswordField ? 'pr-10' : ''}`}
                                           disabled={isLoading || disabled}
                                     />
                                     {isPasswordField && (

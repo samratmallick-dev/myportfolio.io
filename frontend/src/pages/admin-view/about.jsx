@@ -1,7 +1,7 @@
 import CommonForm from '@/components/common/form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { adminAboutFormIndex } from '@/config/allFormIndex';
-import { addUpdateAboutData, fetchAboutData } from '@/store/about.slice';
+import { addUpdateAboutData, getAboutData, clearError, clearSuccess } from '@/store/about.slice';
 import React, { Fragment, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
@@ -15,21 +15,31 @@ const initialFormData = {
 const AdminViewAbout = () => {
       const [formData, setFormData] = useState(initialFormData);
       const dispatch = useDispatch();
-      // const { aboutData, isLoading } = useSelector((state) => state.about);
+      const { aboutData, isLoading, error, success } = useSelector((state) => state.about);
 
-      // useEffect(() => {
-      //       dispatch(fetchAboutData());
-      // }, [dispatch]);
+      useEffect(() => {
+            dispatch(getAboutData());
+      }, [dispatch]);
 
-      // useEffect(() => {
-      //       if (aboutData && aboutData.length > 0) {
-      //             const data = aboutData[0];
-      //             setFormData({
-      //                   aboutImage: data.aboutImage || "",
-      //                   paragraphs: data.paragraphs || "",
-      //             });
-      //       }
-      // }, [aboutData]);
+      useEffect(() => {
+            if (aboutData) {
+                  setFormData({
+                        aboutImage: aboutData.aboutImage?.url || "",
+                        paragraphs: aboutData.paragraphs || "",
+                  });
+            }
+      }, [aboutData]);
+
+      useEffect(() => {
+            if (success) {
+                  toast.success("About section updated successfully!");
+                  dispatch(clearSuccess());
+            }
+            if (error) {
+                  toast.error(error?.message || "Failed to update about section.");
+                  dispatch(clearError());
+            }
+      }, [success, error, dispatch]);
 
       const handleChange = (name, value) => {
             setFormData((prev) => ({
@@ -51,21 +61,10 @@ const AdminViewAbout = () => {
                   submissionData.append("paragraphs", formData.paragraphs.trim());
             }
 
-            // try {
-            //       await dispatch(addUpdateAboutData(submissionData)).unwrap();
-            //       toast.success("About section updated successfully!");
-            //       dispatch(fetchAboutData());
-            // } catch (err) {
-            //       toast.error(err?.message || "Failed to update about section.");
-            //       console.error("Error updating about section:", err);
-            //       dispatch(fetchAboutData());
-            // }
+            dispatch(addUpdateAboutData(submissionData));
       };
 
-      const aboutData = [];
-      const isLoading = false;
-
-      const currentDatabaseData = aboutData ? aboutData : null;
+      const currentDatabaseData = aboutData;
 
       return (
             <Fragment>
@@ -86,7 +85,7 @@ const AdminViewAbout = () => {
                                                 <div className="container mx-auto px-4 text-center">
                                                       {currentDatabaseData.aboutImage && (
                                                             <img
-                                                                  src={currentDatabaseData.aboutImage}
+                                                                  src={currentDatabaseData.aboutImage.url}
                                                                   alt="About"
                                                                   className="w-60 h-60 object-cover rounded-full mx-auto mb-6 border-4 border-primary/20"
                                                             />
@@ -97,8 +96,8 @@ const AdminViewAbout = () => {
                                                 </div>
                                           ) : (
                                                 <div className="text-center p-8 text-muted-foreground">
-                                                      <p>No About data found in the database.</p>
-                                                      <p>Please use the form to add content.</p>
+                                                      <p>No About data found in database.</p>
+                                                      <p>Please use form to add content.</p>
                                                 </div>
                                           )}
                                     </CardContent>

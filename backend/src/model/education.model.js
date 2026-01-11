@@ -1,51 +1,28 @@
 import mongoose from "mongoose";
 
 const educationSchema = new mongoose.Schema({
-      institution: {
+      title: {
             type: String,
             required: true,
-            trim: true,
-      },
-      degree: {
-            type: String,
-            required: true,
-            trim: true,
-      },
-      field: {
-            type: String,
-            required: true,
-            trim: true,
-      },
-      startDate: {
-            type: Date,
-            required: true,
-      },
-      endDate: {
-            type: Date,
-      },
-      isCurrentlyStudying: {
-            type: Boolean,
-            default: false,
-      },
-      grade: {
-            type: String,
             trim: true,
       },
       description: {
             type: String,
+            required: true,
             trim: true,
       },
-      achievements: [{
+      certification: {
+            type: Boolean,
+            default: false,
+      },
+      certificateLink: {
             type: String,
             trim: true,
-      }],
-      logo: {
-            public_id: {
-                  type: String,
-            },
-            url: {
-                  type: String,
-            },
+      },
+      date: {
+            type: String,
+            required: true,
+            trim: true,
       },
       isActive: {
             type: Boolean,
@@ -53,13 +30,6 @@ const educationSchema = new mongoose.Schema({
       },
 }, {
       timestamps: true,
-});
-
-educationSchema.pre("save", function (next) {
-      if (this.isCurrentlyStudying) {
-            this.endDate = undefined;
-      }
-      next();
 });
 
 export const Education = mongoose.model("Education", educationSchema);

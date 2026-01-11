@@ -4,19 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { ExternalLink } from 'lucide-react';
-import { getAllEducation } from '../../store/education.slice';
+import { getAllEducationData } from '../../store/education.slice';
 import EducationSkeleton from '../loaders/EducationSkeleton';
 
 const MyEducation = () => {
       const dispatch = useDispatch();
-      // const { educationData, isLoading } = useSelector((state) => state.education);
+      const { educationData, isLoading } = useSelector((state) => state.education);
 
-      // useEffect(() => {
-      //       dispatch(getAllEducation());
-      // }, [dispatch]);
-
-      const educationData = ['helo'];
-      const isLoading = false;
+      useEffect(() => {
+            dispatch(getAllEducationData());
+      }, [dispatch]);
 
       return (
             <section id="education" className="py-20 border-b border-gray-700">
@@ -38,14 +35,22 @@ const MyEducation = () => {
                                                 </CardHeader>
                                                 <CardContent>
                                                       <p className="text-muted-foreground mb-4">{item.description}</p>
-                                                      {item.certification && item.certificateLink && (
-                                                            <a href={item.certificateLink} target="_blank" rel="noopener noreferrer">
-                                                                  <Button variant="outline" className="hover:bg-primary text-muted-foreground hover:text-white transition-colors duration-300 ease-out">
-                                                                        <ExternalLink className="w-4 h-4 mr-2" />
-                                                                        View Certificate
+                                                      <div className="flex flex-wrap items-center justify-between gap-4">
+                                                            <span className="text-sm text-muted-foreground">{item.date}</span>
+                                                            {item.certificateLink && (
+                                                                  <Button
+                                                                        variant="outline"
+                                                                        size="sm"
+                                                                        asChild
+                                                                        className="flex items-center gap-2"
+                                                                  >
+                                                                        <a href={item.certificateLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+                                                                              <ExternalLink className="w-4 h-4" />
+                                                                              View Certificate
+                                                                        </a>
                                                                   </Button>
-                                                            </a>
-                                                      )}
+                                                            )}
+                                                      </div>
                                                 </CardContent>
                                           </Card>
                                     ))
@@ -54,6 +59,6 @@ const MyEducation = () => {
                   </div>
             </section>
       );
-}
+};
 
 export default MyEducation;

@@ -7,13 +7,13 @@ import CommonForm from "@/components/common/form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { adminHeroFormIndex } from "@/config/allFormIndex";
-import { addUpdateHeroData, fetchHeroData } from "@/store/hero.slice";
+import { addUpdateHeroData, getHeroData, clearError, clearSuccess } from "@/store/hero.slice";
 import AnimatedText from "@/components/user-view/animated-text";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const initialFormData = {
       name: "",
-      title: [],
+      title: "",
       description: "",
       resumeLink: "",
       profileImage: "",
@@ -21,25 +21,35 @@ const initialFormData = {
 
 const AdminViewHero = () => {
       const dispatch = useDispatch();
-      // const { heroData, isLoading } = useSelector((state) => state.hero);
+      const { heroData, isLoading, error, success } = useSelector((state) => state.hero);
       const [formData, setFormData] = useState(initialFormData);
 
-      // useEffect(() => {
-      //       dispatch(fetchHeroData());
-      // }, [dispatch]);
+      useEffect(() => {
+            dispatch(getHeroData());
+      }, [dispatch]);
 
-      // useEffect(() => {
-      //       if (heroData && heroData.length > 0) {
-      //             const data = heroData[0];
-      //             setFormData({
-      //                   name: data.name || "",
-      //                   title: Array.isArray(data.title) ? data.title.join(", ") : "",
-      //                   description: data.description || "",
-      //                   resumeLink: data.resumeLink || "",
-      //                   profileImage: data.profileImage || "",
-      //             });
-      //       }
-      // }, [heroData]);
+      useEffect(() => {
+            if (heroData) {
+                  setFormData({
+                        name: heroData.name || "",
+                        title: Array.isArray(heroData.title) ? heroData.title.join(", ") : heroData.title || "",
+                        description: heroData.description || "",
+                        resumeLink: heroData.resumeLink || "",
+                        profileImage: heroData.profileImage?.url || "",
+                  });
+            }
+      }, [heroData]);
+
+      useEffect(() => {
+            if (success) {
+                  toast.success("Hero section updated successfully!");
+                  dispatch(clearSuccess());
+            }
+            if (error) {
+                  toast.error(error?.message || "Failed to update hero section.");
+                  dispatch(clearError());
+            }
+      }, [success, error, dispatch]);
 
       const handleChange = (name, value) => {
             setFormData((prev) => ({
@@ -62,21 +72,10 @@ const AdminViewHero = () => {
                   submissionData.append("profileImage", formData.profileImage);
             }
 
-            // try {
-            //       await dispatch(addUpdateHeroData(submissionData)).unwrap();
-            //       toast.success("Hero section updated successfully!");
-            //       dispatch(fetchHeroData());
-            // } catch (err) {
-            //       toast.error(err?.message || "Failed to update hero section.");
-            //       console.error("Error updating hero section:", err);
-            //       dispatch(fetchHeroData());
-            // }
+            dispatch(addUpdateHeroData(submissionData));
       };
 
-      const heroData = [];
-      const isLoading = false;
-
-      const currentDatabaseData = heroData && heroData.length > 0 ? heroData[0] : null;
+      const currentDatabaseData = heroData;
 
       return (
             <Fragment>
@@ -98,7 +97,7 @@ const AdminViewHero = () => {
                                           ) : currentDatabaseData ? (
                                                 <div className="container mx-auto px-4 text-center">
                                                       <img
-                                                            src={currentDatabaseData?.profileImage}
+                                                            src={currentDatabaseData?.profileImage?.url}
                                                             alt="Current Profile"
                                                             className="w-60 h-60 object-contain rounded-full mx-auto mb-8 border-4 border-primary/20"
                                                       />
@@ -115,7 +114,7 @@ const AdminViewHero = () => {
                                                       {currentDatabaseData.resumeLink && (
                                                             <div className="flex justify-center">
                                                                   <a
-                                                                        href={currentDatabaseData?.resumeLink}
+                                                                        href={currentDatabaseData.resumeLink}
                                                                         download
                                                                         target="_blank"
                                                                         rel="noopener noreferrer"

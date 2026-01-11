@@ -5,9 +5,8 @@ import { asyncHandler } from "../utilities/error/asyncHandler.js";
 class EducationController {
       createEducation = asyncHandler(async (req, res) => {
             const educationData = req.body;
-            const logo = req.files?.logo?.[0];
 
-            const education = await educationService.createEducation(educationData, logo);
+            const education = await educationService.createEducation(educationData);
             sendCreated(res, "Education created successfully", education);
       });
 
@@ -25,9 +24,8 @@ class EducationController {
       updateEducation = asyncHandler(async (req, res) => {
             const { id } = req.params;
             const educationData = req.body;
-            const logo = req.files?.logo?.[0];
 
-            const education = await educationService.updateEducation(id, educationData, logo);
+            const education = await educationService.updateEducation(id, educationData);
             sendSuccess(res, "Education updated successfully", education);
       });
 

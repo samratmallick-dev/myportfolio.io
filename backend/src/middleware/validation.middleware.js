@@ -42,19 +42,17 @@ const validateProject = [
 ];
 
 const validateEducation = [
-      body("institution").notEmpty().withMessage("Institution is required"),
-      body("degree").notEmpty().withMessage("Degree is required"),
-      body("field").notEmpty().withMessage("Field of study is required"),
-      body("startDate").isISO8601().withMessage("Start date must be a valid date"),
-];
-
-const validateSkillCategory = [
-      body("category").notEmpty().withMessage("Category name is required"),
+      body("title").notEmpty().withMessage("Title is required"),
+      body("description").notEmpty().withMessage("Description is required"),
+      body("date").notEmpty().withMessage("Date is required"),
 ];
 
 const validateSkill = [
+      body("category").notEmpty().withMessage("Category is required"),
       body("name").notEmpty().withMessage("Skill name is required"),
       body("level").isInt({ min: 0, max: 100 }).withMessage("Skill level must be between 0 and 100"),
+      body("iconName").notEmpty().withMessage("Icon name is required"),
+      body("iconColor").notEmpty().withMessage("Icon color is required"),
 ];
 
 const validateService = [
@@ -93,7 +91,6 @@ export {
       validateMongoId,
       validateProject,
       validateEducation,
-      validateSkillCategory,
       validateSkill,
       validateService,
       validateContactMessage,

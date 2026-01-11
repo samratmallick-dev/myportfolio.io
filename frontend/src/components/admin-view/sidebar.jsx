@@ -50,9 +50,10 @@ const AdminSidebar = ({ onLinkClick }) => {
                                           to={item.path}
                                           onClick={onLinkClick}
                                           className={({ isActive }) =>
-                                                `flex items-center px-3 py-2 rounded-lg transition-colors text-sm font-medium ${isActive
-                                                      ? 'bg-[--sidebar-active] text-[--sidebar-active-foreground]'
-                                                      : 'text-[--sidebar-foreground] hover:bg-[--sidebar-hover] hover:text-[--sidebar-hover-foreground]'
+                                                `flex items-center px-3 py-2 rounded-lg transition-colors text-sm font-medium
+                                                ${isActive
+                                                      ? 'bg-(--sidebar-active) text-(--sidebar-active-foreground)'
+                                                      : 'text-sidebar-foreground hover:bg-(--sidebar-hover) hover:text-(--sidebar-hover-foreground)'
                                                 }`
                                           }
                                     >
@@ -63,16 +64,16 @@ const AdminSidebar = ({ onLinkClick }) => {
                         })}
                   </nav>
                   <div className="p-4 mt-auto" style={{ borderTop: '1px solid var(--sidebar-border)' }}>
-                        <Button 
-                              variant="ghost" 
-                              className="w-full justify-start text-sidebar-foreground hover:bg-[--sidebar-hover] hover:text-[--sidebar-hover-foreground]"
+                        <Button
+                              variant="ghost"
+                              className="w-full justify-start text-sidebar-foreground hover:bg-(--sidebar-hover) hover:text-(--sidebar-hover-foreground)"
                               onClick={handleLogout}
                         >
                               <Icons.LogOut className="mr-3 h-5 w-5" /> Logout
                         </Button>
                   </div>
                   <footer className="p-4 text-center text-xs text-muted-foreground">
-                              © {new Date().getFullYear()} Samrat Mallick. All Rights Reserved.
+                        © {new Date().getFullYear()} Samrat Mallick. All Rights Reserved.
                   </footer>
             </aside>
       );

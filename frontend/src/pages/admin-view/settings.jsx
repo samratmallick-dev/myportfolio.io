@@ -185,8 +185,6 @@ const AdminSettings = () => {
             setPasswordErrors({});
       };
 
-      // FIX: Only show Skeleton if loading AND we have no user data yet.
-      // This prevents the component from unmounting during form submission.
       if (isLoading && !user) {
             return <SettingsSkeleton />;
       }
@@ -210,11 +208,11 @@ const AdminSettings = () => {
                               <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-4 p-1">
                                     <div className="flex flex-col gap-2 flex-wrap">
                                           <Label className="text-sm font-medium text-muted-foreground">Name</Label>
-                                          <div className="p-3 bg-sidebar-accent rounded-lg font-medium text-wrap">{user?.username || 'N/A'}</div>
+                                          <input value={user?.username || 'N/A'} readOnly className='p-3 bg-sidebar-accent rounded-lg font-medium text-wrap w-full overflow-auto' />
                                     </div>
                                     <div className="flex flex-col gap-2 flex-wrap">
                                           <Label className="text-sm font-medium text-muted-foreground">Email</Label>
-                                          <div className="p-3 bg-sidebar-accent rounded-lg font-medium text-wrap">{user?.email || 'N/A'}</div>
+                                          <input value={user?.email || 'N/A'} readOnly className='p-3 bg-sidebar-accent rounded-lg font-medium text-wrap w-full overflow-auto' />
                                     </div>
                               </div>
                         </CardContent>
@@ -227,12 +225,12 @@ const AdminSettings = () => {
                         </CardHeader>
                         <CardContent>
                               <Tabs defaultValue="email" className="w-full">
-                                    <TabsList className="grid w-full grid-cols-2 mb-6 bg-sidebar-accent">
-                                          <TabsTrigger value="email" className="flex items-center gap-2">
+                                    <TabsList className="grid w-full grid-cols-2 mb-6 bg-sidebar-accent gap-2">
+                                          <TabsTrigger value="email" className="flex items-center gap-2 cursor-pointer">
                                                 <Mail className="w-4 h-4" />
                                                 Email
                                           </TabsTrigger>
-                                          <TabsTrigger value="password" className="flex items-center gap-2">
+                                          <TabsTrigger value="password" className="flex items-center gap-2 cursor-pointer">
                                                 <Lock className="w-4 h-4" />
                                                 Password
                                           </TabsTrigger>

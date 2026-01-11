@@ -7,15 +7,15 @@ const heroSchema = new mongoose.Schema({
             trim: true,
       },
       title: {
+            type: [String],
+            required: true,
+      },
+      description: {
             type: String,
             required: true,
             trim: true,
       },
-      subtitle: {
-            type: String,
-            trim: true,
-      },
-      description: {
+      resumeLink: {
             type: String,
             trim: true,
       },
@@ -29,26 +29,6 @@ const heroSchema = new mongoose.Schema({
                   required: false,
             },
       },
-      resumeUrl: {
-            type: String,
-            trim: true,
-      },
-      socialLinks: [{
-            platform: {
-                  type: String,
-                  required: true,
-                  trim: true,
-            },
-            url: {
-                  type: String,
-                  required: true,
-                  trim: true,
-            },
-            icon: {
-                  type: String,
-                  trim: true,
-            },
-      }],
       isActive: {
             type: Boolean,
             default: true,

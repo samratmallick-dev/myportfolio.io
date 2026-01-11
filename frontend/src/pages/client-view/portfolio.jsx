@@ -7,37 +7,43 @@ import MyEducation from "@/components/user-view/education";
 import MyServices from "@/components/user-view/service";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
-import { fetchHeroData } from "@/store/hero.slice";
+import { getHeroData } from "@/store/hero.slice";
+import { getAboutData } from "@/store/about.slice";
+import { getAllEducationData } from "@/store/education.slice";
 import HeroSkeleton from "@/components/loaders/HeroSkeleton";
 
 const MyPortfolio = () => {
 
       const dispatch = useDispatch();
-      const heroData = null;
-      // const { heroData, isLoading } = useSelector((state) => state.hero);
+      const { heroData, isLoading: heroLoading } = useSelector((state) => state.hero);
+      const { aboutData, isLoading: aboutLoading } = useSelector((state) => state.about);
+      const { educationData, isLoading: educationLoading } = useSelector((state) => state.education);
 
-      // useEffect(() => {
-      //       dispatch(fetchHeroData());
-      // }, [dispatch]);
+      useEffect(() => {
+            dispatch(getHeroData());
+            dispatch(getAboutData());
+            dispatch(getAllEducationData());
+      }, [dispatch]);
 
-      const currentDatabaseData = heroData && heroData.length > 0 ? heroData[0] : null;
+      const currentHeroData = heroData;
+      const isLoading = heroLoading || aboutLoading || educationLoading;
 
-      // if (isLoading || !currentDatabaseData) {
-      //       return (
-      //             <div className="min-h-screen bg-background relative mt-20">
-      //                   <HeroSkeleton />
-      //                   <AboutMe />
-      //                   <MyEducation />
-      //                   <MySkills />
-      //                   <MyProjects />
-      //                   <MyServices />
-      //             </div>
-      //       );
-      // }
+      if (isLoading || !currentHeroData) {
+            return (
+                  <div className="min-h-screen bg-background relative mt-20">
+                        <HeroSkeleton />
+                        <AboutMe />
+                        <MyEducation />
+                        <MySkills />
+                        <MyProjects />
+                        <MyServices />
+                  </div>
+            );
+      }
 
       return (
             <div className="min-h-screen bg-background relative mt-20">
-                  <Hero heroImage={heroImage} data={currentDatabaseData} />
+                  <Hero heroImage={heroImage} data={currentHeroData} />
                   <AboutMe />
                   <MyEducation />
                   <MySkills />
