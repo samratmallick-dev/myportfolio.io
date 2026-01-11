@@ -1,5 +1,5 @@
 import contactService from "../service/contact.service.js";
-import { sendSuccess, sendCreated, sendNotFound } from "../utilities/response/apiResponse.js";
+import { sendSuccess, sendCreated } from "../utilities/response/apiResponse.js";
 import { asyncHandler } from "../utilities/error/asyncHandler.js";
 
 class ContactController {

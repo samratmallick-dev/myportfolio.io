@@ -12,7 +12,6 @@ const createTransporter = () => {
             },
       });
 };
-console.log(process.env.EMAIL_HOST,process.env.EMAIL_PORT,process.env.EMAIL_USER,process.env.EMAIL_PASS.replace(/\s/g, ""));
 
 const sendEmail = async (options) => {
       try {

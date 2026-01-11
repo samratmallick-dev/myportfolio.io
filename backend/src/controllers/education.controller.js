@@ -1,5 +1,5 @@
 import educationService from "../service/education.service.js";
-import { sendSuccess, sendCreated, sendNotFound } from "../utilities/response/apiResponse.js";
+import { sendSuccess, sendCreated } from "../utilities/response/apiResponse.js";
 import { asyncHandler } from "../utilities/error/asyncHandler.js";
 
 class EducationController {

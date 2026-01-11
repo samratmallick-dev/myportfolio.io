@@ -1,5 +1,5 @@
 import heroService from "../service/hero.service.js";
-import { sendSuccess, sendCreated, sendNotFound } from "../utilities/response/apiResponse.js";
+import { sendSuccess } from "../utilities/response/apiResponse.js";
 import { asyncHandler } from "../utilities/error/asyncHandler.js";
 
 class HeroController {
@@ -12,7 +12,7 @@ class HeroController {
             sendSuccess(res, "Hero content updated successfully", hero);
       });
 
-      getHeroContent = asyncHandler(async (req, res) => {
+      getHeroContent = asyncHandler(async (req, res) => {  
             const hero = await heroService.getHeroContent();
             sendSuccess(res, "Hero content retrieved successfully", hero);
       });

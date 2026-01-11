@@ -1,5 +1,5 @@
 import serviceService from "../service/service.service.js";
-import { sendSuccess, sendCreated, sendNotFound } from "../utilities/response/apiResponse.js";
+import { sendSuccess, sendCreated } from "../utilities/response/apiResponse.js";
 import { asyncHandler } from "../utilities/error/asyncHandler.js";
 
 class ServiceController {

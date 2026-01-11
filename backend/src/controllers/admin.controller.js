@@ -1,7 +1,6 @@
 import adminService from "../service/admin.service.js";
-import { sendCreated, sendSuccess, sendError } from "../utilities/response/apiResponse.js";
+import { sendCreated, sendSuccess } from "../utilities/response/apiResponse.js";
 import { asyncHandler } from "../utilities/error/asyncHandler.js";
-import ApiError from "../utilities/error/apiError.js";
 
 class AdminController {
       initializeAdmin = asyncHandler(async (req, res) => {
