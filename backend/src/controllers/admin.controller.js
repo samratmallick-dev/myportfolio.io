@@ -37,7 +37,13 @@ class AdminController {
       });
 
       generateOTP = asyncHandler(async (req, res) => {
-            const result = await adminService.generateOTPForEmailUpdate(req.body);
+            const { purpose } = req.body;
+            const adminId = req.admin.id;
+            console.log('generateOTP controller - req.body:', req.body);
+            console.log('generateOTP controller - adminId:', adminId);
+            console.log('generateOTP controller - purpose:', purpose);
+            
+            const result = await adminService.generateOTPForEmailUpdate({ adminId, purpose, newEmail: req.body.newEmail });
             sendSuccess(res, result.message);
       });
 

@@ -1,6 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { SummeryApi } from "../config/api";
 
 const baseUrl = import.meta.env.VITE_BASE_URL;
 

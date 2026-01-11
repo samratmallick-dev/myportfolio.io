@@ -8,10 +8,11 @@ const createTransporter = () => {
             secure: false,
             auth: {
                   user: process.env.EMAIL_USER,
-                  pass: process.env.EMAIL_PASS,
+                  pass: process.env.EMAIL_PASS.replace(/\s/g, ""),
             },
       });
 };
+console.log(process.env.EMAIL_HOST,process.env.EMAIL_PORT,process.env.EMAIL_USER,process.env.EMAIL_PASS.replace(/\s/g, ""));
 
 const sendEmail = async (options) => {
       try {
@@ -31,6 +32,8 @@ const sendEmail = async (options) => {
                   to: options.to,
                   subject: options.subject,
             });
+            console.log(info);
+            
 
             return info;
       } catch (error) {

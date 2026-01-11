@@ -74,8 +74,11 @@ const validateOTP = [
 ];
 
 const validateEmailUpdate = [
-      body("email").isEmail().normalizeEmail().withMessage("Please provide a valid email"),
       otpRule(),
+];
+
+const validateGenerateOTP = [
+      body("newEmail").isEmail().normalizeEmail().withMessage("Please provide a valid email"),
 ];
 
 const validatePasswordUpdate = [
@@ -97,4 +100,5 @@ export {
       validateOTP,
       validateEmailUpdate,
       validatePasswordUpdate,
+      validateGenerateOTP,
 };

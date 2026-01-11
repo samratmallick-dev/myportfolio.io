@@ -13,10 +13,12 @@ import {
 } from '@/config/allFormIndex';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { generateOTP, verifyOTPAndUpdateEmail, verifyOTPAndUpdatePassword } from '@/store/auth.slice';
+import { generateOTPThunk, verifyOTPAndUpdateEmailThunk, verifyOTPAndUpdatePasswordThunk } from '@/store/auth.slice';
+import SettingsSkeleton from '@/components/loaders/SettingsSkeleton';
+import { toast } from 'sonner';
 
 const AdminSettings = () => {
-      // const { user } = useSelector((state) => state.auth);
+      const { user, isLoading } = useSelector((state) => state.auth);
       const navigate = useNavigate();
       const dispatch = useDispatch();
 
@@ -50,40 +52,51 @@ const AdminSettings = () => {
             e.preventDefault();
             setEmailLoading(true);
 
-            // try {
-            //       const result = await dispatch(generateOTP({
-            //             purpose: 'email_update',
-            //             newEmail: emailFormData.newEmail
-            //       })).unwrap();
+            try {
+                  await dispatch(generateOTPThunk({
+                        purpose: 'email_update',
+                        newEmail: emailFormData.newEmail
+                  })).unwrap();
 
-            //       setEmailStep('otp-sent');
-            // } catch (error) {
-            //       setEmailErrors({ newEmail: error?.message || 'Failed to send OTP' });
-            // } finally {
-            //       setEmailLoading(false);
-            // }
+                  setEmailErrors({});
+                  setEmailStep('otp-sent');
+                  toast.success('OTP sent successfully');
+            } catch (error) {
+                  setEmailErrors({ newEmail: error?.message || 'Failed to send OTP' });
+                  toast.error('Failed to send OTP', {
+                        description: error?.message || 'Please try again'
+                  });
+            } finally {
+                  setEmailLoading(false);
+            }
       };
 
       const handleVerifyEmailOTP = async (e) => {
             e.preventDefault();
             setEmailLoading(true);
 
-            // try {
-            //       const result = await dispatch(verifyOTPAndUpdateEmail({
-            //             otp: emailOTPData.otp,
-            //             newEmail: emailFormData.newEmail
-            //       })).unwrap();
+            try {
+                  await dispatch(verifyOTPAndUpdateEmailThunk({
+                        otp: emailOTPData.otp,
+                        email: emailFormData.newEmail
+                  })).unwrap();
 
-            //       setEmailStep('success');
+                  setEmailErrors({});
+                  setEmailStep('success');
+                  
+                  toast.success('Email updated successfully');
 
-            //       setTimeout(() => {
-            //             navigate('/auth/login');
-            //       }, 2000);
-            // } catch (error) {
-            //       setEmailErrors({ otp: error?.message || 'Invalid or expired OTP' });
-            // } finally {
-            //       setEmailLoading(false);
-            // }
+                  setTimeout(() => {
+                        navigate('/auth/login');
+                  }, 2000);
+            } catch (error) {
+                  setEmailErrors({ otp: error?.message || 'Invalid or expired OTP' });
+                  toast.error('Failed to update email', {
+                        description: error?.message || 'Please check your OTP and try again'
+                  });
+            } finally {
+                  setEmailLoading(false);
+            }
       };
 
       const resetEmailFlow = () => {
@@ -122,39 +135,47 @@ const AdminSettings = () => {
 
             setPasswordLoading(true);
 
-            // try {
-            //       const result = await dispatch(generateOTP({
-            //             purpose: 'password_update'
-            //       })).unwrap();
+            try {
+                  await dispatch(generateOTPThunk({ purpose: 'password_update' })).unwrap();
 
-            //       setPasswordStep('otp-sent');
-            // } catch (error) {
-            //       setPasswordErrors({ newPassword: error?.message || 'Failed to send OTP' });
-            // } finally {
-            //       setPasswordLoading(false);
-            // }
+                  setPasswordErrors({});
+                  setPasswordStep('otp-sent');
+                  toast.success('OTP sent successfully');
+            } catch (error) {
+                  setPasswordErrors({ newPassword: error?.message || 'Failed to send OTP' });
+                  toast.error('Failed to send OTP', {
+                        description: error?.message || 'Please try again'
+                  });
+            } finally {
+                  setPasswordLoading(false);
+            }
       };
 
       const handleVerifyPasswordOTP = async (e) => {
             e.preventDefault();
             setPasswordLoading(true);
 
-            // try {
-            //       const result = await dispatch(verifyOTPAndUpdatePassword({
-            //             otp: passwordOTPData.otp,
-            //             newPassword: passwordFormData.newPassword
-            //       })).unwrap();
+            try {
+                  await dispatch(verifyOTPAndUpdatePasswordThunk({
+                        otp: passwordOTPData.otp,
+                        newPassword: passwordFormData.newPassword
+                  })).unwrap();
 
-            //       setPasswordStep('success');
+                  setPasswordErrors({});
+                  setPasswordStep('success');
+                  toast.success('Password updated successfully');
 
-            //       setTimeout(() => {
-            //             navigate('/auth/login');
-            //       }, 2000);
-            // } catch (error) {
-            //       setPasswordErrors({ otp: error?.message || 'Invalid or expired OTP' });
-            // } finally {
-            //       setPasswordLoading(false);
-            // }
+                  setTimeout(() => {
+                        navigate('/auth/login');
+                  }, 2000);
+            } catch (error) {
+                  setPasswordErrors({ otp: error?.message || 'Invalid or expired OTP' });
+                  toast.error('Failed to update password', {
+                        description: error?.message || 'Please check your OTP and try again'
+                  });
+            } finally {
+                  setPasswordLoading(false);
+            }
       };
 
       const resetPasswordFlow = () => {
@@ -164,8 +185,11 @@ const AdminSettings = () => {
             setPasswordErrors({});
       };
 
-      const user = [];
-      
+      // FIX: Only show Skeleton if loading AND we have no user data yet.
+      // This prevents the component from unmounting during form submission.
+      if (isLoading && !user) {
+            return <SettingsSkeleton />;
+      }
 
       return (
             <div className="space-y-6 max-w-4xl">
@@ -186,7 +210,7 @@ const AdminSettings = () => {
                               <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-4 p-1">
                                     <div className="flex flex-col gap-2 flex-wrap">
                                           <Label className="text-sm font-medium text-muted-foreground">Name</Label>
-                                          <div className="p-3 bg-sidebar-accent rounded-lg font-medium text-wrap">{user?.name || 'N/A'}</div>
+                                          <div className="p-3 bg-sidebar-accent rounded-lg font-medium text-wrap">{user?.username || 'N/A'}</div>
                                     </div>
                                     <div className="flex flex-col gap-2 flex-wrap">
                                           <Label className="text-sm font-medium text-muted-foreground">Email</Label>

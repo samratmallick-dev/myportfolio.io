@@ -6,30 +6,42 @@ import { checkAuth } from '@/store/auth.slice';
 const CheckAuth = ({ children }) => {
       const dispatch = useDispatch();
       const location = useLocation();
-      // const { isAuthenticated, isLoading } = useSelector((state) => state.auth);
-      const isAuthenticated = true;
-      const isLoading = false;
+      const { isAuthenticated, isLoading, user } = useSelector((state) => state.auth);
       const [authChecked, setAuthChecked] = useState(false);
       const hasCheckedAuth = useRef(false);
 
       useEffect(() => {
-            if (isAuthenticated) {
+            // If we have a token but no user data, we need to check auth
+            const hasToken = !!localStorage.getItem('adminToken');
+            const needsAuthCheck = isAuthenticated && !user && hasToken;
+            
+            if (needsAuthCheck && !hasCheckedAuth.current) {
+                  const verifyAuth = async () => {
+                        hasCheckedAuth.current = true;
+                        dispatch(checkAuth());
+                        setAuthChecked(true);
+                  };
+                  verifyAuth();
+                  return;
+            }
+
+            // If already authenticated with user data, no need to check
+            if (isAuthenticated && user) {
                   setAuthChecked(true);
                   hasCheckedAuth.current = true;
                   return;
             }
 
-            if (hasCheckedAuth.current) {
-                  return;
+            // If not authenticated and hasn't checked yet
+            if (!isAuthenticated && !hasCheckedAuth.current) {
+                  const verifyAuth = async () => {
+                        hasCheckedAuth.current = true;
+                        dispatch(checkAuth());
+                        setAuthChecked(true);
+                  };
+                  verifyAuth();
             }
-
-            const verifyAuth = async () => {
-                  hasCheckedAuth.current = true;
-                  await dispatch(checkAuth());
-                  setAuthChecked(true);
-            };
-            verifyAuth();
-      }, [dispatch, isAuthenticated]);
+      }, [dispatch, isAuthenticated, user]);
 
       if (!authChecked || isLoading) {
             return (

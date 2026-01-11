@@ -5,20 +5,20 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import CommonForm from '@/components/common/form';
 import { authLoginFormIndex } from '@/config/allFormIndex';
 import { Lock, Mail, Sparkles, ArrowRight } from 'lucide-react';
-import { loginUser } from '@/store/auth.slice';
 import { toast } from 'sonner';
+import { loginUser, clearError } from '@/store/auth.slice';
 
 const Login = () => {
       const navigate = useNavigate();
       const dispatch = useDispatch();
       const [formData, setFormData] = useState({ email: '', password: '' });
-      // const { isLoading, isAuthenticated, error } = useSelector((state) => state.auth);
+      const { isLoading, isAuthenticated, error } = useSelector((state) => state.auth);
 
-      // useEffect(() => {
-      //       if (isAuthenticated) {
-      //             navigate('/admin/dashboard');
-      //       }
-      // }, [isAuthenticated, navigate]);
+      useEffect(() => {
+            if (isAuthenticated) {
+                  navigate('/admin/dashboard');
+            }
+      }, [isAuthenticated, navigate]);
 
       useEffect(() => {
             if (error) {
@@ -26,8 +26,10 @@ const Login = () => {
                         description: error || 'Invalid email or password. Please check your credentials.',
                         duration: 5000,
                   });
+                  // Clear error after showing toast
+                  dispatch(clearError());
             }
-      }, [error]);
+      }, [error, dispatch]);
 
       const handleChange = (name, value) => {
             setFormData((prev) => ({ ...prev, [name]: value }));
@@ -41,7 +43,7 @@ const Login = () => {
                   });
                   return;
             }
-            // dispatch(loginUser(formData));
+            dispatch(loginUser(formData));
       };
 
       return (

@@ -55,29 +55,36 @@ class AdminService {
             return admin;
       }
 
-      async generateOTPForEmailUpdate(email) {
-            const admin = await adminRepository.findById(email.adminId);
-            if (!admin) {
-                  throw ApiError.notFound("Admin not found");
+      async generateOTPForEmailUpdate(data) {
+            console.log('generateOTPForEmailUpdate - received data:', data);
+            const { adminId, newEmail } = data;
+            
+            if (!newEmail) {
+                  console.log('generateOTPForEmailUpdate - newEmail is missing:', newEmail);
+                  throw ApiError.badRequest("New email is required");
             }
 
-            const otp = generateOTP();
-            const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+            const admin = await adminRepository.findById(adminId);
+            if (!admin) throw ApiError.notFound("Admin not found");
 
-            await adminRepository.updateById(admin._id, {
+            const otp = generateOTP();
+            const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+
+            await adminRepository.updateById(adminId, {
                   otp,
                   otpExpiry,
-                  newEmail: email.newEmail,
+                  newEmail,
             });
 
             await sendEmail({
-                  to: email.newEmail,
+                  to: newEmail,
                   subject: "Email Update OTP",
-                  text: `Your OTP for email update is: ${otp}. It will expire in 10 minutes.`,
+                  text: `Your OTP is ${otp}. Valid for 10 minutes.`,
             });
 
             return { message: "OTP sent to new email" };
       }
+
 
       async verifyOTPAndUpdateEmail(adminId, otp) {
             const admin = await adminRepository.findById(adminId);
@@ -99,9 +106,11 @@ class AdminService {
 
             const updatedAdmin = await adminRepository.updateById(adminId, {
                   email: admin.newEmail,
-                  otp: undefined,
-                  otpExpiry: undefined,
-                  newEmail: undefined,
+                  $unset: {
+                        otp: 1,
+                        otpExpiry: 1,
+                        newEmail: 1
+                  }
             });
 
             return updatedAdmin;
@@ -150,8 +159,10 @@ class AdminService {
 
             const updatedAdmin = await adminRepository.updateById(adminId, {
                   password: newPassword,
-                  otp: undefined,
-                  otpExpiry: undefined,
+                  $unset: {
+                        otp: 1,
+                        otpExpiry: 1
+                  }
             });
 
             return updatedAdmin;
