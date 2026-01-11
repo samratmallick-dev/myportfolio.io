@@ -3,49 +3,49 @@ import { sendSuccess, sendCreated, sendNotFound } from "../utilities/response/ap
 import { asyncHandler } from "../utilities/error/asyncHandler.js";
 
 class EducationController {
-  createEducation = asyncHandler(async (req, res) => {
-    const educationData = req.body;
-      const logo = req.files?.logo?.[0];
-      
-      const education = await educationService.createEducation(educationData, logo);
-      sendCreated(res, "Education created successfully", education);
-  });
+      createEducation = asyncHandler(async (req, res) => {
+            const educationData = req.body;
+            const logo = req.files?.logo?.[0];
 
-  getAllEducation = asyncHandler(async (req, res) => {
-    const educationList = await educationService.getAllEducation();
-      sendSuccess(res, "Education list retrieved successfully", educationList);
-  });
+            const education = await educationService.createEducation(educationData, logo);
+            sendCreated(res, "Education created successfully", education);
+      });
 
-  getEducationById = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-      const education = await educationService.getEducationById(id);
-      sendSuccess(res, "Education retrieved successfully", education);
-  });
+      getAllEducation = asyncHandler(async (req, res) => {
+            const educationList = await educationService.getAllEducation();
+            sendSuccess(res, "Education list retrieved successfully", educationList);
+      });
 
-  updateEducation = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-      const educationData = req.body;
-      const logo = req.files?.logo?.[0];
-      
-      const education = await educationService.updateEducation(id, educationData, logo);
-      sendSuccess(res, "Education updated successfully", education);
-  });
+      getEducationById = asyncHandler(async (req, res) => {
+            const { id } = req.params;
+            const education = await educationService.getEducationById(id);
+            sendSuccess(res, "Education retrieved successfully", education);
+      });
 
-  deleteEducation = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-      const result = await educationService.deleteEducation(id);
-      sendSuccess(res, "Education deleted successfully", result);
-  });
+      updateEducation = asyncHandler(async (req, res) => {
+            const { id } = req.params;
+            const educationData = req.body;
+            const logo = req.files?.logo?.[0];
 
-  getAllEducationAdmin = asyncHandler(async (req, res) => {
-    const educationList = await educationService.getAllEducationAdmin();
-      sendSuccess(res, "All education retrieved successfully", educationList);
-  });
+            const education = await educationService.updateEducation(id, educationData, logo);
+            sendSuccess(res, "Education updated successfully", education);
+      });
 
-  getLatestEducation = asyncHandler(async (req, res) => {
-    const education = await educationService.getLatestEducation();
-      sendSuccess(res, "Latest education retrieved successfully", education);
-  });
+      deleteEducation = asyncHandler(async (req, res) => {
+            const { id } = req.params;
+            const result = await educationService.deleteEducation(id);
+            sendSuccess(res, "Education deleted successfully", result);
+      });
+
+      getAllEducationAdmin = asyncHandler(async (req, res) => {
+            const educationList = await educationService.getAllEducationAdmin();
+            sendSuccess(res, "All education retrieved successfully", educationList);
+      });
+
+      getLatestEducation = asyncHandler(async (req, res) => {
+            const education = await educationService.getLatestEducation();
+            sendSuccess(res, "Latest education retrieved successfully", education);
+      });
 }
 
 export default new EducationController();

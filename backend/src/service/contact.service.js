@@ -4,165 +4,165 @@ import { uploadToCloudinary } from "../utilities/cloudinary/upload.js";
 import { sendEmail } from "../utilities/email/sendEmail.js";
 
 class ContactService {
-  // Contact Details Methods
-  async addUpdateContactDetails(contactData, images) {
-    let contactDetails = await contactRepository.findActive();
+      // Contact Details Methods
+      async addUpdateContactDetails(contactData, images) {
+            let contactDetails = await contactRepository.findActive();
 
-    if (images && images.length > 0) {
-      const uploadPromises = images.map(image =>
-        uploadToCloudinary(image, "contact/images")
-      );
+            if (images && images.length > 0) {
+                  const uploadPromises = images.map(image =>
+                        uploadToCloudinary(image, "contact/images")
+                  );
 
-      const cloudinaryResponses = await Promise.all(uploadPromises);
+                  const cloudinaryResponses = await Promise.all(uploadPromises);
 
-      if (cloudinaryResponses.length > 0) {
-        contactDetails.profileImage = {
-          public_id: cloudinaryResponses[0].public_id,
-          url: cloudinaryResponses[0].secure_url,
-        };
+                  if (cloudinaryResponses.length > 0) {
+                        contactDetails.profileImage = {
+                              public_id: cloudinaryResponses[0].public_id,
+                              url: cloudinaryResponses[0].secure_url,
+                        };
+                  }
+            }
+
+            if (contactDetails) {
+                  contactDetails = await contactRepository.updateById(contactDetails._id, contactData);
+            } else {
+                  contactDetails = await contactRepository.create(contactData);
+            }
+
+            return contactDetails;
       }
-    }
 
-    if (contactDetails) {
-      contactDetails = await contactRepository.updateById(contactDetails._id, contactData);
-    } else {
-      contactDetails = await contactRepository.create(contactData);
-    }
+      async getContactDetails() {
+            const contactDetails = await contactRepository.findActive();
 
-    return contactDetails;
-  }
+            if (!contactDetails) {
+                  throw ApiError.notFound("Contact details not found");
+            }
 
-  async getContactDetails() {
-    const contactDetails = await contactRepository.findActive();
-
-    if (!contactDetails) {
-      throw ApiError.notFound("Contact details not found");
-    }
-
-    return contactDetails;
-  }
-
-  async updateContactDetails(id, contactData, images) {
-    const existingContact = await contactRepository.findById(id);
-
-    if (!existingContact) {
-      throw ApiError.notFound("Contact details not found");
-    }
-
-    if (images && images.length > 0) {
-      const uploadPromises = images.map(image =>
-        uploadToCloudinary(image, "contact/images")
-      );
-
-      const cloudinaryResponses = await Promise.all(uploadPromises);
-
-      if (cloudinaryResponses.length > 0) {
-        contactData.profileImage = {
-          public_id: cloudinaryResponses[0].public_id,
-          url: cloudinaryResponses[0].secure_url,
-        };
+            return contactDetails;
       }
-    }
 
-    const updatedContact = await contactRepository.updateById(id, contactData);
-    return updatedContact;
-  }
+      async updateContactDetails(id, contactData, images) {
+            const existingContact = await contactRepository.findById(id);
 
-  // Message Methods
-  async sendMessage(messageData) {
-    const message = await contactRepository.createMessage(messageData);
+            if (!existingContact) {
+                  throw ApiError.notFound("Contact details not found");
+            }
 
-    try {
-      await sendEmail({
-        to: messageData.email,
-        subject: "Message Received - Thank You",
-        text: `Thank you for contacting us. We have received your message and will get back to you soon.\n\nMessage details:\nSubject: ${messageData.subject}\nMessage: ${messageData.message}`,
-      });
+            if (images && images.length > 0) {
+                  const uploadPromises = images.map(image =>
+                        uploadToCloudinary(image, "contact/images")
+                  );
 
-      const contactDetails = await contactRepository.findActive();
-      if (contactDetails && contactDetails.email) {
-        await sendEmail({
-          to: contactDetails.email,
-          subject: `New Contact Message: ${messageData.subject}`,
-          text: `You have received a new message from ${messageData.name} (${messageData.email}):\n\nSubject: ${messageData.subject}\nMessage: ${messageData.message}`,
-        });
+                  const cloudinaryResponses = await Promise.all(uploadPromises);
+
+                  if (cloudinaryResponses.length > 0) {
+                        contactData.profileImage = {
+                              public_id: cloudinaryResponses[0].public_id,
+                              url: cloudinaryResponses[0].secure_url,
+                        };
+                  }
+            }
+
+            const updatedContact = await contactRepository.updateById(id, contactData);
+            return updatedContact;
       }
-    } catch (error) {
-      console.error("Error sending notification emails:", error);
-    }
 
-    return message;
-  }
+      // Message Methods
+      async sendMessage(messageData) {
+            const message = await contactRepository.createMessage(messageData);
 
-  async getAllMessages() {
-    const messages = await contactRepository.findActiveMessages();
-    return messages;
-  }
+            try {
+                  await sendEmail({
+                        to: messageData.email,
+                        subject: "Message Received - Thank You",
+                        text: `Thank you for contacting us. We have received your message and will get back to you soon.\n\nMessage details:\nSubject: ${messageData.subject}\nMessage: ${messageData.message}`,
+                  });
 
-  async getMessageById(messageId) {
-    const message = await contactRepository.findMessageById(messageId);
+                  const contactDetails = await contactRepository.findActive();
+                  if (contactDetails && contactDetails.email) {
+                        await sendEmail({
+                              to: contactDetails.email,
+                              subject: `New Contact Message: ${messageData.subject}`,
+                              text: `You have received a new message from ${messageData.name} (${messageData.email}):\n\nSubject: ${messageData.subject}\nMessage: ${messageData.message}`,
+                        });
+                  }
+            } catch (error) {
+                  console.error("Error sending notification emails:", error);
+            }
 
-    if (!message) {
-      throw ApiError.notFound("Message not found");
-    }
+            return message;
+      }
 
-    if (!message.isActive) {
-      throw ApiError.badRequest("Message is not active");
-    }
+      async getAllMessages() {
+            const messages = await contactRepository.findActiveMessages();
+            return messages;
+      }
 
-    return message;
-  }
+      async getMessageById(messageId) {
+            const message = await contactRepository.findMessageById(messageId);
 
-  async deleteMessage(messageId) {
-    const message = await contactRepository.findMessageById(messageId);
+            if (!message) {
+                  throw ApiError.notFound("Message not found");
+            }
 
-    if (!message) {
-      throw ApiError.notFound("Message not found");
-    }
+            if (!message.isActive) {
+                  throw ApiError.badRequest("Message is not active");
+            }
 
-    await contactRepository.deleteMessageById(messageId);
-    return { message: "Message deleted successfully" };
-  }
+            return message;
+      }
 
-  async markMessageAsRead(messageId) {
-    const message = await contactRepository.markMessageAsRead(messageId);
+      async deleteMessage(messageId) {
+            const message = await contactRepository.findMessageById(messageId);
 
-    if (!message) {
-      throw ApiError.notFound("Message not found");
-    }
+            if (!message) {
+                  throw ApiError.notFound("Message not found");
+            }
 
-    return message;
-  }
+            await contactRepository.deleteMessageById(messageId);
+            return { message: "Message deleted successfully" };
+      }
 
-  async replyToMessage(messageId, replyData) {
-    const message = await contactRepository.replyToMessage(messageId, replyData);
+      async markMessageAsRead(messageId) {
+            const message = await contactRepository.markMessageAsRead(messageId);
 
-    if (!message) {
-      throw ApiError.notFound("Message not found");
-    }
+            if (!message) {
+                  throw ApiError.notFound("Message not found");
+            }
 
-    try {
-      await sendEmail({
-        to: message.email,
-        subject: `Re: ${message.subject}`,
-        text: replyData.content,
-      });
-    } catch (error) {
-      console.error("Error sending reply email:", error);
-    }
+            return message;
+      }
 
-    return message;
-  }
+      async replyToMessage(messageId, replyData) {
+            const message = await contactRepository.replyToMessage(messageId, replyData);
 
-  async getUnreadMessagesCount() {
-    const count = await contactRepository.countUnreadMessages();
-    return { count };
-  }
+            if (!message) {
+                  throw ApiError.notFound("Message not found");
+            }
 
-  async getAllMessagesAdmin() {
-    const messages = await contactRepository.findAllMessages();
-    return messages;
-  }
+            try {
+                  await sendEmail({
+                        to: message.email,
+                        subject: `Re: ${message.subject}`,
+                        text: replyData.content,
+                  });
+            } catch (error) {
+                  console.error("Error sending reply email:", error);
+            }
+
+            return message;
+      }
+
+      async getUnreadMessagesCount() {
+            const count = await contactRepository.countUnreadMessages();
+            return { count };
+      }
+
+      async getAllMessagesAdmin() {
+            const messages = await contactRepository.findAllMessages();
+            return messages;
+      }
 }
 
 export default new ContactService();

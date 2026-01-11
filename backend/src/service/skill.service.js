@@ -3,119 +3,119 @@ import ApiError from "../utilities/error/apiError.js";
 import { uploadToCloudinary } from "../utilities/cloudinary/upload.js";
 
 class SkillService {
-  async createSkillCategory(categoryData) {
-    const existingCategory = await skillRepository.findByCategory(categoryData.category);
-    if (existingCategory) {
-      throw ApiError.badRequest("Skill category already exists");
-    }
+      async createSkillCategory(categoryData) {
+            const existingCategory = await skillRepository.findByCategory(categoryData.category);
+            if (existingCategory) {
+                  throw ApiError.badRequest("Skill category already exists");
+            }
 
-    const skillCategory = await skillRepository.create(categoryData);
-    return skillCategory;
-  }
+            const skillCategory = await skillRepository.create(categoryData);
+            return skillCategory;
+      }
 
-  async getAllSkillCategories() {
-    const skillCategories = await skillRepository.findActive();
-    return skillCategories;
-  }
+      async getAllSkillCategories() {
+            const skillCategories = await skillRepository.findActive();
+            return skillCategories;
+      }
 
-  async getSkillCategoryById(id) {
-    const skillCategory = await skillRepository.findById(id);
-    
-    if (!skillCategory) {
-      throw ApiError.notFound("Skill category not found");
-    }
+      async getSkillCategoryById(id) {
+            const skillCategory = await skillRepository.findById(id);
 
-    if (!skillCategory.isActive) {
-      throw ApiError.badRequest("Skill category is not active");
-    }
+            if (!skillCategory) {
+                  throw ApiError.notFound("Skill category not found");
+            }
 
-    return skillCategory;
-  }
+            if (!skillCategory.isActive) {
+                  throw ApiError.badRequest("Skill category is not active");
+            }
 
-  async deleteSkillCategory(id) {
-    const skillCategory = await skillRepository.findById(id);
-    
-    if (!skillCategory) {
-      throw ApiError.notFound("Skill category not found");
-    }
+            return skillCategory;
+      }
 
-    await skillRepository.deleteById(id);
-    return { message: "Skill category deleted successfully" };
-  }
+      async deleteSkillCategory(id) {
+            const skillCategory = await skillRepository.findById(id);
 
-  async addSkillToCategory(categoryId, skillData, icon) {
-    const skillCategory = await skillRepository.findById(categoryId);
-    
-    if (!skillCategory) {
-      throw ApiError.notFound("Skill category not found");
-    }
+            if (!skillCategory) {
+                  throw ApiError.notFound("Skill category not found");
+            }
 
-    if (icon) {
-      const cloudinaryResponse = await uploadToCloudinary(icon, "skills/icons");
-      skillData.icon = {
-        public_id: cloudinaryResponse.public_id,
-        url: cloudinaryResponse.secure_url,
-      };
-    }
+            await skillRepository.deleteById(id);
+            return { message: "Skill category deleted successfully" };
+      }
 
-    const updatedCategory = await skillRepository.addSkillToCategory(categoryId, skillData);
-    return updatedCategory;
-  }
+      async addSkillToCategory(categoryId, skillData, icon) {
+            const skillCategory = await skillRepository.findById(categoryId);
 
-  async updateSkillInCategory(categoryId, skillId, skillData, icon) {
-    const skillCategory = await skillRepository.findById(categoryId);
-    
-    if (!skillCategory) {
-      throw ApiError.notFound("Skill category not found");
-    }
+            if (!skillCategory) {
+                  throw ApiError.notFound("Skill category not found");
+            }
 
-    const existingSkill = skillCategory.skills.id(skillId);
-    if (!existingSkill) {
-      throw ApiError.notFound("Skill not found in category");
-    }
+            if (icon) {
+                  const cloudinaryResponse = await uploadToCloudinary(icon, "skills/icons");
+                  skillData.icon = {
+                        public_id: cloudinaryResponse.public_id,
+                        url: cloudinaryResponse.secure_url,
+                  };
+            }
 
-    if (icon) {
-      const cloudinaryResponse = await uploadToCloudinary(icon, "skills/icons");
-      skillData.icon = {
-        public_id: cloudinaryResponse.public_id,
-        url: cloudinaryResponse.secure_url,
-      };
-    }
+            const updatedCategory = await skillRepository.addSkillToCategory(categoryId, skillData);
+            return updatedCategory;
+      }
 
-    const updatedCategory = await skillRepository.updateSkillInCategory(categoryId, skillId, skillData);
-    return updatedCategory;
-  }
+      async updateSkillInCategory(categoryId, skillId, skillData, icon) {
+            const skillCategory = await skillRepository.findById(categoryId);
 
-  async deleteSkillFromCategory(categoryId, skillId) {
-    const skillCategory = await skillRepository.findById(categoryId);
-    
-    if (!skillCategory) {
-      throw ApiError.notFound("Skill category not found");
-    }
+            if (!skillCategory) {
+                  throw ApiError.notFound("Skill category not found");
+            }
 
-    const existingSkill = skillCategory.skills.id(skillId);
-    if (!existingSkill) {
-      throw ApiError.notFound("Skill not found in category");
-    }
+            const existingSkill = skillCategory.skills.id(skillId);
+            if (!existingSkill) {
+                  throw ApiError.notFound("Skill not found in category");
+            }
 
-    const updatedCategory = await skillRepository.deleteSkillFromCategory(categoryId, skillId);
-    return updatedCategory;
-  }
+            if (icon) {
+                  const cloudinaryResponse = await uploadToCloudinary(icon, "skills/icons");
+                  skillData.icon = {
+                        public_id: cloudinaryResponse.public_id,
+                        url: cloudinaryResponse.secure_url,
+                  };
+            }
 
-  async getAllSkillCategoriesAdmin() {
-    const skillCategories = await skillRepository.findAll();
-    return skillCategories;
-  }
+            const updatedCategory = await skillRepository.updateSkillInCategory(categoryId, skillId, skillData);
+            return updatedCategory;
+      }
 
-  async getSkillById(categoryId, skillId) {
-    const skill = await skillRepository.getSkillById(categoryId, skillId);
-    
-    if (!skill) {
-      throw ApiError.notFound("Skill not found");
-    }
+      async deleteSkillFromCategory(categoryId, skillId) {
+            const skillCategory = await skillRepository.findById(categoryId);
 
-    return skill;
-  }
+            if (!skillCategory) {
+                  throw ApiError.notFound("Skill category not found");
+            }
+
+            const existingSkill = skillCategory.skills.id(skillId);
+            if (!existingSkill) {
+                  throw ApiError.notFound("Skill not found in category");
+            }
+
+            const updatedCategory = await skillRepository.deleteSkillFromCategory(categoryId, skillId);
+            return updatedCategory;
+      }
+
+      async getAllSkillCategoriesAdmin() {
+            const skillCategories = await skillRepository.findAll();
+            return skillCategories;
+      }
+
+      async getSkillById(categoryId, skillId) {
+            const skill = await skillRepository.getSkillById(categoryId, skillId);
+
+            if (!skill) {
+                  throw ApiError.notFound("Skill not found");
+            }
+
+            return skill;
+      }
 }
 
 export default new SkillService();
