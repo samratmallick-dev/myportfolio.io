@@ -5,7 +5,6 @@ import { validateAdminInitialization, validateLogin, validateEmailUpdate, valida
 
 const router = Router();
 
-console.log(adminController.initializeAdmin.length);
 router.post("/initialize", validateAdminInitialization, handleValidationErrors, adminController.initializeAdmin);
 router.post("/login", validateLogin, handleValidationErrors, adminController.login);
 router.post("/logout", authenticate, adminController.logout);
