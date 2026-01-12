@@ -7,7 +7,7 @@ class SkillRepository extends BaseRepository {
       }
 
       async findAllActive() {
-            return await this.model.find({ isActive: true }).sort({ createdAt: -1 });
+            return await this.model.find({ isActive: true }).sort({ createdAt: 1 });
       }
 
       async addSkillToCategory(categoryId, skillData) {
