@@ -7,12 +7,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { adminSkillCategoryFormIndex, adminSkillFormIndex } from '@/config/allFormIndex';
 import {
-      createSkillCategory,
-      addSkillToCategory,
-      getAllSkillCategories,
-      deleteSkillCategory,
-      deleteSkillFromCategory,
-      updateSkillToCategory,
+      createCategory,
+      addSkill,
+      getAllCategories,
+      deleteCategory,
+      deleteSkill,
+      updateSkill,
+      clearError,
+      clearSuccess,
 } from '@/store/skills.slice';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -30,16 +32,29 @@ const initialSkillFormData = {
 
 const AdminViewSkills = () => {
       const dispatch = useDispatch();
-      // const { isLoading, skillsData, error } = useSelector((state) => state.skills);
+      const { isLoading, categories, error, success } = useSelector((state) => state.skills);
 
       const [categoryFormData, setCategoryFormData] = useState(initialCategoryFormData);
       const [skillFormData, setSkillFormData] = useState(initialSkillFormData);
       const [showEditForm, setShowEditForm] = useState(false);
       const [currentEditingSkill, setCurrentEditingSkill] = useState(null);
 
-      // useEffect(() => {
-      //       dispatch(getAllSkillCategories());
-      // }, [dispatch]);
+      useEffect(() => {
+            dispatch(getAllCategories());
+      }, [dispatch]);
+
+      useEffect(() => {
+            if (success) {
+                  toast.success('Operation completed successfully');
+                  dispatch(clearSuccess());
+                  dispatch(getAllCategories());
+            }
+            if (error) {
+                  const errorMessage = error?.message || error?.error || 'Operation failed';
+                  toast.error(errorMessage);
+                  dispatch(clearError());
+            }
+      }, [success, error, dispatch]);
 
       const handleCategoryFormChange = (name, value) => {
             setCategoryFormData({ ...categoryFormData, [name]: value });
@@ -55,63 +70,45 @@ const AdminViewSkills = () => {
 
       const handleCreateCategorySubmit = (e) => {
             e.preventDefault();
-            // dispatch(createSkillCategory({ category: categoryFormData.category, skills: [] }))
-            //       .then(() => {
-            //             toast.success('Category created successfully');
-            //             setCategoryFormData(initialCategoryFormData);
-            //             dispatch(getAllSkillCategories());
-            //       })
-            //       .catch((err) => toast.error(err.message || 'Failed to create category'));
+            dispatch(createCategory({ category: categoryFormData.category })).then(() => {
+                  setCategoryFormData(initialCategoryFormData);
+            });
       };
 
       const handleAddSkillSubmit = (e) => {
             e.preventDefault();
-            const selectedCategory = skillsData.find(cat => cat.category === skillFormData.category);
-            // if (selectedCategory) {
-            //       const { category, ...skillDetails } = skillFormData;
-            //       dispatch(addSkillToCategory({ id: selectedCategory._id, skillData: skillDetails }))
-            //             .then(() => {
-            //                   toast.success('Skill added successfully');
-            //                   setSkillFormData(initialSkillFormData);
-            //                   dispatch(getAllSkillCategories());
-            //             })
-            //             .catch((err) => toast.error(err.message || 'Failed to add skill'));
-            // } else {
-            //       toast.error('Please select a valid category.');
-            // }
+            const selectedCategory = categories.find(cat => cat.category === skillFormData.category);
+            if (selectedCategory) {
+                  const { category, ...skillDetails } = skillFormData;
+                  dispatch(addSkill({ categoryId: selectedCategory._id, skillData: skillDetails })).then(() => {
+                        setSkillFormData(initialSkillFormData);
+                  });
+            } else {
+                  toast.error('Please select a valid category.');
+            }
       };
 
       const handleUpdateSkillSubmit = (e) => {
             e.preventDefault();
-            // if (currentEditingSkill) {
-            //       const { categoryId, skillId, skillData } = currentEditingSkill;
-            //       dispatch(updateSkillToCategory({ categoryId, skillId, skillData }))
-            //             .then(() => {
-            //                   toast.success('Skill updated successfully');
-            //                   setShowEditForm(false);
-            //                   setCurrentEditingSkill(null);
-            //                   dispatch(getAllSkillCategories());
-            //             })
-            //             .catch((err) => toast.error(err.message || 'Failed to update skill'));
-            // }
+            if (currentEditingSkill) {
+                  const { categoryId, skillId, skillData } = currentEditingSkill;
+                  dispatch(updateSkill({ categoryId, skillId, skillData })).then(() => {
+                        setShowEditForm(false);
+                        setCurrentEditingSkill(null);
+                  });
+            }
       };
 
       const handleDeleteCategory = (categoryId) => {
-            // dispatch(deleteSkillCategory(categoryId))
-            //       .then(() => {
-            //             toast.success('Category deleted successfully');
-            //             dispatch(getAllSkillCategories());
-            //       })
-            //       .catch((err) => toast.error(err.message || 'Failed to delete category'));
+            if (window.confirm('Are you sure you want to delete this category?')) {
+                  dispatch(deleteCategory(categoryId));
+            }
       };
 
       const handleDeleteSkill = (categoryId, skillId) => {
-            // dispatch(deleteSkillFromCategory({ categoryId, skillId }))
-            //       .then(() => {
-            //             toast.success('Skill deleted successfully');
-            //             dispatch(getAllSkillCategories());
-            //       })
-            //       .catch((err) => toast.error(err.message || 'Failed to delete skill'));
+            if (window.confirm('Are you sure you want to delete this skill?')) {
+                  dispatch(deleteSkill({ categoryId, skillId }));
+            }
       };
 
       const handleEditSkill = (categoryId, skillId, skillItem) => {
@@ -119,10 +116,8 @@ const AdminViewSkills = () => {
             setShowEditForm(true);
       };
 
-      const skillsData = [];
-      const isLoading = false;
-
-      const skillOptions = skillsData.map(cat => ({ label: cat.category, value: cat.category }));
+      const skillOptions = categories.map(cat => ({ label: cat.category, value: cat.category }));
+      const hasCategories = categories && categories.length > 0;
 
       return (
             <Fragment>
@@ -133,14 +128,14 @@ const AdminViewSkills = () => {
                                           <CardTitle>Existing Skills</CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                          {isLoading ? (
+                                          {isLoading && categories.length === 0 ? (
                                                 <div className="space-y-4">
                                                       <Skeleton className="h-12 w-full" />
                                                       <Skeleton className="h-12 w-full" />
                                                       <Skeleton className="h-12 w-full" />
                                                 </div>
-                                          ) : skillsData && skillsData.length > 0 ? (
-                                                skillsData.map((categoryItem) => (
+                                          ) : hasCategories ? (
+                                                categories.map((categoryItem) => (
                                                       <Card key={categoryItem._id} className="mb-4">
                                                             <CardHeader className="flex flex-row items-center justify-between">
                                                                   <CardTitle className="text-lg">{categoryItem.category}</CardTitle>
@@ -191,7 +186,7 @@ const AdminViewSkills = () => {
                                                 ))
                                           ) : (
                                                 <div className="text-center p-8 text-muted-foreground">
-                                                      <p>No skill categories found.</p>
+                                                      <p>No skill categories found. Create one to get started.</p>
                                                 </div>
                                           )}
                                     </CardContent>
@@ -240,14 +235,20 @@ const AdminViewSkills = () => {
                                                       <CardTitle>Add New Skill</CardTitle>
                                                 </CardHeader>
                                                 <CardContent>
-                                                      <CommonForm
-                                                            formControls={adminSkillFormIndex.map(c => c.name === 'category' ? { ...c, componentType: 'select', options: skillOptions } : c)}
-                                                            values={skillFormData}
-                                                            onChange={handleSkillFormChange}
-                                                            onSubmit={handleAddSkillSubmit}
-                                                            buttonText="Add Skill"
-                                                            isLoading={isLoading}
-                                                      />
+                                                      {!hasCategories ? (
+                                                            <div className="text-center p-8 text-muted-foreground">
+                                                                  <p>Please create a category first before adding skills.</p>
+                                                            </div>
+                                                      ) : (
+                                                            <CommonForm
+                                                                  formControls={adminSkillFormIndex.map(c => c.name === 'category' ? { ...c, componentType: 'select', options: skillOptions } : c)}
+                                                                  values={skillFormData}
+                                                                  onChange={handleSkillFormChange}
+                                                                  onSubmit={handleAddSkillSubmit}
+                                                                  buttonText="Add Skill"
+                                                                  isLoading={isLoading}
+                                                            />
+                                                      )}
                                                 </CardContent>
                                           </Card>
                                     </Fragment>

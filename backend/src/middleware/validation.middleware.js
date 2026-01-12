@@ -46,15 +46,6 @@ const validateEducation = [
       body("description").notEmpty().withMessage("Description is required"),
       body("date").notEmpty().withMessage("Date is required"),
 ];
-
-const validateSkill = [
-      body("category").notEmpty().withMessage("Category is required"),
-      body("name").notEmpty().withMessage("Skill name is required"),
-      body("level").isInt({ min: 0, max: 100 }).withMessage("Skill level must be between 0 and 100"),
-      body("iconName").notEmpty().withMessage("Icon name is required"),
-      body("iconColor").notEmpty().withMessage("Icon color is required"),
-];
-
 const validateService = [
       body("title").notEmpty().withMessage("Service title is required"),
       body("description").notEmpty().withMessage("Service description is required"),
@@ -84,6 +75,17 @@ const validatePasswordUpdate = [
       otpRule(),
 ];
 
+const validateSkillCategory = [
+      body("category").notEmpty().withMessage("Category name is required").trim(),
+];
+
+const validateSkill = [
+      body("name").notEmpty().withMessage("Skill name is required").trim(),
+      body("level").isInt({ min: 0, max: 100 }).withMessage("Level must be between 0 and 100"),
+      body("iconName").notEmpty().withMessage("Icon name is required"),
+      body("iconColor").notEmpty().withMessage("Icon color is required"),
+];
+
 export {
       handleValidationErrors,
       validateLogin,
@@ -91,11 +93,12 @@ export {
       validateMongoId,
       validateProject,
       validateEducation,
-      validateSkill,
       validateService,
       validateContactMessage,
       validateOTP,
       validateEmailUpdate,
       validatePasswordUpdate,
       validateGenerateOTP,
+      validateSkillCategory,
+      validateSkill,
 };

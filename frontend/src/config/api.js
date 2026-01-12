@@ -293,6 +293,48 @@ export const fetchLatestEducation = async () => {
       }
 };
 
+// Skill endpoints
+export const skillEndpoints = {
+      createCategory: '/api/v1/skills/create-category',
+      getAllCategories: '/api/v1/skills/get-all-categories',
+      getCategoryById: '/api/v1/skills/get-category/:id',
+      addSkill: '/api/v1/skills/add-skill/:id',
+      updateSkill: '/api/v1/skills/update-skill/:categoryId/:skillId',
+      deleteCategory: '/api/v1/skills/delete-category/:id',
+      deleteSkill: '/api/v1/skills/delete-skill/:categoryId/:skillId',
+};
+
+// Skill API functions
+export const createSkillCategory = async (categoryData) => {
+      const response = await api.post(skillEndpoints.createCategory, categoryData);
+      return response.data;
+};
+
+export const fetchAllSkillCategories = async () => {
+      const response = await api.get(skillEndpoints.getAllCategories);
+      return response.data;
+};
+
+export const addSkillToCategory = async (categoryId, skillData) => {
+      const response = await api.post(skillEndpoints.addSkill.replace(':id', categoryId), skillData);
+      return response.data;
+};
+
+export const updateSkillInCategory = async (categoryId, skillId, skillData) => {
+      const response = await api.put(skillEndpoints.updateSkill.replace(':categoryId', categoryId).replace(':skillId', skillId), skillData);
+      return response.data;
+};
+
+export const deleteSkillCategory = async (categoryId) => {
+      const response = await api.delete(skillEndpoints.deleteCategory.replace(':id', categoryId));
+      return response.data;
+};
+
+export const deleteSkillFromCategory = async (categoryId, skillId) => {
+      const response = await api.delete(skillEndpoints.deleteSkill.replace(':categoryId', categoryId).replace(':skillId', skillId));
+      return response.data;
+};
+
 // Request interceptor to add auth token if available
 api.interceptors.request.use(
       (config) => {

@@ -1,12 +1,7 @@
 import mongoose from "mongoose";
 
-const skillSchema = new mongoose.Schema({
-      category: {
-            type: String,
-            required: true,
-            trim: true,
-      },
-      skills: [{
+const skillItemSchema = new mongoose.Schema(
+      {
             name: {
                   type: String,
                   required: true,
@@ -14,37 +9,42 @@ const skillSchema = new mongoose.Schema({
             },
             level: {
                   type: Number,
+                  required: true,
                   min: 0,
                   max: 100,
+            },
+            iconName: {
+                  type: String,
                   required: true,
             },
-            icon: {
-                  public_id: {
-                        type: String,
-                  },
-                  url: {
-                        type: String,
-                  },
-            },
-            yearsOfExperience: {
-                  type: Number,
-                  min: 0,
-            },
-            projects: [{
-                  type: mongoose.Schema.Types.ObjectId,
-                  ref: "Project",
-            }],
-      }],
-      description: {
-            type: String,
-            trim: true,
+            iconColor: {
+                  type: String,
+                  required: true,
+            }
       },
-      isActive: {
-            type: Boolean,
-            default: true,
+      { _id: false }
+);
+
+const skillSchema = new mongoose.Schema(
+      {
+            category: {
+                  type: String,
+                  required: true,
+                  trim: true,
+                  unique: true,
+            },
+            skills: {
+                  type: [skillItemSchema],
+                  default: [],
+            },
+            isActive: {
+                  type: Boolean,
+                  default: true,
+            },
       },
-}, {
-      timestamps: true,
-});
+      {
+            timestamps: true,
+      }
+);
 
 export const Skill = mongoose.model("Skill", skillSchema);

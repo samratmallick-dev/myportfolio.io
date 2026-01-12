@@ -3,77 +3,43 @@ import { sendSuccess, sendCreated } from "../utilities/response/apiResponse.js";
 import { asyncHandler } from "../utilities/error/asyncHandler.js";
 
 class SkillController {
-      createSkillCategory = asyncHandler(async (req, res) => {
-            const categoryData = req.body;
-
-            const skillCategory = await skillService.createSkillCategory(categoryData);
-
-            sendCreated(res, "Skill category created successfully", skillCategory);
+      createCategory = asyncHandler(async (req, res) => {
+            const category = await skillService.createCategory(req.body);
+            sendCreated(res, "Category created successfully", category);
       });
 
-      getAllSkillCategories = asyncHandler(async (req, res) => {
-            const skillCategories = await skillService.getAllSkillCategories();
-
-            sendSuccess(res, "Skill categories retrieved successfully", skillCategories);
+      getAllCategories = asyncHandler(async (req, res) => {
+            const categories = await skillService.getAllCategories();
+            sendSuccess(res, "Categories retrieved successfully", categories);
       });
 
-      getSkillCategoryById = asyncHandler(async (req, res) => {
-            const { id } = req.params;
-            const skillCategory = await skillService.getSkillCategoryById(id);
-
-            sendSuccess(res, "Skill category retrieved successfully", skillCategory);
-      });
-
-      deleteSkillCategory = asyncHandler(async (req, res) => {
-            const { id } = req.params;
-
-            const result = await skillService.deleteSkillCategory(id);
-
-            sendSuccess(res, "Skill category deleted successfully", result);
+      getCategoryById = asyncHandler(async (req, res) => {
+            const category = await skillService.getCategoryById(req.params.id);
+            sendSuccess(res, "Category retrieved successfully", category);
       });
 
       addSkillToCategory = asyncHandler(async (req, res) => {
             const { id } = req.params;
-            const skillData = req.body;
-            const icon = req.files?.icon?.[0];
-
-            const updatedCategory = await skillService.addSkillToCategory(id, skillData, icon);
-
-            sendSuccess(res, "Skill added to category successfully", updatedCategory);
+            const category = await skillService.addSkillToCategory(id, req.body);
+            sendSuccess(res, "Skill added successfully", category);
       });
 
-      updateSkillInCategory = asyncHandler(async (req, res) => {
-            const { id, skillId } = req.params;
-            const skillData = req.body;
-            const icon = req.files?.icon?.[0];
+      updateSkill = asyncHandler(async (req, res) => {
+            const { categoryId, skillId } = req.params;
+            const category = await skillService.updateSkill(categoryId, skillId, req.body);
+            sendSuccess(res, "Skill updated successfully", category);
+      });
 
-            const updatedCategory = await skillService.updateSkillInCategory(id, skillId, skillData, icon);
-
-            sendSuccess(res, "Skill updated successfully", updatedCategory);
+      deleteCategory = asyncHandler(async (req, res) => {
+            const result = await skillService.deleteCategory(req.params.id);
+            sendSuccess(res, "Category deleted successfully", result);
       });
 
       deleteSkillFromCategory = asyncHandler(async (req, res) => {
-            const { id, skillId } = req.params;
-
-            const updatedCategory = await skillService.deleteSkillFromCategory(id, skillId);
-
-            sendSuccess(res, "Skill deleted from category successfully", updatedCategory);
-      });
-
-      getAllSkillCategoriesAdmin = asyncHandler(async (req, res) => {
-            const skillCategories = await skillService.getAllSkillCategoriesAdmin();
-
-            sendSuccess(res, "All skill categories retrieved successfully", skillCategories);
-      });
-
-      getSkillById = asyncHandler(async (req, res) => {
-            const { id, skillId } = req.params;
-            const skill = await skillService.getSkillById(id, skillId);
-
-            sendSuccess(res, "Skill retrieved successfully", skill);
+            const { categoryId, skillId } = req.params;
+            const category = await skillService.deleteSkillFromCategory(categoryId, skillId);
+            sendSuccess(res, "Skill deleted successfully", category);
       });
 }
 
 export default new SkillController();
-
-

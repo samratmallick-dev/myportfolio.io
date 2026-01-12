@@ -1,214 +1,177 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {
+      createSkillCategory,
+      fetchAllSkillCategories,
+      addSkillToCategory,
+      updateSkillInCategory,
+      deleteSkillCategory,
+      deleteSkillFromCategory,
+} from '@/config/api';
 
-const baseUrl = import.meta.env.VITE_BASE_URL;
-
-const initialState = {
-      isLoading: false,
-      skillsData: [],
-      error: null,
-};
-
-export const createSkillCategory = createAsyncThunk(
-      "skills/createSkillCategory",
+export const createCategory = createAsyncThunk(
+      'skills/createCategory',
       async (categoryData, { rejectWithValue }) => {
             try {
-                  const response = await axios.post(`${baseUrl}${SummeryApi.createSkillCategoryUrl}`, categoryData);
-                  return response.data.data;
+                  const response = await createSkillCategory(categoryData);
+                  return response;
             } catch (error) {
-                  return rejectWithValue(error.response.data.message || error.message);
+                  return rejectWithValue(error?.response?.data || error?.data || { message: error.message || 'Failed to create category' });
             }
       }
 );
 
-export const getAllSkillCategories = createAsyncThunk(
-      "skills/getAllSkillCategories",
+export const getAllCategories = createAsyncThunk(
+      'skills/getAllCategories',
       async (_, { rejectWithValue }) => {
             try {
-                  const response = await axios.get(`${baseUrl}${SummeryApi.getAllSkillCategoriesUrl}`);
-                  return response.data.data;
+                  const response = await fetchAllSkillCategories();
+                  return response;
             } catch (error) {
-                  return rejectWithValue(error.response.data.message || error.message);
+                  return rejectWithValue(error?.response?.data || error?.data || { message: error.message || 'Failed to fetch categories' });
             }
       }
 );
 
-export const getSkillCategoryById = createAsyncThunk(
-      "skills/getSkillCategoryById",
-      async (id, { rejectWithValue }) => {
+export const addSkill = createAsyncThunk(
+      'skills/addSkill',
+      async ({ categoryId, skillData }, { rejectWithValue }) => {
             try {
-                  const response = await axios.get(`${baseUrl}${SummeryApi.getSkillCategoryUrl(id)}`);
-                  return response.data.data;
+                  const response = await addSkillToCategory(categoryId, skillData);
+                  return response;
             } catch (error) {
-                  return rejectWithValue(error.response.data.message || error.message);
+                  return rejectWithValue(error?.response?.data || error?.data || { message: error.message || 'Failed to add skill' });
             }
       }
 );
 
-export const deleteSkillCategory = createAsyncThunk(
-      "skills/deleteSkillCategory",
-      async (id, { rejectWithValue }) => {
-            try {
-                  await axios.delete(`${baseUrl}${SummeryApi.deleteSkillCategoryUrl(id)}`);
-                  return id;
-            } catch (error) {
-                  return rejectWithValue(error.response.data.message || error.message);
-            }
-      }
-);
-
-export const addSkillToCategory = createAsyncThunk(
-      "skills/addSkillToCategory",
-      async ({ id, skillData }, { rejectWithValue }) => {
-            try {
-                  const response = await axios.post(`${baseUrl}${SummeryApi.addSkillToCategoryUrl(id)}`, skillData);
-                  return response.data.data;
-            } catch (error) {
-                  return rejectWithValue(error.response.data.message || error.message);
-            }
-      }
-);
-
-export const updateSkillToCategory = createAsyncThunk(
-      "skills/updateSkillToCategory",
+export const updateSkill = createAsyncThunk(
+      'skills/updateSkill',
       async ({ categoryId, skillId, skillData }, { rejectWithValue }) => {
             try {
-                  const response = await axios.put(`${baseUrl}${SummeryApi.updateSkillInCategoryUrl(categoryId, skillId)}`, skillData);
-                  return response.data.data;
+                  const response = await updateSkillInCategory(categoryId, skillId, skillData);
+                  return response;
             } catch (error) {
-                  return rejectWithValue(error.response.data.message || error.message);
+                  return rejectWithValue(error?.response?.data || error?.data || { message: error.message || 'Failed to update skill' });
             }
       }
 );
 
-export const deleteSkillFromCategory = createAsyncThunk(
-      "skills/deleteSkillFromCategory",
+export const deleteCategory = createAsyncThunk(
+      'skills/deleteCategory',
+      async (categoryId, { rejectWithValue }) => {
+            try {
+                  const response = await deleteSkillCategory(categoryId);
+                  return response;
+            } catch (error) {
+                  return rejectWithValue(error?.response?.data || error?.data || { message: error.message || 'Failed to delete category' });
+            }
+      }
+);
+
+export const deleteSkill = createAsyncThunk(
+      'skills/deleteSkill',
       async ({ categoryId, skillId }, { rejectWithValue }) => {
             try {
-                  const response = await axios.delete(`${baseUrl}${SummeryApi.deleteSkillFromCategoryUrl(categoryId, skillId)}`);
-                  return response.data.data; 
+                  const response = await deleteSkillFromCategory(categoryId, skillId);
+                  return response;
             } catch (error) {
-                  return rejectWithValue(error.response.data.message || error.message);
+                  return rejectWithValue(error?.response?.data || error?.data || { message: error.message || 'Failed to delete skill' });
             }
       }
 );
 
 const skillsSlice = createSlice({
-      name: "skills",
-      initialState,
-      reducers: {},
+      name: 'skills',
+      initialState: {
+            categories: [],
+            isLoading: false,
+            error: null,
+            success: false,
+      },
+      reducers: {
+            clearError: (state) => {
+                  state.error = null;
+            },
+            clearSuccess: (state) => {
+                  state.success = false;
+            },
+      },
       extraReducers: (builder) => {
             builder
-
-                  .addCase(createSkillCategory.pending, (state) => {
+                  .addCase(createCategory.pending, (state) => {
                         state.isLoading = true;
                         state.error = null;
                   })
-                  .addCase(createSkillCategory.fulfilled, (state, action) => {
+                  .addCase(createCategory.fulfilled, (state) => {
                         state.isLoading = false;
-                        state.skillsData.push(action.payload);
+                        state.success = true;
                   })
-                  .addCase(createSkillCategory.rejected, (state, action) => {
+                  .addCase(createCategory.rejected, (state, action) => {
                         state.isLoading = false;
                         state.error = action.payload;
                   })
-
-                  .addCase(getAllSkillCategories.pending, (state) => {
+                  .addCase(getAllCategories.pending, (state) => {
                         state.isLoading = true;
                         state.error = null;
                   })
-                  .addCase(getAllSkillCategories.fulfilled, (state, action) => {
+                  .addCase(getAllCategories.fulfilled, (state, action) => {
                         state.isLoading = false;
-                        state.skillsData = action.payload;
+                        state.categories = action.payload.data || [];
                   })
-                  .addCase(getAllSkillCategories.rejected, (state, action) => {
+                  .addCase(getAllCategories.rejected, (state, action) => {
                         state.isLoading = false;
                         state.error = action.payload;
                   })
-
-                  .addCase(getSkillCategoryById.pending, (state) => {
+                  .addCase(addSkill.pending, (state) => {
                         state.isLoading = true;
                         state.error = null;
                   })
-                  .addCase(getSkillCategoryById.fulfilled, (state, action) => {
+                  .addCase(addSkill.fulfilled, (state) => {
                         state.isLoading = false;
-
+                        state.success = true;
                   })
-                  .addCase(getSkillCategoryById.rejected, (state, action) => {
+                  .addCase(addSkill.rejected, (state, action) => {
                         state.isLoading = false;
                         state.error = action.payload;
                   })
-
-                  .addCase(deleteSkillCategory.pending, (state) => {
+                  .addCase(updateSkill.pending, (state) => {
                         state.isLoading = true;
                         state.error = null;
                   })
-                  .addCase(deleteSkillCategory.fulfilled, (state, action) => {
+                  .addCase(updateSkill.fulfilled, (state) => {
                         state.isLoading = false;
-                        state.skillsData = state.skillsData.filter(
-                              (category) => category._id !== action.payload
-                        );
+                        state.success = true;
                   })
-                  .addCase(deleteSkillCategory.rejected, (state, action) => {
+                  .addCase(updateSkill.rejected, (state, action) => {
                         state.isLoading = false;
                         state.error = action.payload;
                   })
-
-                  .addCase(addSkillToCategory.pending, (state) => {
+                  .addCase(deleteCategory.pending, (state) => {
                         state.isLoading = true;
                         state.error = null;
                   })
-                  .addCase(addSkillToCategory.fulfilled, (state, action) => {
+                  .addCase(deleteCategory.fulfilled, (state) => {
                         state.isLoading = false;
-                        const index = state.skillsData.findIndex(
-                              (category) => category._id === action.payload._id
-                        );
-                        if (index !== -1) {
-                              state.skillsData[index] = action.payload;
-                        }
+                        state.success = true;
                   })
-                  .addCase(addSkillToCategory.rejected, (state, action) => {
+                  .addCase(deleteCategory.rejected, (state, action) => {
                         state.isLoading = false;
                         state.error = action.payload;
                   })
-
-                  .addCase(updateSkillToCategory.pending, (state) => {
+                  .addCase(deleteSkill.pending, (state) => {
                         state.isLoading = true;
                         state.error = null;
                   })
-                  .addCase(updateSkillToCategory.fulfilled, (state, action) => {
+                  .addCase(deleteSkill.fulfilled, (state) => {
                         state.isLoading = false;
-                        const index = state.skillsData.findIndex(
-                              (category) => category._id === action.payload._id
-                        );
-                        if (index !== -1) {
-                              state.skillsData[index] = action.payload;
-                        }
+                        state.success = true;
                   })
-                  .addCase(updateSkillToCategory.rejected, (state, action) => {
-                        state.isLoading = false;
-                        state.error = action.payload;
-                  })
-
-                  .addCase(deleteSkillFromCategory.pending, (state) => {
-                        state.isLoading = true;
-                        state.error = null;
-                  })
-                  .addCase(deleteSkillFromCategory.fulfilled, (state, action) => {
-                        state.isLoading = false;
-                        const index = state.skillsData.findIndex(
-                              (category) => category._id === action.payload._id
-                        );
-                        if (index !== -1) {
-                              state.skillsData[index] = action.payload;
-                        }
-                  })
-                  .addCase(deleteSkillFromCategory.rejected, (state, action) => {
+                  .addCase(deleteSkill.rejected, (state, action) => {
                         state.isLoading = false;
                         state.error = action.payload;
                   });
       },
 });
 
-export const skillsActions = skillsSlice.actions;
+export const { clearError, clearSuccess } = skillsSlice.actions;
 export default skillsSlice.reducer;

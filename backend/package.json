@@ -6,12 +6,7 @@
       "type": "module",
       "scripts": {
             "start": "node ./src/server.js",
-            "dev": "nodemon ./src/server.js",
-            "seed:hero": "node ./scripts/seed-hero.js",
-            "seed:about": "node ./scripts/seed-about.js",
-            "seed:education": "node ./scripts/seed-education.js",
-            "seed:project": "node ./scripts/seed-project.js",
-            "seed:skills": "node ./scripts/seed-skills.js"
+            "dev": "nodemon ./src/server.js"
       },
       "keywords": [
             "FullStack Developer",
