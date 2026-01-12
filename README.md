@@ -461,6 +461,11 @@ import { authenticate } from "./middleware/auth.middleware.js";
 **Purpose**: Personal fullstack portfolio system  
 **Status**: Active Development
 
+**Connect**:  
+📧 Email: [My Email Address](mailto:samratmallick2002@gmail.com)  
+💼 LinkedIn: [My Linkedin Profile](https://linkedin.com/in/samrat-mallick01)  
+🐙 GitHub: [My Github Profile](https://github.com/samratmallick-dev)
+
 ---
 
 <div align="center">
