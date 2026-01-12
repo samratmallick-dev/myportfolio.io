@@ -1,363 +1,475 @@
 # Portfolio Backend System
 
-A comprehensive backend system for Samrat Mallick's portfolio website built with Node.js, Express.js, and MongoDB.
+**Private Repository - Internal Documentation**
 
-## 🚀 Features
+Backend API system for Samrat Mallick's portfolio website. This is a personal project for managing portfolio content, projects, skills, and admin authentication.
 
-- **Authentication & Authorization**: JWT-based admin authentication
-- **Content Management**: Full CRUD operations for portfolio content
-- **File Uploads**: Cloudinary integration for image management
-- **Email Services**: OTP generation and email notifications
-- **Error Handling**: Centralized error handling with logging
-- **API Documentation**: RESTful API with versioned routes
-- **Validation**: Input validation and sanitization
-- **Security**: CORS, cookie handling, and secure headers
+---
 
-## 📁 Project Structure
+## Tech Stack
+
+- **Runtime**: Node.js (ES Modules)
+- **Framework**: Express.js v5.2.1
+- **Database**: MongoDB (Mongoose v9.1.2)
+- **Authentication**: JWT (jsonwebtoken v9.0.3)
+- **Password Hashing**: bcryptjs v3.0.3
+- **File Upload**: Multer v2.0.2
+- **Cloud Storage**: Cloudinary v2.8.0
+- **Email**: Nodemailer v7.0.12
+- **Validation**: express-validator v7.0.1
+- **Logging**: Winston v3.19.0
+- **HTTP Status**: http-status-codes v2.3.0
+- **Dev Tools**: Nodemon v3.1.11, Prettier v3.7.4
+
+---
+
+## Project Structure
 
 ```
 backend/
+├── logs/
+│   └── info.log                    # Winston log file
 ├── src/
 │   ├── config/
-│   │   ├── db/config.db.js            # Database configuration
-│   │   └── logger/logger.config.js    # Winston logger setup
-│   ├── controllers/                    # Request handlers
-│   │   ├── admin.controller.js
-│   │   ├── hero.controller.js
+│   │   ├── db/
+│   │   │   └── config.db.js        # MongoDB connection
+│   │   └── logger/
+│   │       └── logger.config.js    # Winston logger setup
+│   ├── controllers/
 │   │   ├── about.controller.js
+│   │   ├── admin.controller.js     # Admin auth & profile
+│   │   ├── contact.controller.js
 │   │   ├── education.controller.js
+│   │   ├── hero.controller.js
 │   │   ├── project.controller.js
-│   │   ├── skill.controller.js
 │   │   ├── service.controller.js
-│   │   └── contact.controller.js
-│   ├── middleware/                     # Custom middleware
-│   │   ├── auth.middleware.js         # JWT authentication
-│   │   ├── upload.middleware.js        # Multer file upload
-│   │   ├── error.middleware.js         # Error handling
-│   │   └── validation.middleware.js    # Input validation
-│   ├── model/                          # MongoDB models
-│   │   ├── admin.model.js
-│   │   ├── hero.model.js
+│   │   └── skill.controller.js
+│   ├── middleware/
+│   │   ├── auth.middleware.js      # JWT authentication
+│   │   ├── error.middleware.js     # Global error handler
+│   │   ├── upload.middleware.js    # Multer file upload
+│   │   └── validation.middleware.js # express-validator rules
+│   ├── model/
 │   │   ├── about.model.js
+│   │   ├── admin.model.js          # Admin schema with bcrypt
+│   │   ├── contact.model.js
 │   │   ├── education.model.js
+│   │   ├── hero.model.js
 │   │   ├── project.model.js
-│   │   ├── skill.model.js
 │   │   ├── service.model.js
-│   │   └── contact.model.js
-│   ├── repository/                     # Data access layer
-│   │   ├── admin.repository.js
-│   │   ├── hero.repository.js
+│   │   └── skill.model.js
+│   ├── repository/
+│   │   ├── base.repository.js      # Generic CRUD operations
 │   │   ├── about.repository.js
+│   │   ├── admin.repository.js
+│   │   ├── contact.repository.js
 │   │   ├── education.repository.js
+│   │   ├── hero.repository.js
 │   │   ├── project.repository.js
-│   │   ├── skill.repository.js
 │   │   ├── service.repository.js
-│   │   └── contact.repository.js
-│   ├── routes/                         # API routes
-│   │   ├── api.routes.js               # Main API router
-│   │   ├── v1.routes.js                # API v1 routes
-│   │   └── v1Routes/                   # Individual route modules
-│   ├── service/                        # Business logic layer
-│   │   ├── admin.service.js
-│   │   ├── hero.service.js
+│   │   └── skill.repository.js
+│   ├── routes/
+│   │   ├── v1Routes/
+│   │   │   ├── about.routes.js
+│   │   │   ├── admin.routes.js
+│   │   │   ├── contact.routes.js
+│   │   │   ├── education.routes.js
+│   │   │   ├── hero.routes.js
+│   │   │   ├── project.routes.js
+│   │   │   ├── services.routes.js
+│   │   │   ├── skill.routes.js
+│   │   │   └── v1.routes.js        # V1 route aggregator
+│   │   └── api.routes.js           # Main API router
+│   ├── service/
 │   │   ├── about.service.js
+│   │   ├── admin.service.js        # Business logic for admin
+│   │   ├── contact.service.js
 │   │   ├── education.service.js
+│   │   ├── hero.service.js
 │   │   ├── project.service.js
-│   │   ├── skill.service.js
 │   │   ├── service.service.js
-│   │   └── contact.service.js
-│   ├── utilities/                       # Helper utilities
+│   │   └── skill.service.js
+│   ├── utilities/
 │   │   ├── cloudinary/
-│   │   │   └── upload.js               # Cloudinary upload helpers
+│   │   │   └── upload.js           # Cloudinary upload/delete
 │   │   ├── email/
-│   │   │   ├── generateOTP.js          # OTP generation
-│   │   │   └── sendEmail.js            # Email sending
+│   │   │   ├── generateOTP.js      # 6-digit OTP generator
+│   │   │   └── sendEmail.js        # Nodemailer wrapper
 │   │   ├── error/
-│   │   │   ├── appError.js             # Custom error class
-│   │   │   └── asyncHandler.js         # Async error wrapper
+│   │   │   ├── apiError.js         # Custom error class
+│   │   │   └── asyncHandler.js     # Async wrapper
 │   │   └── response/
-│   │       └── apiResponse.js          # API response helpers
-│   ├── app.js                          # Express app setup
-│   └── server.js                       # Server bootstrap
-├── logs/                               # Log files
-├── .env                                # Environment variables
+│   │       └── apiResponse.js      # Standardized responses
+│   ├── app.js                      # Express app setup
+│   └── server.js                   # Entry point
+├── .env                            # Environment variables
 ├── .gitignore
+├── .prettierrc                     # Prettier config
 ├── package.json
 └── README.md
 ```
 
-## 🛠️ Installation & Setup
+---
 
-### Prerequisites
+## Environment Variables
 
-- Node.js (v18 or higher)
-- MongoDB (v4.4 or higher)
-- Cloudinary account (for image uploads)
-- Gmail account (for email services - optional)
+Create `.env` file in the backend root:
 
-### Installation Steps
+```env
+# Server
+PORT=8000
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd backend
-   ```
+# Client
+CLIENT_URL=http://localhost:5173
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+# MongoDB
+MONGO_URL=mongodb+srv://<username>:<password>@<cluster>.mongodb.net
+MONGO_NAME=myportfolio
 
-3. **Set up environment variables**
-   Create a `.env` file in the root directory:
-   ```env
-   # Server Configuration
-   PORT=5000
-   NODE_ENV=development
-   CLIENT_URL=http://localhost:5173
+# Cloudinary
+CLOUD_NAME=<your_cloud_name>
+CLOUD_API_KEY=<your_api_key>
+CLOUD_API_SECRET=<your_api_secret>
+CLOUDINARY_URL=cloudinary://<api_key>:<api_secret>@<cloud_name>
 
-   # Database Configuration
-   MONGO_URL=mongodb://localhost:27017
-   MONGO_NAME=portfolio_db
+# Email (Gmail SMTP)
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER=<your_email>
+EMAIL_PASS=<app_password>
 
-   # JWT Configuration
-   JWT_SECRET=your_super_secret_jwt_key_here
-   JWT_EXPIRE=7d
+# JWT (Optional - defaults to fallback_secret_key)
+JWT_SECRET=<your_jwt_secret>
 
-   # Cloudinary Configuration
-   CLOUD_NAME=your_cloudinary_cloud_name
-   CLOUD_API_KEY=your_cloudinary_api_key
-   CLOUD_API_SECRET=your_cloudinary_api_secret
-
-   # Email Configuration
-   EMAIL_HOST=smtp.gmail.com
-   EMAIL_PORT=587
-   EMAIL_USER=your_email@gmail.com
-   EMAIL_PASS=your_app_password
-   ```
-
-4. **Start MongoDB**
-   ```bash
-   # Make sure MongoDB is running on your system
-   mongod
-   ```
-
-5. **Run the server**
-   ```bash
-   # Development mode
-   npm run dev
-
-   # Production mode
-   npm start
-   ```
-
-### Quick Start
-
-After installation, initialize your admin account:
-
-```bash
-curl -X POST http://localhost:5000/api/v1/admin/initialize \
--H "Content-Type: application/json" \
--d '{"username":"admin","email":"admin@example.com","password":"yourpassword"}'
+# Environment
+NODE_ENV=development
 ```
 
-### Development Workflow
+**Notes:**
+- `EMAIL_PASS` should be Gmail App Password (not regular password)
+- `JWT_SECRET` defaults to "fallback_secret_key" if not provided (see auth.middleware.js)
+- All Cloudinary variables are required for image uploads
 
-1. **Start development server**: `npm run dev`
-2. **API testing**: Use Postman or curl with the provided endpoints
-3. **Database management**: Use MongoDB Compass or CLI
-4. **File uploads**: Images are automatically stored in Cloudinary
-5. **Email testing**: Configure Gmail app password for OTP features
+---
 
-### Production Deployment
+## Database Schema Overview
 
-1. **Environment variables**: Set all required production variables
-2. **Database**: Use MongoDB Atlas or production MongoDB instance
-3. **File storage**: Cloudinary is production-ready
-4. **Email**: Use production email service
-5. **Security**: Enable HTTPS and secure headers
-6. **Monitoring**: Set up logging and monitoring tools
-
-## 📚 API Documentation
-
-### Base URL
+### Admin Model
+```javascript
+{
+  username: String (unique, 3-50 chars),
+  email: String (unique, lowercase),
+  password: String (bcrypt hashed, min 6 chars),
+  role: String (enum: ["admin"], default: "admin"),
+  isActive: Boolean (default: true),
+  lastLogin: Date,
+  otp: String (6-digit, temporary),
+  otpExpiry: Date,
+  newEmail: String (pending email change),
+  timestamps: true
+}
 ```
-http://localhost:8000/api/v1
+
+### Hero Model
+```javascript
+{
+  name: String,
+  title: [String] (array of titles),
+  description: String,
+  resumeLink: String,
+  profileImage: {
+    public_id: String,
+    url: String
+  },
+  isActive: Boolean,
+  timestamps: true
+}
 ```
 
-### Authentication Routes
-- `POST /admin/initialize` - Initialize admin user
-  - **Body**: `{ username, email, password }`
-  - **Response**: Admin user object
-- `POST /admin/login` - Admin login
-  - **Body**: `{ email, password }`
-  - **Response**: `{ admin, token }`
-- `POST /admin/logout` - Admin logout
-  - **Headers**: `Authorization: Bearer <token>`
-  - **Response**: Success message
-- `GET /admin/get-admin-user` - Get current admin user
-  - **Headers**: `Authorization: Bearer <token>`
-  - **Response**: Admin user object
-- `POST /admin/generate-otp` - Generate OTP for email/password update
-  - **Headers**: `Authorization: Bearer <token>`
-  - **Body**: `{ newEmail }` (for email update) or `{ email }` (for password reset)
-  - **Response**: OTP sent message
-- `POST /admin/verify-otp-update-email` - Verify OTP and update email
-  - **Headers**: `Authorization: Bearer <token>`
-  - **Body**: `{ otp }`
-  - **Response**: Updated admin user
-- `POST /admin/verify-otp-update-password` - Verify OTP and update password
-  - **Headers**: `Authorization: Bearer <token>`
-  - **Body**: `{ otp, newPassword }`
-  - **Response**: Updated admin user
+### Project Model
+```javascript
+{
+  title: String,
+  description: String,
+  shortDescription: String,
+  technologies: [String],
+  category: String,
+  images: [{
+    public_id: String,
+    url: String,
+    alt: String
+  }],
+  liveUrl: String,
+  githubUrl: String,
+  featured: Boolean,
+  status: String (enum: ["completed", "in-progress", "planned"]),
+  startDate: Date,
+  endDate: Date,
+  teamSize: Number,
+  role: String,
+  challenges: [String],
+  solutions: [String],
+  isActive: Boolean,
+  timestamps: true
+}
+```
 
-### Hero Content Routes
-- `POST /hero/add-and-update-hero-content` - Add/update hero content
-  - **Headers**: `Authorization: Bearer <token>`
-  - **Body**: `{ name, title, subtitle, description, profileImage, resumeUrl, socialLinks }`
-  - **Files**: `profileImage` (optional)
-  - **Response**: Hero content object
-- `GET /hero/get-hero-content` - Get hero content
-  - **Response**: Hero content object
-- `DELETE /hero/delete-hero-content/:id` - Delete hero content
-  - **Headers**: `Authorization: Bearer <token>`
-  - **Response**: Success message
+### Skill Model
+```javascript
+{
+  category: String (unique),
+  skills: [{
+    name: String,
+    level: Number (0-100),
+    iconName: String,
+    iconColor: String
+  }],
+  isActive: Boolean,
+  timestamps: true
+}
+```
 
-### About Content Routes
-- `POST /about/add-and-update-about-content` - Add/update about content
-  - **Headers**: `Authorization: Bearer <token>`
-  - **Body**: `{ title, description, profileImage, experience, skills, personalInfo }`
-  - **Files**: `profileImage` (optional)
-  - **Response**: About content object
-- `GET /about/get-about-content` - Get about content
-  - **Response**: About content object
-- `DELETE /about/delete-about-content/:id` - Delete about content
-  - **Headers**: `Authorization: Bearer <token>`
-  - **Response**: Success message
+**Other Models**: About, Education, Service, Contact follow similar patterns with `isActive` and `timestamps`.
 
-### Education Routes
-- `POST /education/create-education-details` - Create education entry
-  - **Headers**: `Authorization: Bearer <token>`
-  - **Body**: `{ institution, degree, field, startDate, endDate, grade, description, achievements }`
-  - **Files**: `logo` (optional)
-  - **Response**: Education object
-- `GET /education/get-all-education-details` - Get all education entries
-  - **Response**: Array of education objects
-- `GET /education/get-education-details/:id` - Get education by ID
-  - **Response**: Education object
-- `PUT /education/update-education-details/:id` - Update education entry
-  - **Headers**: `Authorization: Bearer <token>`
-  - **Body**: Same as create
-  - **Files**: `logo` (optional)
-  - **Response**: Updated education object
-- `DELETE /education/delete-education-details/:id` - Delete education entry
-  - **Headers**: `Authorization: Bearer <token>`
-  - **Response**: Success message
+---
 
-### Projects Routes
-- `POST /projects/add-project` - Create project
-  - **Headers**: `Authorization: Bearer <token>`
-  - **Body**: `{ title, description, technologies, category, githubUrl, liveUrl, status, teamSize, role, challenges, solutions }`
-  - **Files**: `images` (multiple, optional)
-  - **Response**: Project object
-- `GET /projects/get-all-projects` - Get all projects
-  - **Query**: `?category=<category>` (optional filter)
-  - **Response**: Array of project objects
-- `GET /projects/get-project/:id` - Get project by ID
-  - **Response**: Project object
-- `PUT /projects/update-project/:id` - Update project
-  - **Headers**: `Authorization: Bearer <token>`
-  - **Body**: Same as create
-  - **Files**: `images` (multiple, optional)
-  - **Response**: Updated project object
-- `DELETE /projects/delete-project/:id` - Delete project
-  - **Headers**: `Authorization: Bearer <token>`
-  - **Response**: Success message
-- `GET /projects/get-featured-projects` - Get featured projects
-  - **Response**: Array of featured project objects
-- `POST /projects/set-featured-projects` - Set featured projects
-  - **Headers**: `Authorization: Bearer <token>`
-  - **Body**: `{ projectIds }`
-  - **Response**: Success message
+## Authentication & Authorization
 
-### Skills Routes
-- `POST /skills/create-skill-category` - Create skill category
-  - **Headers**: `Authorization: Bearer <token>`
-  - **Body**: `{ categoryName, description }`
-  - **Response**: Skill category object
-- `GET /skills/get-all-skill-categories` - Get all skill categories
-  - **Response**: Array of skill category objects
-- `GET /skills/get-skill-categories/:id` - Get skill category by ID
-  - **Response**: Skill category object
-- `DELETE /skills/delete-skill-categories/:id` - Delete skill category
-  - **Headers**: `Authorization: Bearer <token>`
-  - **Response**: Success message
-- `POST /skills/add-skill-to-category/:id` - Add skill to category
-  - **Headers**: `Authorization: Bearer <token>`
-  - **Body**: `{ name, level, icon, experience, projects }`
-  - **Files**: `icon` (optional)
-  - **Response**: Updated skill category
-- `PUT /skills/update-skill-in-category/:id/:skillId` - Update skill in category
-  - **Headers**: `Authorization: Bearer <token>`
-  - **Body**: `{ name, level, icon, experience, projects }`
-  - **Files**: `icon` (optional)
-  - **Response**: Updated skill category
-- `DELETE /skills/delete-skill-from-category/:id/:skillId` - Delete skill from category
-  - **Headers**: `Authorization: Bearer <token>`
-  - **Response**: Updated skill category
+### Flow
+1. **Admin Initialization**: POST `/api/v1/admin/initialize` - Creates first admin (one-time)
+2. **Login**: POST `/api/v1/admin/login` - Returns JWT token in cookie + response
+3. **Protected Routes**: Use `authenticate` middleware to verify JWT
+4. **Token Storage**: JWT stored in httpOnly cookie named "token"
+5. **Token Verification**: Checks `req.cookies.token` or `Authorization: Bearer <token>` header
 
-### Services Routes
-- `POST /services/create-services` - Create service
-  - **Headers**: `Authorization: Bearer <token>`
-  - **Body**: `{ title, description, icon, features, pricing, duration, technologies, processSteps }`
-  - **Files**: `icon` (optional)
-  - **Response**: Service object
-- `GET /services/get-all-services` - Get all services
-  - **Response**: Array of service objects
-- `GET /services/get-services/:id` - Get service by ID
-  - **Response**: Service object
-- `PUT /services/update-services/:id` - Update service
-  - **Headers**: `Authorization: Bearer <token>`
-  - **Body**: Same as create
-  - **Files**: `icon` (optional)
-  - **Response**: Updated service object
-- `DELETE /services/delete-services/:id` - Delete service
-  - **Headers**: `Authorization: Bearer <token>`
-  - **Response**: Success message
+### JWT Payload
+```javascript
+{
+  adminId: admin._id,
+  iat: timestamp,
+  exp: timestamp
+}
+```
 
-### Contact Routes
-- `POST /contact/add-update-contact-details` - Add/update contact details
-  - **Headers**: `Authorization: Bearer <token>`
-  - **Body**: `{ email, phone, address, socialLinks, workingHours }`
-  - **Response**: Contact details object
-- `GET /contact/get-contact-details` - Get contact details
-  - **Response**: Contact details object
-- `POST /contact/send-message` - Send contact message
-  - **Body**: `{ name, email, subject, message, priority }`
-  - **Response**: Success message
-- `GET /contact/get-all-messages` - Get all messages
-  - **Headers**: `Authorization: Bearer <token>`
-  - **Query**: `?status=<status>` (optional filter)
-  - **Response**: Array of message objects
-- `GET /contact/get-message/:messageId` - Get message by ID
-  - **Headers**: `Authorization: Bearer <token>`
-  - **Response**: Message object
-- `DELETE /contact/delete-message/:messageId` - Delete message
-  - **Headers**: `Authorization: Bearer <token>`
-  - **Response**: Success message
-- `POST /contact/reply-to-message/:messageId` - Reply to message
-  - **Headers**: `Authorization: Bearer <token>`
-  - **Body**: `{ reply }`
-  - **Response**: Updated message object
-- `GET /contact/get-unread-message-count` - Get unread message count
-  - **Headers**: `Authorization: Bearer <token>`
-  - **Response**: `{ count }`
+### Middleware Usage
+```javascript
+// Public route
+router.get("/get-hero-content", heroController.getHeroContent);
 
-### Response Format
+// Protected route
+router.post("/add-project", authenticate, upload.array("images", 5), projectController.createProject);
+```
 
-All API responses follow this format:
+### OTP System
+- **Generate OTP**: Admin requests OTP for email/password change
+- **OTP Storage**: Stored in admin document with expiry (typically 10 minutes)
+- **Verification**: OTP validated before updating email/password
+- **Email Delivery**: Sent via Nodemailer (Gmail SMTP)
 
-**Success Response:**
+---
+
+## API Routes
+
+**Base URL**: `http://localhost:8000/api/v1`
+
+### Admin Routes (`/admin`)
+| Method | Endpoint                      | Auth | Description              |
+| ------ | ----------------------------- | ---- | ------------------------ |
+| POST   | `/initialize`                 | No   | Create first admin       |
+| POST   | `/login`                      | No   | Admin login              |
+| POST   | `/logout`                     | Yes  | Admin logout             |
+| GET    | `/get-admin-user`             | Yes  | Get current admin        |
+| POST   | `/generate-otp`               | Yes  | Generate OTP for changes |
+| POST   | `/verify-otp-update-email`    | Yes  | Update email with OTP    |
+| POST   | `/verify-otp-update-password` | Yes  | Update password with OTP |
+
+### Hero Routes (`/hero`)
+| Method | Endpoint                       | Auth | Description            |
+| ------ | ------------------------------ | ---- | ---------------------- |
+| POST   | `/add-and-update-hero-content` | Yes  | Add/update hero        |
+| GET    | `/get-hero-content`            | No   | Get active hero        |
+| GET    | `/get-hero-content/:id`        | No   | Get hero by ID         |
+| PUT    | `/update-hero-content/:id`     | Yes  | Update hero            |
+| DELETE | `/delete-hero-content/:id`     | Yes  | Delete hero            |
+| GET    | `/get-all-hero-content`        | Yes  | Get all heroes (admin) |
+
+### Project Routes (`/projects`)
+| Method | Endpoint                                  | Auth | Description           |
+| ------ | ----------------------------------------- | ---- | --------------------- |
+| POST   | `/add-project`                            | Yes  | Create project        |
+| GET    | `/get-all-projects`                       | No   | Get active projects   |
+| GET    | `/get-project/:projectId`                 | No   | Get project by ID     |
+| PUT    | `/update-project/:projectId`              | Yes  | Update project        |
+| DELETE | `/delete-project/:projectId`              | Yes  | Delete project        |
+| GET    | `/get-featured-projects`                  | No   | Get featured projects |
+| POST   | `/set-featured-projects`                  | Yes  | Set featured status   |
+| GET    | `/get-all-projects-admin`                 | Yes  | Get all (admin)       |
+| GET    | `/get-projects-by-category/:category`     | No   | Filter by category    |
+| GET    | `/get-projects-by-technology/:technology` | No   | Filter by tech        |
+
+### Skill Routes (`/skills`)
+Similar CRUD pattern with category management
+
+### Other Routes
+- `/about` - About section CRUD
+- `/education` - Education entries CRUD
+- `/services` - Services CRUD
+- `/contact` - Contact form submission
+
+---
+
+## Request/Response Flow
+
+### Standard Flow
+```
+Request → Express Middleware → Router → Controller → Service → Repository → Database
+                                                                              ↓
+Response ← ApiResponse ← Controller ← Service ← Repository ← Database Result
+```
+
+### Layer Responsibilities
+
+**Controller**: HTTP handling, validation, file processing
+```javascript
+const createProject = asyncHandler(async (req, res) => {
+  const data = req.body;
+  const files = req.files;
+  const result = await projectService.createProject(data, files);
+  return sendCreated(res, "Project created", result);
+});
+```
+
+**Service**: Business logic, orchestration
+```javascript
+const createProject = async (data, files) => {
+  const uploadedImages = await uploadImages(files);
+  const project = await projectRepository.create({ ...data, images: uploadedImages });
+  return project;
+};
+```
+
+**Repository**: Database operations
+```javascript
+class ProjectRepository extends BaseRepository {
+  constructor() {
+    super(Project);
+  }
+  // Inherits: create, findById, updateById, deleteById, etc.
+}
+```
+
+---
+
+## Middleware Details
+
+### 1. Authentication (`auth.middleware.js`)
+- Extracts JWT from cookie or Authorization header
+- Verifies token with `JWT_SECRET` (defaults to "fallback_secret_key")
+- Fetches admin from database
+- Checks `isActive` status
+- Attaches `req.admin` object: `{ id, username, email }`
+
+### 2. Error Handler (`error.middleware.js`)
+- Catches all errors from routes
+- Logs errors with Winston
+- Handles specific error types:
+  - ValidationError (Mongoose)
+  - CastError (Invalid MongoDB ID)
+  - Duplicate key (code 11000)
+  - JWT errors
+  - Multer errors (file size, count)
+- Returns standardized ApiResponse
+- Includes stack trace in development mode
+
+### 3. Upload (`upload.middleware.js`)
+- Uses Multer with memory storage
+- Allowed types: JPEG, JPG, PNG, WebP, GIF
+- File size limit: 5MB per file
+- Max files: 10
+- Usage: `upload.single("fieldName")` or `upload.array("fieldName", maxCount)`
+
+### 4. Validation (`validation.middleware.js`)
+- Uses express-validator
+- Pre-defined validation rules:
+  - `validateLogin`: email + password (min 6 chars)
+  - `validateAdminInitialization`: username (3-50) + email + password
+  - `validateMongoId`: MongoDB ObjectId format
+  - `validateProject`: title, description, technologies, category
+  - `validateSkill`: name, level (0-100), iconName, iconColor
+  - `validateContactMessage`: name, email, subject, message
+  - `validateOTP`: 6-digit numeric
+- `handleValidationErrors`: Collects and throws validation errors
+
+---
+
+## File Upload Handling
+
+### Cloudinary Integration
+
+**Upload Process**:
+1. Multer receives file in memory (buffer)
+2. Controller passes buffer to service
+3. Service calls `uploadToCloudinary(file, options)`
+4. Returns `{ public_id, url, ... }`
+5. Store `public_id` and `url` in database
+
+**Upload Function**:
+```javascript
+uploadToCloudinary(file, {
+  folder: "portfolio/projects",
+  public_id: "custom-name", // optional
+  overwrite: false
+})
+```
+
+**Delete Function**:
+```javascript
+deleteFromCloudinary(public_id, "image")
+```
+
+**Configuration**:
+- Cloud name, API key, API secret from `.env`
+- Default folder: "portfolio"
+- Resource type: "auto" (detects image/video)
+
+---
+
+## Error Handling Strategy
+
+### Custom Error Class (`ApiError`)
+```javascript
+ApiError.badRequest("Invalid input")           // 400
+ApiError.unauthorized("Invalid token")          // 401
+ApiError.forbidden("Access denied")             // 403
+ApiError.notFound("Resource not found")         // 404
+ApiError.conflict("Duplicate entry")            // 409
+ApiError.unprocessableEntity("Validation fail") // 422
+ApiError.internal("Server error")               // 500
+```
+
+### Async Handler
+Wraps async route handlers to catch errors:
+```javascript
+const handler = asyncHandler(async (req, res) => {
+  // Any thrown error is caught and passed to error middleware
+});
+```
+
+### Error Response Format
+```json
+{
+  "success": false,
+  "message": "Error message",
+  "timestamp": "2024-01-01T00:00:00.000Z",
+  "errors": []
+}
+```
+
+---
+
+## API Response Format
+
+### Success Response
 ```json
 {
   "success": true,
@@ -367,131 +479,315 @@ All API responses follow this format:
 }
 ```
 
-**Error Response:**
+### Error Response
 ```json
 {
   "success": false,
-  "message": "Error description",
-  "errors": [ ... ],
-  "timestamp": "2024-01-01T00:00:00.000Z"
+  "message": "Operation failed",
+  "timestamp": "2024-01-01T00:00:00.000Z",
+  "errors": ["detail1", "detail2"]
 }
 ```
 
-**Paginated Response:**
+### Helper Functions
+```javascript
+sendSuccess(res, "Message", data, statusCode)
+sendCreated(res, "Message", data)
+sendError(res, "Message", errors, statusCode)
+sendNotFound(res, "Message")
+sendUnauthorized(res, "Message")
+sendPaginated(res, "Message", data, pagination)
+```
+
+---
+
+## Validation Rules
+
+### Common Patterns
+- **Email**: `isEmail().normalizeEmail()`
+- **Password**: `isLength({ min: 6 })`
+- **MongoDB ID**: `isMongoId()`
+- **Required String**: `notEmpty().trim()`
+- **Array**: `isArray({ min: 1 })`
+- **Number Range**: `isInt({ min: 0, max: 100 })`
+
+### Usage in Routes
+```javascript
+router.post(
+  "/login",
+  validateLogin,
+  handleValidationErrors,
+  adminController.login
+);
+```
+
+---
+
+## Logging
+
+### Winston Configuration
+- **Level**: info
+- **Format**: `YYYY-MM-DD HH:mm:ss [Abar Khabo Services] LEVEL: message`
+- **Transports**:
+  - Console (all logs)
+  - File: `logs/info.log` (info level)
+
+### Usage
+```javascript
+Logger.info("Server started");
+Logger.error("Database connection failed", error);
+```
+
+### Logged Events
+- Server startup
+- Database connection
+- Email sending
+- Errors (with request context)
+
+---
+
+## Coding Standards
+
+### Naming Conventions
+- **Files**: `kebab-case.js` (e.g., `admin.controller.js`)
+- **Classes**: `PascalCase` (e.g., `ApiError`, `BaseRepository`)
+- **Functions**: `camelCase` (e.g., `createProject`, `sendEmail`)
+- **Constants**: `UPPER_SNAKE_CASE` (e.g., `CLOUDINARY_API_KEY`)
+- **Routes**: `kebab-case` (e.g., `/get-hero-content`)
+
+### Code Style (Prettier)
 ```json
 {
-  "success": true,
-  "message": "Data retrieved successfully",
-  "data": {
-    "items": [ ... ],
-    "pagination": {
-      "page": 1,
-      "limit": 10,
-      "total": 100,
-      "totalPages": 10,
-      "hasNext": true,
-      "hasPrev": false
-    }
-  },
-  "timestamp": "2024-01-01T00:00:00.000Z"
+  "singleQuote": false,
+  "bracketSpacing": true,
+  "tabWidth": 6,
+  "trailingComma": "es6",
+  "semi": true
 }
 ```
 
-### Authentication
+### Architecture Pattern
+**Layered Architecture**:
+- Routes → Controllers → Services → Repositories → Models
+- Each layer has single responsibility
+- Repository extends BaseRepository for common operations
 
-All protected routes require JWT authentication:
+### Import Style
+```javascript
+import express from "express";
+import { authenticate } from "./middleware/auth.middleware.js";
+```
+- ES Modules (type: "module" in package.json)
+- Always include `.js` extension
 
-1. **Login** to get a token
-2. **Include token** in request headers:
-   - `Authorization: Bearer <your-jwt-token>`
-   - Or as cookie: `token=<your-jwt-token>`
+---
 
-### File Uploads
+## Running Locally
 
-For routes that accept file uploads:
-- Use `multipart/form-data` content type
-- File field names are specified in each route
-- Supported formats: Images (jpg, jpeg, png, gif, webp)
-- Max file size: 5MB per file
-- Files are automatically uploaded to Cloudinary
+### Prerequisites
+- Node.js (v18+ recommended)
+- MongoDB Atlas account or local MongoDB
+- Cloudinary account
+- Gmail account with App Password
 
-### Error Codes
+### Setup Steps
 
-- `200` - Success
-- `201` - Created
-- `400` - Bad Request
-- `401` - Unauthorized
-- `403` - Forbidden
-- `404` - Not Found
-- `409` - Conflict
-- `422` - Validation Error
-- `500` - Internal Server Error
+1. **Clone and Navigate**
+```bash
+cd backend
+```
 
-## 🔧 Architecture
+2. **Install Dependencies**
+```bash
+npm install
+```
 
-### MVC + Service + Repository Pattern
+3. **Configure Environment**
+Create `.env` file with all required variables (see Environment Variables section)
 
-- **Models**: Define data structure and validation using Mongoose schemas
-- **Repository**: Handle database operations with clean data access patterns
-- **Service**: Implement business logic and validation rules
-- **Controllers**: Handle HTTP requests and responses
-- **Middleware**: Handle cross-cutting concerns (auth, validation, error handling)
+4. **Start Development Server**
+```bash
+npm run dev
+```
 
-### Key Features
+5. **Start Production Server**
+```bash
+npm start
+```
 
-1. **Centralized Error Handling**: Custom error classes and middleware for consistent error responses
-2. **Authentication**: JWT-based with secure cookie handling and token management
-3. **File Uploads**: Cloudinary integration with automatic image optimization and CDN delivery
-4. **Email Services**: OTP generation and email notifications using Nodemailer
-5. **Logging**: Winston-based structured logging with different log levels
-6. **Validation**: Express-validator for comprehensive input validation and sanitization
-7. **Security**: CORS configuration, rate limiting, and secure headers
-8. **API Versioning**: Clean versioned API structure for future scalability
+6. **Initialize Admin** (First Time Only)
+```bash
+POST http://localhost:8000/api/v1/admin/initialize
+Content-Type: application/json
 
-### Database Schema
+{
+  "username": "admin",
+  "email": "your@email.com",
+  "password": "yourpassword"
+}
+```
 
-The system uses MongoDB with the following main collections:
+### Verify Setup
+- Server: `http://localhost:8000`
+- Health Check: `http://localhost:8000/` (should return JSON with status)
+- API Base: `http://localhost:8000/api/v1`
 
-- **admins**: Authentication and user management
-- **heroes**: Profile section content
-- **abouts**: About section content
-- **educations**: Academic background and qualifications
-- **projects**: Portfolio projects with images and metadata
-- **skills**: Skill categories and individual skills
-- **services**: Service offerings and descriptions
-- **contactdetails**: Contact information and social links
-- **messages**: Contact form submissions and replies
+---
 
-### Security Features
+## Common Commands
 
-- Password hashing with bcryptjs
-- JWT token authentication with expiration
-- Input validation and sanitization
-- CORS configuration for cross-origin requests
-- Secure cookie handling
-- File upload validation and filtering
-- Rate limiting and request throttling
+```bash
+# Development with auto-reload
+npm run dev
 
-## 🤝 Contributing
+# Production
+npm start
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+# Format code
+npx prettier --write .
 
-## 📝 License
+# Check logs
+cat logs/info.log
+```
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+---
 
-## 📞 Contact
+## Known Issues & Caveats
 
-Samrat Mallick - [Portfolio](https://samratmallick-dev.github.io/myportfolio.io/)
+### 1. JWT Secret Fallback
+- If `JWT_SECRET` is not in `.env`, defaults to "fallback_secret_key"
+- **TODO**: Make JWT_SECRET required and throw error if missing
 
-## 🙏 Acknowledgments
+### 2. Single Admin System
+- Only one admin can be initialized
+- No multi-admin or role-based access control
+- **TODO**: Add support for multiple admins with different roles
 
-- Express.js for the web framework
-- MongoDB for the database
-- Cloudinary for file storage
-- Winston for logging
-- JWT for authentication
+### 3. Email Password Whitespace
+- `sendEmail.js` strips whitespace from `EMAIL_PASS`: `.replace(/\s/g, "")`
+- Required because Gmail App Passwords are formatted with spaces
+
+### 4. OTP Expiry Not Enforced
+- OTP expiry is stored but not consistently checked across all endpoints
+- **TODO**: Add expiry validation in all OTP verification flows
+
+### 5. File Upload Error Handling
+- Multer errors are caught globally but could be more specific
+- No cleanup of uploaded files on transaction failure
+
+### 6. CORS Configuration
+- Hardcoded to `http://localhost:5173`
+- **TODO**: Use `CLIENT_URL` from environment variables
+
+### 7. Logger Label Mismatch
+- Logger label says "Abar Khabo Services" instead of portfolio name
+- **TODO**: Update to "Portfolio Backend" or similar
+
+### 8. No Rate Limiting
+- No protection against brute force or spam
+- **TODO**: Add rate limiting middleware (express-rate-limit)
+
+### 9. Pagination Not Used
+- BaseRepository has pagination support but not implemented in most endpoints
+- **TODO**: Add pagination to project/skill listing endpoints
+
+### 10. Image Deletion on Update
+- When updating projects with new images, old images not deleted from Cloudinary
+- **TODO**: Delete old images before uploading new ones
+
+---
+
+## Maintenance Notes
+
+### Database Backups
+- Use MongoDB Atlas automated backups
+- Manual export: `mongodump --uri="<MONGO_URL>/<MONGO_NAME>"`
+
+### Cloudinary Storage
+- Monitor storage usage in Cloudinary dashboard
+- Implement cleanup script for orphaned images (images in Cloudinary but not in DB)
+
+### Log Rotation
+- `logs/info.log` grows indefinitely
+- **TODO**: Implement log rotation (winston-daily-rotate-file)
+
+### Security Checklist
+- [ ] Change JWT_SECRET from fallback
+- [ ] Use strong admin password
+- [ ] Enable MongoDB IP whitelist
+- [ ] Rotate Cloudinary API keys periodically
+- [ ] Use environment-specific CORS origins
+- [ ] Add rate limiting
+- [ ] Implement request size limits
+- [ ] Add helmet.js for security headers
+
+---
+
+## Future Refactoring Ideas
+
+### High Priority
+1. **Environment Validation**: Validate all required env vars on startup
+2. **JWT Secret**: Make JWT_SECRET mandatory
+3. **CORS Dynamic**: Use CLIENT_URL from env instead of hardcoded
+4. **OTP Expiry**: Enforce expiry checks consistently
+5. **Image Cleanup**: Delete old Cloudinary images on update/delete
+
+### Medium Priority
+6. **Rate Limiting**: Add express-rate-limit for auth endpoints
+7. **Pagination**: Implement pagination for all list endpoints
+8. **Multi-Admin**: Support multiple admin accounts
+9. **Role-Based Access**: Add granular permissions (super-admin, editor, viewer)
+10. **Audit Logs**: Track who changed what and when
+
+### Low Priority
+11. **API Versioning**: Prepare for v2 API structure
+12. **Caching**: Add Redis for frequently accessed data
+13. **Search**: Implement full-text search for projects/skills
+14. **Analytics**: Track API usage and performance metrics
+15. **Testing**: Add unit and integration tests
+
+### Code Quality
+16. **TypeScript**: Migrate to TypeScript for type safety
+17. **ESLint**: Add ESLint for code quality
+18. **Documentation**: Generate API docs with Swagger/OpenAPI
+19. **Error Codes**: Add unique error codes for debugging
+20. **Dependency Updates**: Regular security updates
+
+---
+
+## Troubleshooting
+
+### MongoDB Connection Failed
+- Check `MONGO_URL` and `MONGO_NAME` in `.env`
+- Verify MongoDB Atlas IP whitelist includes your IP
+- Check network connectivity
+
+### JWT Token Invalid
+- Verify `JWT_SECRET` matches between token generation and verification
+- Check token expiration
+- Clear cookies and login again
+
+### File Upload Fails
+- Check file size (max 5MB)
+- Verify file type (JPEG, PNG, WebP, GIF only)
+- Check Cloudinary credentials in `.env`
+
+### Email Not Sending
+- Verify Gmail App Password (not regular password)
+- Check `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USER`, `EMAIL_PASS`
+- Enable "Less secure app access" or use App Password
+
+### CORS Errors
+- Verify frontend URL matches CORS origin in `app.js`
+- Check `credentials: true` is set in frontend fetch/axios
+
+---
+
+## Contact & Notes
+
+**Project Owner**: Samrat Mallick  
+**Purpose**: Personal portfolio backend  
+**Status**: Active Development  
+**Last Updated**: 2024
+
+This is a private repository for personal use. All credentials in `.env` should be kept secure and never committed to version control.
