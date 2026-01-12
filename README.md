@@ -459,7 +459,12 @@ import { authenticate } from "./middleware/auth.middleware.js";
 
 **Project Owner**: Samrat Mallick  
 **Purpose**: Personal fullstack portfolio system  
-**Status**: Active Development  
-**Last Updated**: 2024
+**Status**: Active Development
 
-This is a private repository. Keep all credentials secure and never commit `.env` files.
+---
+
+<div align="center">
+
+© 2026 Samrat Mallick. All Rights Reserved.
+
+</div>
