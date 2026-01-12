@@ -16,17 +16,13 @@ const MyPortfolio = () => {
 
       const dispatch = useDispatch();
       const { heroData, isLoading: heroLoading } = useSelector((state) => state.hero);
-      const { aboutData, isLoading: aboutLoading } = useSelector((state) => state.about);
-      const { educationData, isLoading: educationLoading } = useSelector((state) => state.education);
 
       useEffect(() => {
             dispatch(getHeroData());
-            dispatch(getAboutData());
-            dispatch(getAllEducationData());
       }, [dispatch]);
 
       const currentHeroData = heroData;
-      const isLoading = heroLoading || aboutLoading || educationLoading;
+      const isLoading = heroLoading;
 
       if (isLoading || !currentHeroData) {
             return (

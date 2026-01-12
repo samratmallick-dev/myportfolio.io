@@ -1,7 +1,6 @@
 import ProjectCard from '@/components/user-view/project-card';
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { getAllProjects } from '@/store/project.slice';
 import ProjectsSkeleton from '@/components/loaders/ProjectsSkeleton';
 
 const MyAllProjectList = () => {
