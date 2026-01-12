@@ -4,9 +4,9 @@ import heroSlice from './hero.slice.js';
 import aboutSlice from './about.slice.js';
 import educationSlice from './education.slice.js';
 import skillsSlice from './skills.slice.js';
-import projectSlice from './project.slice.js';
 import servicesSlice from './services.slice.js';
 import contactSlice from './contact.slice.js';
+import projectSlice from './project.slice.js';
 
 export const store = configureStore({
       reducer: {
@@ -15,8 +15,8 @@ export const store = configureStore({
             about: aboutSlice,
             education: educationSlice,
             skills: skillsSlice,
-            project: projectSlice,
             services: servicesSlice,
-            contact: contactSlice
+            contact: contactSlice,
+            project: projectSlice,
       },
 });

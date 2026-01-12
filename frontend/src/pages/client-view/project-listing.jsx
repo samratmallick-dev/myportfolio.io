@@ -2,17 +2,15 @@ import ProjectCard from '@/components/user-view/project-card';
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import ProjectsSkeleton from '@/components/loaders/ProjectsSkeleton';
+import { getAllProjects } from '@/store/project.slice';
 
 const MyAllProjectList = () => {
       const dispatch = useDispatch();
-      // const { projectsData, isLoading } = useSelector((state) => state.project);
+      const { projectsData, isLoading } = useSelector((state) => state.project);
 
-      // useEffect(() => {
-      //       dispatch(getAllProjects());
-      // }, [dispatch]);
-
-      const projectsData = null;
-      const isLoading = false;
+      useEffect(() => {
+            dispatch(getAllProjects());
+      }, [dispatch]);
 
       return (
             <div className="relative mt-20">

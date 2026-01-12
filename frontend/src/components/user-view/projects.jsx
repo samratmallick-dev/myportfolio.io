@@ -3,25 +3,22 @@ import { useDispatch, useSelector } from 'react-redux';
 import ProjectCard from './project-card';
 import { Button } from '../ui/button';
 import { useNavigate } from 'react-router-dom';
-import { getFeaturedProjects } from '../../store/project.slice';
+import { getFeaturedProjects } from '@/store/project.slice';
 import ProjectsSkeleton from '../loaders/ProjectsSkeleton';
 
 const MyProjects = () => {
       const navigate = useNavigate();
-      // const dispatch = useDispatch();
-      // const { featuredProjects, isLoading } = useSelector((state) => state.project);
+      const dispatch = useDispatch();
+      const { featuredProjects, isLoading } = useSelector((state) => state.project);
 
-      // useEffect(() => {
-      //       dispatch(getFeaturedProjects());
-      // }, [dispatch]);
+      useEffect(() => {
+            dispatch(getFeaturedProjects());
+      }, [dispatch]);
 
       const goToProjectListingPage = () => {
             window.scrollTo(0, 0);
             navigate('/portfolio/projects');
       };
-
-      const featuredProjects = null;
-      const isLoading = false;
 
       return (
             <section id="projects" className="py-20 border-b border-gray-700">

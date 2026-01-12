@@ -34,13 +34,6 @@ const validateMongoId = [
       param("id").isMongoId().withMessage("Invalid ID format"),
 ];
 
-const validateProject = [
-      body("title").notEmpty().withMessage("Title is required").isLength({ max: 200 }).withMessage("Title must not exceed 200 characters"),
-      body("description").notEmpty().withMessage("Description is required"),
-      body("technologies").isArray({ min: 1 }).withMessage("At least one technology is required"),
-      body("category").notEmpty().withMessage("Category is required"),
-];
-
 const validateEducation = [
       body("title").notEmpty().withMessage("Title is required"),
       body("description").notEmpty().withMessage("Description is required"),
@@ -86,12 +79,23 @@ const validateSkill = [
       body("iconColor").notEmpty().withMessage("Icon color is required"),
 ];
 
+const validateProject = [
+      body("title").notEmpty().withMessage("Title is required"),
+      body("description").notEmpty().withMessage("Description is required"),
+      body("technologies").custom((value) => {
+            if (!value) return false;
+            if (typeof value === 'string' && value.trim()) return true;
+            if (Array.isArray(value) && value.length > 0) return true;
+            return false;
+      }).withMessage("Technologies is required"),
+      body("status").optional().isIn(["Completed", "In Progress", "On Hold"]).withMessage("Invalid status"),
+];
+
 export {
       handleValidationErrors,
       validateLogin,
       validateAdminInitialization,
       validateMongoId,
-      validateProject,
       validateEducation,
       validateService,
       validateContactMessage,
@@ -101,4 +105,5 @@ export {
       validateGenerateOTP,
       validateSkillCategory,
       validateSkill,
+      validateProject,
 };

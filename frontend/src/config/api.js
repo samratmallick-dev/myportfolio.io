@@ -1,16 +1,14 @@
 import axios from 'axios';
 
-// Handle different environment variable formats
 const envBaseUrl = import.meta.env.VITE_BASE_URL;
 const API_BASE_URL = envBaseUrl ? (envBaseUrl.startsWith('http') ? envBaseUrl : `http://localhost:${envBaseUrl}`) : 'http://localhost:8000';
 
-// Create axios instance with default configuration
 const api = axios.create({
       baseURL: API_BASE_URL,
       headers: {
             'Content-Type': 'application/json',
       },
-      withCredentials: true, // Important for cookies if using session-based auth
+      withCredentials: true, 
 });
 
 // Admin authentication endpoints
@@ -23,38 +21,7 @@ export const adminAuthEndpoints = {
       verifyOTPUpdatePassword: '/api/v1/admin/verify-otp-update-password',
 };
 
-// Hero endpoints
-export const heroEndpoints = {
-      addUpdateHero: '/api/v1/hero/add-and-update-hero-content',
-      getHeroContent: '/api/v1/hero/get-hero-content',
-      getHeroById: '/api/v1/hero/get-hero-content/:id',
-      updateHeroById: '/api/v1/hero/update-hero-content/:id',
-      deleteHeroById: '/api/v1/hero/delete-hero-content/:id',
-      getAllHeroContent: '/api/v1/hero/get-all-hero-content',
-};
-
-// About endpoints
-export const aboutEndpoints = {
-      addUpdateAbout: '/api/v1/about/add-and-update-about-content',
-      getAboutContent: '/api/v1/about/get-about-content',
-      getAboutById: '/api/v1/about/get-about-content/:id',
-      updateAboutById: '/api/v1/about/update-about-content/:id',
-      deleteAboutById: '/api/v1/about/delete-about-content/:id',
-      getAllAboutContent: '/api/v1/about/get-all-about-content',
-};
-
-// Education endpoints
-export const educationEndpoints = {
-      createEducation: '/api/v1/education/create-education-details',
-      getAllEducation: '/api/v1/education/get-all-education-details',
-      getEducationById: '/api/v1/education/get-education-details/:id',
-      updateEducationById: '/api/v1/education/update-education-details/:id',
-      deleteEducationById: '/api/v1/education/delete-education-details/:id',
-      getAllEducationAdmin: '/api/v1/education/get-all-education-admin',
-      getLatestEducation: '/api/v1/education/get-latest-education',
-};
-
-// Admin login API function
+// Admin Api function
 export const loginAdmin = async (credentials) => {
       try {
             const response = await api.post(adminAuthEndpoints.login, credentials);
@@ -64,7 +31,6 @@ export const loginAdmin = async (credentials) => {
       }
 };
 
-// Admin logout API function
 export const logoutAdmin = async () => {
       try {
             const response = await api.post(adminAuthEndpoints.logout);
@@ -74,7 +40,6 @@ export const logoutAdmin = async () => {
       }
 };
 
-// Check admin authentication status
 export const checkAdminAuth = async () => {
       try {
             const response = await api.get(adminAuthEndpoints.checkAuth);
@@ -84,14 +49,12 @@ export const checkAdminAuth = async () => {
       }
 };
 
-// Generate OTP for email/password update
 export const generateOTP = async (data) => {
       const res = await api.post(adminAuthEndpoints.generateOTP, data);
       return res.data;
 };
 
 
-// Verify OTP and update email
 export const verifyOTPAndUpdateEmail = async (data) => {
       try {
             const response = await api.post(adminAuthEndpoints.verifyOTPUpdateEmail, data);
@@ -101,7 +64,6 @@ export const verifyOTPAndUpdateEmail = async (data) => {
       }
 };
 
-// Verify OTP and update password
 export const verifyOTPAndUpdatePassword = async (data) => {
       try {
             const response = await api.post(adminAuthEndpoints.verifyOTPUpdatePassword, data);
@@ -109,6 +71,16 @@ export const verifyOTPAndUpdatePassword = async (data) => {
       } catch (error) {
             throw error.response?.data || error;
       }
+};
+
+// Hero endpoints
+export const heroEndpoints = {
+      addUpdateHero: '/api/v1/hero/add-and-update-hero-content',
+      getHeroContent: '/api/v1/hero/get-hero-content',
+      getHeroById: '/api/v1/hero/get-hero-content/:id',
+      updateHeroById: '/api/v1/hero/update-hero-content/:id',
+      deleteHeroById: '/api/v1/hero/delete-hero-content/:id',
+      getAllHeroContent: '/api/v1/hero/get-all-hero-content',
 };
 
 // Hero API functions
@@ -170,6 +142,16 @@ export const fetchAllHeroData = async () => {
       }
 };
 
+// About endpoints
+export const aboutEndpoints = {
+      addUpdateAbout: '/api/v1/about/add-and-update-about-content',
+      getAboutContent: '/api/v1/about/get-about-content',
+      getAboutById: '/api/v1/about/get-about-content/:id',
+      updateAboutById: '/api/v1/about/update-about-content/:id',
+      deleteAboutById: '/api/v1/about/delete-about-content/:id',
+      getAllAboutContent: '/api/v1/about/get-all-about-content',
+};
+
 // About API functions
 export const fetchAboutData = async () => {
       try {
@@ -227,6 +209,17 @@ export const fetchAllAboutData = async () => {
       } catch (error) {
             throw error.response?.data || error;
       }
+};
+
+// Education endpoints
+export const educationEndpoints = {
+      createEducation: '/api/v1/education/create-education-details',
+      getAllEducation: '/api/v1/education/get-all-education-details',
+      getEducationById: '/api/v1/education/get-education-details/:id',
+      updateEducationById: '/api/v1/education/update-education-details/:id',
+      deleteEducationById: '/api/v1/education/delete-education-details/:id',
+      getAllEducationAdmin: '/api/v1/education/get-all-education-admin',
+      getLatestEducation: '/api/v1/education/get-latest-education',
 };
 
 // Education API functions
@@ -332,6 +325,59 @@ export const deleteSkillCategory = async (categoryId) => {
 
 export const deleteSkillFromCategory = async (categoryId, skillId) => {
       const response = await api.delete(skillEndpoints.deleteSkill.replace(':categoryId', categoryId).replace(':skillId', skillId));
+      return response.data;
+};
+
+// Project endpoints
+export const projectEndpoints = {
+      createProject: '/api/v1/projects/create-project',
+      getAllProjects: '/api/v1/projects/get-all-projects',
+      getProjectById: '/api/v1/projects/get-project/:id',
+      updateProjectById: '/api/v1/projects/update-project/:id',
+      deleteProjectById: '/api/v1/projects/delete-project/:id',
+      getAllProjectsAdmin: '/api/v1/projects/get-all-projects-admin',
+      getFeaturedProjects: '/api/v1/projects/get-featured-projects',
+      setFeaturedProject: '/api/v1/projects/set-featured-project/:id',
+};
+
+// Project API functions
+export const fetchAllProjects = async () => {
+      const response = await api.get(projectEndpoints.getAllProjects);
+      return response.data;
+};
+
+export const fetchProjectById = async (id) => {
+      const response = await api.get(projectEndpoints.getProjectById.replace(':id', id));
+      return response.data;
+};
+
+export const createProject = async (projectData) => {
+      const response = await api.post(projectEndpoints.createProject, projectData);
+      return response.data;
+};
+
+export const updateProjectById = async (id, projectData) => {
+      const response = await api.put(projectEndpoints.updateProjectById.replace(':id', id), projectData);
+      return response.data;
+};
+
+export const deleteProjectById = async (id) => {
+      const response = await api.delete(projectEndpoints.deleteProjectById.replace(':id', id));
+      return response.data;
+};
+
+export const fetchAllProjectsAdmin = async () => {
+      const response = await api.get(projectEndpoints.getAllProjectsAdmin);
+      return response.data;
+};
+
+export const fetchFeaturedProjects = async () => {
+      const response = await api.get(projectEndpoints.getFeaturedProjects);
+      return response.data;
+};
+
+export const setFeaturedProject = async (id, isFeatured) => {
+      const response = await api.patch(projectEndpoints.setFeaturedProject.replace(':id', id), { isFeatured });
       return response.data;
 };
 

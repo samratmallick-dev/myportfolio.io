@@ -1,23 +1,11 @@
 import projectRepository from "../repository/project.repository.js";
 import ApiError from "../utilities/error/apiError.js";
-import { uploadToCloudinary } from "../utilities/cloudinary/upload.js";
 
 class ProjectService {
-      async createProject(projectData, images) {
-            if (images && images.length > 0) {
-                  const uploadPromises = images.map(image =>
-                        uploadToCloudinary(image, "projects/images")
-                  );
-
-                  const cloudinaryResponses = await Promise.all(uploadPromises);
-
-                  projectData.images = cloudinaryResponses.map(response => ({
-                        public_id: response.public_id,
-                        url: response.secure_url,
-                        alt: projectData.title || "Project image",
-                  }));
+      async createProject(projectData) {
+            if (projectData.technologies && typeof projectData.technologies === 'string') {
+                  projectData.technologies = projectData.technologies.split(',').map(t => t.trim()).filter(Boolean);
             }
-
             const project = await projectRepository.create(projectData);
             return project;
       }
@@ -41,28 +29,15 @@ class ProjectService {
             return project;
       }
 
-      async updateProject(id, projectData, images) {
+      async updateProject(id, projectData) {
             const existingProject = await projectRepository.findById(id);
 
             if (!existingProject) {
                   throw ApiError.notFound("Project not found");
             }
 
-            if (images && images.length > 0) {
-                  const uploadPromises = images.map(image =>
-                        uploadToCloudinary(image, "projects/images")
-                  );
-
-                  const cloudinaryResponses = await Promise.all(uploadPromises);
-
-                  projectData.images = [
-                        ...existingProject.images,
-                        ...cloudinaryResponses.map(response => ({
-                              public_id: response.public_id,
-                              url: response.secure_url,
-                              alt: projectData.title || "Project image",
-                        }))
-                  ];
+            if (projectData.technologies && typeof projectData.technologies === 'string') {
+                  projectData.technologies = projectData.technologies.split(',').map(t => t.trim()).filter(Boolean);
             }
 
             const updatedProject = await projectRepository.updateById(id, projectData);
@@ -80,33 +55,25 @@ class ProjectService {
             return { message: "Project deleted successfully" };
       }
 
-      async getFeaturedProjects() {
-            const projects = await projectRepository.findFeatured();
-            return projects;
-      }
-
-      async setFeaturedProjects(projectIds) {
-            if (!Array.isArray(projectIds) || projectIds.length === 0) {
-                  throw ApiError.badRequest("Project IDs array is required");
-            }
-
-            const projects = await projectRepository.updateFeatured(projectIds);
-            return projects;
-      }
-
       async getAllProjectsAdmin() {
             const projects = await projectRepository.findAll();
             return projects;
       }
 
-      async getProjectsByCategory(category) {
-            const projects = await projectRepository.findByCategory(category);
+      async getFeaturedProjects() {
+            const projects = await projectRepository.findFeatured();
             return projects;
       }
 
-      async getProjectsByTechnology(technology) {
-            const projects = await projectRepository.findByTechnology(technology);
-            return projects;
+      async setFeaturedProject(id, isFeatured) {
+            const project = await projectRepository.findById(id);
+
+            if (!project) {
+                  throw ApiError.notFound("Project not found");
+            }
+
+            const updatedProject = await projectRepository.updateById(id, { isFeatured });
+            return updatedProject;
       }
 }
 

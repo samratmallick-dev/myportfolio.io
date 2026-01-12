@@ -1,95 +1,134 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
-
-const baseUrl = import.meta.env.VITE_BASE_URL;
+import {
+      fetchAllProjects,
+      fetchProjectById,
+      createProject,
+      updateProjectById,
+      deleteProjectById,
+      fetchAllProjectsAdmin,
+      fetchFeaturedProjects,
+      setFeaturedProject,
+} from "@/config/api";
 
 const initialState = {
-      isLoading: false,
       projectsData: [],
       featuredProjects: [],
+      currentProject: null,
+      isLoading: false,
       error: null,
+      success: false,
 };
 
+// Async thunks
 export const getAllProjects = createAsyncThunk(
-      "project/getAllProjects",
+      "project/fetchAllProjects",
       async (_, { rejectWithValue }) => {
             try {
-                  const response = await axios.get(`${baseUrl}${SummeryApi.getAllProjectsUrl}`, {
-                        withCredentials: true,
-                  });
+                  const response = await fetchAllProjects();
                   return response.data;
             } catch (error) {
-                  return rejectWithValue(error.response?.data);
+                  return rejectWithValue(error.response?.data || error.message);
             }
       }
 );
 
-export const createProject = createAsyncThunk(
-      "project/createProject",
-      async (formData, { rejectWithValue }) => {
-            try {
-                  const response = await axios.post(`${baseUrl}${SummeryApi.createProjectUrl}`, formData, {
-                        withCredentials: true,
-                  });
-                  return response.data;
-            } catch (error) {
-                  return rejectWithValue(error.response?.data);
-            }
-      }
-);
-
-export const updateProjectById = createAsyncThunk(
-      "project/updateProjectById",
-      async ({ id, formData }, { rejectWithValue }) => {
-            try {
-                  const response = await axios.put(`${baseUrl}${SummeryApi.updateProjectUrl(id)}`, formData, {
-                        withCredentials: true,
-                  });
-                  return response.data;
-            } catch (error) {
-                  return rejectWithValue(error.response?.data);
-            }
-      }
-);
-
-export const deleteProjectById = createAsyncThunk(
-      "project/deleteProjectById",
+export const getProjectById = createAsyncThunk(
+      "project/fetchProjectById",
       async (id, { rejectWithValue }) => {
             try {
-                  const response = await axios.delete(`${baseUrl}${SummeryApi.deleteProjectUrl(id)}`, {
-                        withCredentials: true,
-                  });
+                  const response = await fetchProjectById(id);
                   return response.data;
             } catch (error) {
-                  return rejectWithValue(error.response?.data);
+                  return rejectWithValue(error.response?.data || error.message);
+            }
+      }
+);
+
+export const createProjectData = createAsyncThunk(
+      "project/createProject",
+      async (projectData, { rejectWithValue, dispatch }) => {
+            try {
+                  const response = await createProject(projectData);
+                  dispatch(getAllProjectsAdmin());
+                  return response.data;
+            } catch (error) {
+                  return rejectWithValue(error.response?.data || error.message);
+            }
+      }
+);
+
+export const updateProjectData = createAsyncThunk(
+      "project/updateProject",
+      async ({ id, projectData }, { rejectWithValue, dispatch }) => {
+            try {
+                  const response = await updateProjectById(id, projectData);
+                  dispatch(getAllProjectsAdmin());
+                  return response.data;
+            } catch (error) {
+                  return rejectWithValue(error.response?.data || error.message);
+            }
+      }
+);
+
+export const deleteProjectData = createAsyncThunk(
+      "project/deleteProject",
+      async (id, { rejectWithValue, dispatch }) => {
+            try {
+                  const response = await deleteProjectById(id);
+                  dispatch(getAllProjectsAdmin());
+                  dispatch(getFeaturedProjects());
+                  return { id, message: response.message };
+            } catch (error) {
+                  return rejectWithValue(error.response?.data || error.message);
+            }
+      }
+);
+
+export const getAllProjectsAdmin = createAsyncThunk(
+      "project/fetchAllProjectsAdmin",
+      async (_, { rejectWithValue }) => {
+            try {
+                  const response = await fetchAllProjectsAdmin();
+                  return response.data;
+            } catch (error) {
+                  return rejectWithValue(error.response?.data || error.message);
             }
       }
 );
 
 export const getFeaturedProjects = createAsyncThunk(
-      "project/getFeaturedProjects",
+      "project/fetchFeaturedProjects",
       async (_, { rejectWithValue }) => {
             try {
-                  const response = await axios.get(`${baseUrl}${SummeryApi.getFeaturedProjectsUrl}`, {
-                        withCredentials: true,
-                  });
+                  const response = await fetchFeaturedProjects();
                   return response.data;
             } catch (error) {
-                  return rejectWithValue(error.response?.data);
+                  return rejectWithValue(error.response?.data || error.message);
             }
       }
 );
 
-export const setFeaturedProjects = createAsyncThunk(
-      "project/setFeaturedProjects",
-      async ({ projectIds }, { rejectWithValue }) => {
+export const updateFeaturedProjects = createAsyncThunk(
+      "project/updateFeaturedProjects",
+      async (projectIds, { rejectWithValue, dispatch, getState }) => {
             try {
-                  const response = await axios.post(`${baseUrl}${SummeryApi.setFeaturedProjectsUrl}`, { projectIds }, {
-                        withCredentials: true,
-                  });
-                  return response.data;
+                  const state = getState();
+                  const currentFeatured = state.project.featuredProjects.map(p => p._id);
+                  const allProjects = state.project.projectsData;
+
+                  for (const project of allProjects) {
+                        const shouldBeFeatured = projectIds.includes(project._id);
+                        const isFeatured = currentFeatured.includes(project._id);
+
+                        if (shouldBeFeatured !== isFeatured) {
+                              await setFeaturedProject(project._id, shouldBeFeatured);
+                        }
+                  }
+
+                  dispatch(getFeaturedProjects());
+                  return projectIds;
             } catch (error) {
-                  return rejectWithValue(error.response?.data);
+                  return rejectWithValue(error.response?.data || error.message);
             }
       }
 );
@@ -97,8 +136,24 @@ export const setFeaturedProjects = createAsyncThunk(
 const projectSlice = createSlice({
       name: "project",
       initialState,
-      reducers: {},
+      reducers: {
+            clearError: (state) => {
+                  state.error = null;
+            },
+            clearSuccess: (state) => {
+                  state.success = false;
+            },
+            resetProjectState: (state) => {
+                  state.projectsData = [];
+                  state.featuredProjects = [];
+                  state.currentProject = null;
+                  state.isLoading = false;
+                  state.error = null;
+                  state.success = false;
+            },
+      },
       extraReducers: (builder) => {
+            // Fetch all projects
             builder
                   .addCase(getAllProjects.pending, (state) => {
                         state.isLoading = true;
@@ -106,88 +161,135 @@ const projectSlice = createSlice({
                   })
                   .addCase(getAllProjects.fulfilled, (state, action) => {
                         state.isLoading = false;
-                        state.projectsData = action.payload.data || [];
+                        state.projectsData = action.payload || [];
                         state.error = null;
                   })
                   .addCase(getAllProjects.rejected, (state, action) => {
                         state.isLoading = false;
                         state.error = action.payload;
-                  })
-                  .addCase(createProject.pending, (state) => {
-                        state.isLoading = true;
-                        state.error = null;
-                  })
-                  .addCase(createProject.fulfilled, (state, action) => {
-                        state.isLoading = false;
-                        if (action.payload?.data) {
-                              state.projectsData.push(action.payload.data);
-                        }
-                        state.error = null;
-                  })
-                  .addCase(createProject.rejected, (state, action) => {
-                        state.isLoading = false;
-                        state.error = action.payload;
-                  })
-                  .addCase(updateProjectById.pending, (state) => {
-                        state.isLoading = true;
-                        state.error = null;
-                  })
-                  .addCase(updateProjectById.fulfilled, (state, action) => {
-                        state.isLoading = false;
-                        const updated = action.payload?.data;
-                        if (updated?._id) {
-                              const idx = state.projectsData.findIndex(p => p._id === updated._id);
-                              if (idx !== -1) {
-                                    state.projectsData[idx] = updated;
-                              }
-                        }
-                        state.error = null;
-                  })
-                  .addCase(updateProjectById.rejected, (state, action) => {
-                        state.isLoading = false;
-                        state.error = action.payload;
-                  })
-                  .addCase(deleteProjectById.pending, (state) => {
-                        state.isLoading = true;
-                        state.error = null;
-                  })
-                  .addCase(deleteProjectById.fulfilled, (state) => {
-                        state.isLoading = false;
-                        state.error = null;
+                  });
 
+            // Fetch project by ID
+            builder
+                  .addCase(getProjectById.pending, (state) => {
+                        state.isLoading = true;
+                        state.error = null;
                   })
-                  .addCase(deleteProjectById.rejected, (state, action) => {
+                  .addCase(getProjectById.fulfilled, (state, action) => {
+                        state.isLoading = false;
+                        state.currentProject = action.payload;
+                        state.error = null;
+                  })
+                  .addCase(getProjectById.rejected, (state, action) => {
                         state.isLoading = false;
                         state.error = action.payload;
+                  });
+
+            // Create project
+            builder
+                  .addCase(createProjectData.pending, (state) => {
+                        state.isLoading = true;
+                        state.error = null;
+                        state.success = false;
                   })
+                  .addCase(createProjectData.fulfilled, (state) => {
+                        state.isLoading = false;
+                        state.success = true;
+                        state.error = null;
+                  })
+                  .addCase(createProjectData.rejected, (state, action) => {
+                        state.isLoading = false;
+                        state.error = action.payload;
+                        state.success = false;
+                  });
+
+            // Update project
+            builder
+                  .addCase(updateProjectData.pending, (state) => {
+                        state.isLoading = true;
+                        state.error = null;
+                        state.success = false;
+                  })
+                  .addCase(updateProjectData.fulfilled, (state) => {
+                        state.isLoading = false;
+                        state.success = true;
+                        state.error = null;
+                  })
+                  .addCase(updateProjectData.rejected, (state, action) => {
+                        state.isLoading = false;
+                        state.error = action.payload;
+                        state.success = false;
+                  });
+
+            // Delete project
+            builder
+                  .addCase(deleteProjectData.pending, (state) => {
+                        state.isLoading = true;
+                        state.error = null;
+                        state.success = false;
+                  })
+                  .addCase(deleteProjectData.fulfilled, (state) => {
+                        state.isLoading = false;
+                        state.success = true;
+                        state.error = null;
+                  })
+                  .addCase(deleteProjectData.rejected, (state, action) => {
+                        state.isLoading = false;
+                        state.error = action.payload;
+                        state.success = false;
+                  });
+
+            // Fetch all projects admin
+            builder
+                  .addCase(getAllProjectsAdmin.pending, (state) => {
+                        state.isLoading = true;
+                        state.error = null;
+                  })
+                  .addCase(getAllProjectsAdmin.fulfilled, (state, action) => {
+                        state.isLoading = false;
+                        state.projectsData = action.payload || [];
+                        state.error = null;
+                  })
+                  .addCase(getAllProjectsAdmin.rejected, (state, action) => {
+                        state.isLoading = false;
+                        state.error = action.payload;
+                  });
+
+            // Fetch featured projects
+            builder
                   .addCase(getFeaturedProjects.pending, (state) => {
                         state.isLoading = true;
                         state.error = null;
                   })
                   .addCase(getFeaturedProjects.fulfilled, (state, action) => {
                         state.isLoading = false;
-                        state.featuredProjects = action.payload.data || [];
+                        state.featuredProjects = action.payload || [];
                         state.error = null;
                   })
                   .addCase(getFeaturedProjects.rejected, (state, action) => {
                         state.isLoading = false;
                         state.error = action.payload;
-                  })
-                  .addCase(setFeaturedProjects.pending, (state) => {
+                  });
+
+            // Update featured projects
+            builder
+                  .addCase(updateFeaturedProjects.pending, (state) => {
                         state.isLoading = true;
                         state.error = null;
+                        state.success = false;
                   })
-                  .addCase(setFeaturedProjects.fulfilled, (state, action) => {
+                  .addCase(updateFeaturedProjects.fulfilled, (state) => {
                         state.isLoading = false;
-                        state.featuredProjects = action.payload.data || [];
+                        state.success = true;
                         state.error = null;
                   })
-                  .addCase(setFeaturedProjects.rejected, (state, action) => {
+                  .addCase(updateFeaturedProjects.rejected, (state, action) => {
                         state.isLoading = false;
                         state.error = action.payload;
+                        state.success = false;
                   });
       },
 });
 
-export const projectActions = projectSlice.actions;
+export const { clearError, clearSuccess, resetProjectState } = projectSlice.actions;
 export default projectSlice.reducer;

@@ -13,6 +13,8 @@ const ProjectCard = ({
       liveUrl,
       status
 }) => {
+      const techArray = Array.isArray(technologies) ? technologies : [];
+
       return (
             <Card className="hover-lift tech-glow group">
                   <CardHeader>
@@ -30,7 +32,7 @@ const ProjectCard = ({
                   </CardHeader>
                   <CardContent>
                         <div className="flex flex-wrap gap-2 mb-4 ">
-                              {technologies.map((tech, index) => (
+                              {techArray.map((tech, index) => (
                                     <Badge key={index} variant="secondary" className="bg-primary/10 text-primary border-primary/20">
                                           {tech}
                                     </Badge>

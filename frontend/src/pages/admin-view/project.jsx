@@ -6,16 +6,18 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-      createProject,
-      deleteProjectById,
-      getAllProjects,
-      getFeaturedProjects as fetchFeaturedProjects,
-      setFeaturedProjects,
-      updateProjectById,
-} from '@/store/project.slice';
 import { adminProjectFormIndex } from '@/config/allFormIndex';
 import { Input } from '@/components/ui/input';
+import {
+      createProjectData,
+      updateProjectData,
+      deleteProjectData,
+      getAllProjectsAdmin,
+      getFeaturedProjects,
+      updateFeaturedProjects,
+      clearError,
+      clearSuccess,
+} from '@/store/project.slice';
 
 const initialFormData = {
       title: '',
@@ -28,26 +30,35 @@ const initialFormData = {
 
 const AdminViewProject = () => {
       const dispatch = useDispatch();
-      // const { projectsData, featuredProjects, isLoading } = useSelector((state) => state.project);
+      const { projectsData, featuredProjects, isLoading, error, success } = useSelector((state) => state.project);
 
       const [formData, setFormData] = useState(initialFormData);
       const [editMode, setEditMode] = useState(false);
       const [editId, setEditId] = useState(null);
       const [selectedFeatured, setSelectedFeatured] = useState([]);
 
-      const projectsData = [];
-      const isLoading = false;
+      useEffect(() => {
+            dispatch(getAllProjectsAdmin());
+            dispatch(getFeaturedProjects());
+      }, [dispatch]);
 
-      // useEffect(() => {
-      //       dispatch(getAllProjects());
-      //       dispatch(fetchFeaturedProjects());
-      // }, [dispatch]);
+      useEffect(() => {
+            if (featuredProjects && Array.isArray(featuredProjects)) {
+                  setSelectedFeatured(featuredProjects.map((p) => p._id));
+            }
+      }, [featuredProjects]);
 
-      // useEffect(() => {
-      //       if (featuredProjects && Array.isArray(featuredProjects)) {
-      //             setSelectedFeatured(featuredProjects.map((p) => p._id));
-      //       }
-      // }, [featuredProjects]);
+      useEffect(() => {
+            if (success) {
+                  toast.success(editMode ? 'Project updated successfully!' : 'Project created successfully!');
+                  dispatch(clearSuccess());
+                  resetForm();
+            }
+            if (error) {
+                  toast.error(error?.message || 'Failed to save project.');
+                  dispatch(clearError());
+            }
+      }, [success, error, dispatch, editMode]);
 
       const handleChange = (name, value) => {
             setFormData((prev) => ({ ...prev, [name]: value }));
@@ -61,28 +72,19 @@ const AdminViewProject = () => {
 
       const handleSubmit = async (e) => {
             e.preventDefault();
-            try {
-                  const payload = {
-                        title: formData.title,
-                        description: formData.description,
-                        technologies: formData.technologies,
-                        githubUrl: formData.githubUrl,
-                        liveUrl: formData.liveUrl,
-                        status: formData.status,
-                  };
+            const payload = {
+                  title: formData.title,
+                  description: formData.description,
+                  technologies: formData.technologies,
+                  githubUrl: formData.githubUrl,
+                  liveUrl: formData.liveUrl,
+                  status: formData.status,
+            };
 
-                  // if (editMode) {
-                  //       await dispatch(updateProjectById({ id: editId, formData: payload })).unwrap();
-                  //       toast.success('Project updated successfully!');
-                  // } else {
-                  //       await dispatch(createProject(payload)).unwrap();
-                  //       toast.success('Project created successfully!');
-                  // }
-                  // dispatch(getAllProjects());
-                  // resetForm();
-            } catch (err) {
-                  toast.error(err?.message || 'Failed to save project.');
-                  console.error('Project save error:', err);
+            if (editMode) {
+                  dispatch(updateProjectData({ id: editId, projectData: payload }));
+            } else {
+                  dispatch(createProjectData(payload));
             }
       };
 
@@ -100,15 +102,9 @@ const AdminViewProject = () => {
       };
 
       const handleDelete = async (id) => {
-            // try {
-            //       await dispatch(deleteProjectById(id)).unwrap();
-            //       toast.success('Project deleted successfully!');
-            //       dispatch(getAllProjects());
-            //       dispatch(fetchFeaturedProjects());
-            // } catch (err) {
-            //       toast.error(err?.message || 'Failed to delete project.');
-            //       console.error('Project delete error:', err);
-            // }
+            if (window.confirm('Are you sure you want to delete this project?')) {
+                  dispatch(deleteProjectData(id));
+            }
       };
 
       const toggleFeatured = (projectId) => {
@@ -119,24 +115,29 @@ const AdminViewProject = () => {
                   }
                   if (prev.length >= 3) {
                         toast.error('You can select at most 3 featured projects.');
-                        return prev; 
+                        return prev;
                   }
                   return [...prev, projectId];
             });
       };
 
       const saveFeatured = async () => {
-            // try {
-            //       await dispatch(setFeaturedProjects({ projectIds: selectedFeatured })).unwrap();
-            //       toast.success('Featured projects updated!');
-            //       dispatch(fetchFeaturedProjects());
-            // } catch (err) {
-            //       toast.error(err?.message || 'Failed to update featured projects.');
-            //       console.error('Featured update error:', err);
-            // }
+            try {
+                  await dispatch(updateFeaturedProjects(selectedFeatured)).unwrap();
+                  toast.success('Featured projects updated!');
+            } catch (err) {
+                  toast.error(err?.message || 'Failed to update featured projects.');
+            }
       };
 
       const isProjectFeatured = useMemo(() => new Set(selectedFeatured), [selectedFeatured]);
+
+      const technologiesArray = (tech) => {
+            if (!tech) return [];
+            if (Array.isArray(tech)) return tech;
+            if (typeof tech !== 'string') return [];
+            return tech.split(',').map(t => t.trim()).filter(Boolean);
+      };
 
       return (
             <Fragment>
@@ -162,9 +163,9 @@ const AdminViewProject = () => {
                                                                         <div className="text-sm text-muted-foreground">{item.status}</div>
                                                                   </div>
                                                                   <p className="text-sm text-muted-foreground">{item.description}</p>
-                                                                  {Array.isArray(item.technologies) && item.technologies.length > 0 && (
+                                                                  {item.technologies && technologiesArray(item.technologies).length > 0 && (
                                                                         <div className="flex flex-wrap gap-2 mt-2">
-                                                                              {item.technologies.map((t, idx) => (
+                                                                              {technologiesArray(item.technologies).map((t, idx) => (
                                                                                     <span key={idx} className="px-2 py-1 text-xs rounded-md bg-primary/10 text-primary border border-primary/20">{t}</span>
                                                                               ))}
                                                                         </div>

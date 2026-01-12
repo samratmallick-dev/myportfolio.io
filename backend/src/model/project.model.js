@@ -11,76 +11,31 @@ const projectSchema = new mongoose.Schema({
             required: true,
             trim: true,
       },
-      shortDescription: {
-            type: String,
-            trim: true,
-      },
       technologies: [{
             type: String,
             required: true,
             trim: true,
       }],
-      category: {
-            type: String,
-            required: true,
-            trim: true,
-      },
-      images: [{
-            public_id: {
-                  type: String,
-                  required: true,
-            },
-            url: {
-                  type: String,
-                  required: true,
-            },
-            alt: {
-                  type: String,
-                  trim: true,
-            },
-      }],
-      liveUrl: {
-            type: String,
-            trim: true,
-      },
       githubUrl: {
             type: String,
             trim: true,
       },
-      featured: {
-            type: Boolean,
-            default: false,
+      liveUrl: {
+            type: String,
+            trim: true,
       },
       status: {
             type: String,
-            enum: ["completed", "in-progress", "planned"],
-            default: "completed",
+            enum: ["Completed", "In Progress", "On Hold"],
+            default: "Completed",
       },
-      startDate: {
-            type: Date,
-      },
-      endDate: {
-            type: Date,
-      },
-      teamSize: {
-            type: Number,
-            min: 1,
-      },
-      role: {
-            type: String,
-            trim: true,
-      },
-      challenges: [{
-            type: String,
-            trim: true,
-      }],
-      solutions: [{
-            type: String,
-            trim: true,
-      }],
       isActive: {
             type: Boolean,
             default: true,
+      },
+      isFeatured: {
+            type: Boolean,
+            default: false,
       },
 }, {
       timestamps: true,
