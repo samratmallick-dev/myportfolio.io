@@ -9,7 +9,7 @@ Modern MERN-based platform powering Samrat Mallick’s public-facing portfolio a
 ## Overview
 - **Public experience**: High-performing, responsive portfolio with featured projects, services, skills, education timeline, and contact form.
 - **Admin console**: Secure dashboard to manage all portfolio content, media uploads to Cloudinary, and OTP-backed account actions.
-- **API-first**: Layered Express + MongoDB backend with JWT auth, validation, logging, and cloud storage.
+- **API-first**: Layered Express + MongoDB backend with JWT auth, validation, logging.
 
 ---
 
