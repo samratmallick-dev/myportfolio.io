@@ -12,45 +12,13 @@ const serviceSchema = new mongoose.Schema({
             trim: true,
       },
       icon: {
-            public_id: {
-                  type: String,
-                  required: true,
-            },
-            url: {
-                  type: String,
-                  required: true,
-            },
+            type: String,
+            required: true,
+            trim: true,
       },
       features: [{
             type: String,
             trim: true,
-      }],
-      pricing: {
-            type: String,
-            trim: true,
-      },
-      duration: {
-            type: String,
-            trim: true,
-      },
-      technologies: [{
-            type: String,
-            trim: true,
-      }],
-      process: [{
-            step: {
-                  type: Number,
-                  required: true,
-            },
-            title: {
-                  type: String,
-                  required: true,
-                  trim: true,
-            },
-            description: {
-                  type: String,
-                  trim: true,
-            },
       }],
       isActive: {
             type: Boolean,

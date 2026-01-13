@@ -2,19 +2,16 @@ import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import ServiceCard from './service-card';
 import * as Icons from 'lucide-react';
-import { getAllServices } from '../../store/services.slice';
 import ServicesSkeleton from '../loaders/ServicesSkeleton';
+import { getAllServices } from '@/store/services.slice';
 
 const MyServices = () => {
       const dispatch = useDispatch();
-      // const { servicesData, isLoading } = useSelector((state) => state.services);
+      const { servicesData, isLoading } = useSelector((state) => state.services);
 
-      // useEffect(() => {
-      //       dispatch(getAllServices());
-      // }, [dispatch]);
-
-      const servicesData = null;
-      const isLoading = false;
+      useEffect(() => {
+            dispatch(getAllServices());
+      }, [dispatch]);
 
       return (
             <section id="services" className="py-20">

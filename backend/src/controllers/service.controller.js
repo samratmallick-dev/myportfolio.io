@@ -5,9 +5,8 @@ import { asyncHandler } from "../utilities/error/asyncHandler.js";
 class ServiceController {
       createService = asyncHandler(async (req, res) => {
             const serviceData = req.body;
-            const icon = req.files?.icon?.[0];
 
-            const service = await serviceService.createService(serviceData, icon);
+            const service = await serviceService.createService(serviceData);
             sendCreated(res, "Service created successfully", service);
       });
 
@@ -25,9 +24,8 @@ class ServiceController {
       updateService = asyncHandler(async (req, res) => {
             const { id } = req.params;
             const serviceData = req.body;
-            const icon = req.files?.icon?.[0];
 
-            const service = await serviceService.updateService(id, serviceData, icon);
+            const service = await serviceService.updateService(id, serviceData);
             sendSuccess(res, "Service updated successfully", service);
       });
 

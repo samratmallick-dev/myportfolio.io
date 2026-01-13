@@ -6,7 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { adminServiceFormIndex } from '@/config/allFormIndex';
-import { getAllServices, createService, updateService, deleteService } from '@/store/services.slice';
+import {
+      createServiceData,
+      updateServiceData,
+      deleteServiceData,
+      getAllServicesAdmin,
+      clearError,
+      clearSuccess,
+} from '@/store/services.slice';
 
 const initialFormData = {
       title: '',
@@ -17,17 +24,29 @@ const initialFormData = {
 
 const AdminViewServices = () => {
       const dispatch = useDispatch();
-      // const { isLoading, servicesData, error } = useSelector((state) => state.services);
+      const { isLoading, servicesData, error, success } = useSelector((state) => state.services);
 
       const [formData, setFormData] = useState(initialFormData);
       const [isEdit, setIsEdit] = useState(false);
       const [editingId, setEditingId] = useState(null);
-      const servicesData = [];
-      const isLoading = false;
 
-      // useEffect(() => {
-      //       dispatch(getAllServices());
-      // }, [dispatch]);
+      useEffect(() => {
+            dispatch(getAllServicesAdmin());
+      }, [dispatch]);
+
+      useEffect(() => {
+            if (success) {
+                  toast.success(isEdit ? 'Service updated successfully' : 'Service created successfully');
+                  dispatch(clearSuccess());
+                  setIsEdit(false);
+                  setEditingId(null);
+                  setFormData(initialFormData);
+            }
+            if (error) {
+                  toast.error(error?.message || 'Operation failed');
+                  dispatch(clearError());
+            }
+      }, [success, error, dispatch, isEdit]);
 
       const handleFormChange = (name, value) => {
             setFormData({ ...formData, [name]: value });
@@ -35,13 +54,7 @@ const AdminViewServices = () => {
 
       const handleCreateSubmit = (e) => {
             e.preventDefault();
-            // dispatch(createService(formData))
-            //       .then(() => {
-            //             toast.success('Service created successfully');
-            //             setFormData(initialFormData);
-            //             dispatch(getAllServices());
-            //       })
-            //       .catch((err) => toast.error(err?.message || 'Failed to create service'));
+            dispatch(createServiceData(formData));
       };
 
       const startEdit = (service) => {
@@ -58,15 +71,7 @@ const AdminViewServices = () => {
       const handleUpdateSubmit = (e) => {
             e.preventDefault();
             if (!editingId) return;
-            // dispatch(updateService({ id: editingId, formData }))
-            //       .then(() => {
-            //             toast.success('Service updated successfully');
-            //             setIsEdit(false);
-            //             setEditingId(null);
-            //             setFormData(initialFormData);
-            //             dispatch(getAllServices());
-            //       })
-            //       .catch((err) => toast.error(err?.message || 'Failed to update service'));
+            dispatch(updateServiceData({ id: editingId, serviceData: formData }));
       };
 
       const handleCancelEdit = () => {
@@ -76,12 +81,9 @@ const AdminViewServices = () => {
       };
 
       const handleDelete = (id) => {
-            // dispatch(deleteService(id))
-            //       .then(() => {
-            //             toast.success('Service deleted successfully');
-            //             dispatch(getAllServices());
-            //       })
-            //       .catch((err) => toast.error(err?.message || 'Failed to delete service'));
+            if (window.confirm('Are you sure you want to delete this service?')) {
+                  dispatch(deleteServiceData(id));
+            }
       };
 
       return (

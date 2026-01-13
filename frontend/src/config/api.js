@@ -381,6 +381,47 @@ export const setFeaturedProject = async (id, isFeatured) => {
       return response.data;
 };
 
+// Service endpoints
+export const serviceEndpoints = {
+      createService: '/api/v1/services/create-services',
+      getAllServices: '/api/v1/services/get-all-services',
+      getServiceById: '/api/v1/services/get-services/:id',
+      updateServiceById: '/api/v1/services/update-services/:id',
+      deleteServiceById: '/api/v1/services/delete-services/:id',
+      getAllServicesAdmin: '/api/v1/services/get-all-services-admin',
+};
+
+// Service API functions
+export const fetchAllServices = async () => {
+      const response = await api.get(serviceEndpoints.getAllServices);
+      return response.data;
+};
+
+export const fetchServiceById = async (id) => {
+      const response = await api.get(serviceEndpoints.getServiceById.replace(':id', id));
+      return response.data;
+};
+
+export const createService = async (serviceData) => {
+      const response = await api.post(serviceEndpoints.createService, serviceData);
+      return response.data;
+};
+
+export const updateServiceById = async (id, serviceData) => {
+      const response = await api.put(serviceEndpoints.updateServiceById.replace(':id', id), serviceData);
+      return response.data;
+};
+
+export const deleteServiceById = async (id) => {
+      const response = await api.delete(serviceEndpoints.deleteServiceById.replace(':id', id));
+      return response.data;
+};
+
+export const fetchAllServicesAdmin = async () => {
+      const response = await api.get(serviceEndpoints.getAllServicesAdmin);
+      return response.data;
+};
+
 // Request interceptor to add auth token if available
 api.interceptors.request.use(
       (config) => {

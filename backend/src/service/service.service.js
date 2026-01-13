@@ -1,15 +1,10 @@
 import serviceRepository from "../repository/service.repository.js";
 import ApiError from "../utilities/error/apiError.js";
-import { uploadToCloudinary } from "../utilities/cloudinary/upload.js";
 
 class ServiceService {
-      async createService(serviceData, icon) {
-            if (icon) {
-                  const cloudinaryResponse = await uploadToCloudinary(icon, "services/icons");
-                  serviceData.icon = {
-                        public_id: cloudinaryResponse.public_id,
-                        url: cloudinaryResponse.secure_url,
-                  };
+      async createService(serviceData) {
+            if (serviceData.features && typeof serviceData.features === 'string') {
+                  serviceData.features = serviceData.features.split(',').map(f => f.trim());
             }
 
             const service = await serviceRepository.create(serviceData);
@@ -35,19 +30,15 @@ class ServiceService {
             return service;
       }
 
-      async updateService(id, serviceData, icon) {
+      async updateService(id, serviceData) {
             const existingService = await serviceRepository.findById(id);
 
             if (!existingService) {
                   throw ApiError.notFound("Service not found");
             }
 
-            if (icon) {
-                  const cloudinaryResponse = await uploadToCloudinary(icon, "services/icons");
-                  serviceData.icon = {
-                        public_id: cloudinaryResponse.public_id,
-                        url: cloudinaryResponse.secure_url,
-                  };
+            if (serviceData.features && typeof serviceData.features === 'string') {
+                  serviceData.features = serviceData.features.split(',').map(f => f.trim());
             }
 
             const updatedService = await serviceRepository.updateById(id, serviceData);

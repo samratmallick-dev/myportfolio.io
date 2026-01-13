@@ -42,6 +42,7 @@ const validateEducation = [
 const validateService = [
       body("title").notEmpty().withMessage("Service title is required"),
       body("description").notEmpty().withMessage("Service description is required"),
+      body("icon").notEmpty().withMessage("Icon is required"),
 ];
 
 const validateContactMessage = [

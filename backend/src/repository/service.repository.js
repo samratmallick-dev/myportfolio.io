@@ -7,11 +7,11 @@ class ServiceRepository extends BaseRepository {
       }
 
       async findAll(filter = {}) {
-            return await this.model.find(filter).sort({ createdAt: -1 });
+            return await this.model.find(filter).sort({ createdAt: 1 });
       }
 
       async findActive(filter = {}) {
-            return await this.model.find({ ...filter, isActive: true }).sort({ createdAt: -1 });
+            return await this.model.find({ ...filter, isActive: true }).sort({ createdAt: 1 });
       }
 }
 
