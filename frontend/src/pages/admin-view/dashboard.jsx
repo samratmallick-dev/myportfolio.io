@@ -6,63 +6,53 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import * as Icons from 'lucide-react';
 
-// import { fetchHeroData } from '@/store/hero.slice';
-// import { fetchAboutData } from '@/store/about.slice';
-// import { getAllEducation } from '@/store/education.slice';
-// import { getAllSkillCategories } from '@/store/skills.slice';
-// import { getAllProjects, getFeaturedProjects } from '@/store/project.slice';
-// import { getAllServices } from '@/store/services.slice';
-// import { getAllMessages, getContactDetails } from '@/store/contact.slice';
+import { getHeroData } from '@/store/hero.slice';
+import { getAboutData } from '@/store/about.slice';
+import { getAllEducationData } from '@/store/education.slice';
+import { getAllCategories } from '@/store/skills.slice';
+import { getAllProjects, getFeaturedProjects } from '@/store/project.slice';
+import { getAllServices } from '@/store/services.slice';
+import { getAllMessages, getContactDetails } from '@/store/contact.slice';
 
 const AdminViewDashboard = () => {
       const dispatch = useDispatch();
 
-      const totals = [];
-      const isLoadingAny = false;
-      const contactLoading = false;
-      const messages = [];
-      const contactDetails = [];
-      const projectLoading = false;
-      const heroLoading = false;
-      const aboutLoading = false;
-      const featuredProjects = []
+      const { projectsData, featuredProjects, isLoading: projectLoading } = useSelector((s) => s.project);
+      const { servicesData, isLoading: servicesLoading } = useSelector((s) => s.services);
+      const { categories: skillsData, isLoading: skillsLoading } = useSelector((s) => s.skills);
+      const { educationData, isLoading: educationLoading } = useSelector((s) => s.education);
+      const { heroData, isLoading: heroLoading } = useSelector((s) => s.hero);
+      const { aboutData, isLoading: aboutLoading } = useSelector((s) => s.about);
+      const { messages, contactDetails, loading: contactLoading } = useSelector((s) => s.contact);
 
-      // const { projectsData, featuredProjects, isLoading: projectLoading } = useSelector((s) => s.project);
-      // const { servicesData, isLoading: servicesLoading } = useSelector((s) => s.services);
-      // const { skillsData, isLoading: skillsLoading } = useSelector((s) => s.skills);
-      // const { educationData, isLoading: educationLoading } = useSelector((s) => s.education);
-      // const { heroData, isLoading: heroLoading } = useSelector((s) => s.hero);
-      // const { aboutData, isLoading: aboutLoading } = useSelector((s) => s.about);
-      // const { messages, contact: contactDetails, isLoading: contactLoading } = useSelector((s) => s.contact);
+      useEffect(() => {
+            dispatch(getHeroData());
+            dispatch(getAboutData());
+            dispatch(getAllEducationData());
+            dispatch(getAllCategories());
+            dispatch(getAllProjects());
+            dispatch(getFeaturedProjects());
+            dispatch(getAllServices());
+            dispatch(getAllMessages());
+            dispatch(getContactDetails());
+      }, [dispatch]);
 
-      // useEffect(() => {
-      //       dispatch(fetchHeroData());
-      //       dispatch(fetchAboutData());
-      //       dispatch(getAllEducation());
-      //       dispatch(getAllSkillCategories());
-      //       dispatch(getAllProjects());
-      //       dispatch(getFeaturedProjects());
-      //       dispatch(getAllServices());
-      //       dispatch(getAllMessages());
-      //       dispatch(getContactDetails());
-      // }, [dispatch]);
+      const totals = useMemo(() => {
+            const totalProjects = Array.isArray(projectsData) ? projectsData.length : 0;
+            const totalServices = Array.isArray(servicesData) ? servicesData.length : 0;
+            const totalCategories = Array.isArray(skillsData) ? skillsData.length : 0;
+            const totalSkills = Array.isArray(skillsData)
+                  ? skillsData.reduce((acc, cat) => acc + (Array.isArray(cat?.skills) ? cat.skills.length : 0), 0)
+                  : 0;
+            const totalEducation = Array.isArray(educationData) ? educationData.length : 0;
+            const totalMessages = Array.isArray(messages) ? messages.length : 0;
+            const heroConfigured = !!(heroData && (Array.isArray(heroData) ? heroData.length > 0 : true));
+            const aboutConfigured = !!(aboutData && (Array.isArray(aboutData) ? aboutData.length > 0 : true));
+            const totalFeatured = Array.isArray(featuredProjects) ? featuredProjects.length : 0;
+            return { totalProjects, totalServices, totalCategories, totalSkills, totalEducation, totalMessages, heroConfigured, aboutConfigured, totalFeatured };
+      }, [projectsData, servicesData, skillsData, educationData, messages, heroData, aboutData, featuredProjects]);
 
-      // const totals = useMemo(() => {
-      //       const totalProjects = Array.isArray(projectsData) ? projectsData.length : 0;
-      //       const totalServices = Array.isArray(servicesData) ? servicesData.length : 0;
-      //       const totalCategories = Array.isArray(skillsData) ? skillsData.length : 0;
-      //       const totalSkills = Array.isArray(skillsData)
-      //             ? skillsData.reduce((acc, cat) => acc + (Array.isArray(cat?.skills) ? cat.skills.length : 0), 0)
-      //             : 0;
-      //       const totalEducation = Array.isArray(educationData) ? educationData.length : 0;
-      //       const totalMessages = Array.isArray(messages) ? messages.length : 0;
-      //       const heroConfigured = !!(heroData && (Array.isArray(heroData) ? heroData.length > 0 : true));
-      //       const aboutConfigured = !!(aboutData && (Array.isArray(aboutData) ? aboutData.length > 0 : true));
-      //       const totalFeatured = Array.isArray(featuredProjects) ? featuredProjects.length : 0;
-      //       return { totalProjects, totalServices, totalCategories, totalSkills, totalEducation, totalMessages, heroConfigured, aboutConfigured, totalFeatured };
-      // }, [projectsData, servicesData, skillsData, educationData, messages, heroData, aboutData, featuredProjects]);
-
-      // const isLoadingAny = projectLoading || servicesLoading || skillsLoading || educationLoading || heroLoading || aboutLoading || contactLoading;
+      const isLoadingAny = projectLoading || servicesLoading || skillsLoading || educationLoading || heroLoading || aboutLoading || contactLoading;
 
       const stats = [
             { title: 'Projects', value: totals.totalProjects, link: '/admin/projects-list' },
@@ -158,14 +148,14 @@ const AdminViewDashboard = () => {
                                                       <Skeleton className="h-4 w-48 mx-auto mb-2" />
                                                       <Skeleton className="h-4 w-56 mx-auto" />
                                                 </div>
-                                          ) : (Array.isArray(contactDetails) && contactDetails.length > 0) ? (
+                                          ) : contactDetails ? (
                                                 (() => {
-                                                      const c = contactDetails[0];
+                                                      const c = contactDetails;
                                                       return (
                                                             <div className="container mx-auto px-4 text-center">
-                                                                  {c.contactImage && (
+                                                                  {c.contactImage?.url && (
                                                                         <img
-                                                                              src={c.contactImage}
+                                                                              src={c.contactImage.url}
                                                                               alt="Contact"
                                                                               className="w-32 h-32 object-cover rounded-full mx-auto mb-4 border-4 border-primary/20"
                                                                         />
