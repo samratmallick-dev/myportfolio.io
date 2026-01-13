@@ -12,10 +12,9 @@ export const createCategory = createAsyncThunk(
       'skills/createCategory',
       async (categoryData, { rejectWithValue }) => {
             try {
-                  const response = await createSkillCategory(categoryData);
-                  return response;
+                  return await createSkillCategory(categoryData);
             } catch (error) {
-                  return rejectWithValue(error?.response?.data || error?.data || { message: error.message || 'Failed to create category' });
+                  return rejectWithValue(error?.response?.data || error);
             }
       }
 );
@@ -24,10 +23,9 @@ export const getAllCategories = createAsyncThunk(
       'skills/getAllCategories',
       async (_, { rejectWithValue }) => {
             try {
-                  const response = await fetchAllSkillCategories();
-                  return response;
+                  return await fetchAllSkillCategories();
             } catch (error) {
-                  return rejectWithValue(error?.response?.data || error?.data || { message: error.message || 'Failed to fetch categories' });
+                  return rejectWithValue(error?.response?.data || error);
             }
       }
 );
@@ -36,10 +34,9 @@ export const addSkill = createAsyncThunk(
       'skills/addSkill',
       async ({ categoryId, skillData }, { rejectWithValue }) => {
             try {
-                  const response = await addSkillToCategory(categoryId, skillData);
-                  return response;
+                  return await addSkillToCategory(categoryId, skillData);
             } catch (error) {
-                  return rejectWithValue(error?.response?.data || error?.data || { message: error.message || 'Failed to add skill' });
+                  return rejectWithValue(error?.response?.data || error);
             }
       }
 );
@@ -48,10 +45,9 @@ export const updateSkill = createAsyncThunk(
       'skills/updateSkill',
       async ({ categoryId, skillId, skillData }, { rejectWithValue }) => {
             try {
-                  const response = await updateSkillInCategory(categoryId, skillId, skillData);
-                  return response;
+                  return await updateSkillInCategory(categoryId, skillId, skillData);
             } catch (error) {
-                  return rejectWithValue(error?.response?.data || error?.data || { message: error.message || 'Failed to update skill' });
+                  return rejectWithValue(error?.response?.data || error);
             }
       }
 );
@@ -60,10 +56,10 @@ export const deleteCategory = createAsyncThunk(
       'skills/deleteCategory',
       async (categoryId, { rejectWithValue }) => {
             try {
-                  const response = await deleteSkillCategory(categoryId);
-                  return response;
+                  await deleteSkillCategory(categoryId);
+                  return categoryId;
             } catch (error) {
-                  return rejectWithValue(error?.response?.data || error?.data || { message: error.message || 'Failed to delete category' });
+                  return rejectWithValue(error?.response?.data || error);
             }
       }
 );
@@ -72,10 +68,10 @@ export const deleteSkill = createAsyncThunk(
       'skills/deleteSkill',
       async ({ categoryId, skillId }, { rejectWithValue }) => {
             try {
-                  const response = await deleteSkillFromCategory(categoryId, skillId);
-                  return response;
+                  await deleteSkillFromCategory(categoryId, skillId);
+                  return { categoryId, skillId };
             } catch (error) {
-                  return rejectWithValue(error?.response?.data || error?.data || { message: error.message || 'Failed to delete skill' });
+                  return rejectWithValue(error?.response?.data || error);
             }
       }
 );
@@ -98,9 +94,21 @@ const skillsSlice = createSlice({
       },
       extraReducers: (builder) => {
             builder
+
+                  .addCase(getAllCategories.pending, (state) => {
+                        state.isLoading = true;
+                  })
+                  .addCase(getAllCategories.fulfilled, (state, action) => {
+                        state.isLoading = false;
+                        state.categories = action.payload?.data || [];
+                  })
+                  .addCase(getAllCategories.rejected, (state, action) => {
+                        state.isLoading = false;
+                        state.error = action.payload;
+                  })
+
                   .addCase(createCategory.pending, (state) => {
                         state.isLoading = true;
-                        state.error = null;
                   })
                   .addCase(createCategory.fulfilled, (state) => {
                         state.isLoading = false;
@@ -110,21 +118,9 @@ const skillsSlice = createSlice({
                         state.isLoading = false;
                         state.error = action.payload;
                   })
-                  .addCase(getAllCategories.pending, (state) => {
-                        state.isLoading = true;
-                        state.error = null;
-                  })
-                  .addCase(getAllCategories.fulfilled, (state, action) => {
-                        state.isLoading = false;
-                        state.categories = action.payload.data || [];
-                  })
-                  .addCase(getAllCategories.rejected, (state, action) => {
-                        state.isLoading = false;
-                        state.error = action.payload;
-                  })
+
                   .addCase(addSkill.pending, (state) => {
                         state.isLoading = true;
-                        state.error = null;
                   })
                   .addCase(addSkill.fulfilled, (state) => {
                         state.isLoading = false;
@@ -134,9 +130,9 @@ const skillsSlice = createSlice({
                         state.isLoading = false;
                         state.error = action.payload;
                   })
+
                   .addCase(updateSkill.pending, (state) => {
                         state.isLoading = true;
-                        state.error = null;
                   })
                   .addCase(updateSkill.fulfilled, (state) => {
                         state.isLoading = false;
@@ -146,24 +142,38 @@ const skillsSlice = createSlice({
                         state.isLoading = false;
                         state.error = action.payload;
                   })
+
                   .addCase(deleteCategory.pending, (state) => {
                         state.isLoading = true;
-                        state.error = null;
                   })
-                  .addCase(deleteCategory.fulfilled, (state) => {
+                  .addCase(deleteCategory.fulfilled, (state, action) => {
                         state.isLoading = false;
+                        state.categories = state.categories.filter(
+                              (cat) => cat._id !== action.payload
+                        );
                         state.success = true;
                   })
                   .addCase(deleteCategory.rejected, (state, action) => {
                         state.isLoading = false;
                         state.error = action.payload;
                   })
+
                   .addCase(deleteSkill.pending, (state) => {
                         state.isLoading = true;
-                        state.error = null;
                   })
-                  .addCase(deleteSkill.fulfilled, (state) => {
+                  .addCase(deleteSkill.fulfilled, (state, action) => {
+                        const { categoryId, skillId } = action.payload;
                         state.isLoading = false;
+                        state.categories = state.categories.map((category) =>
+                              category._id === categoryId
+                                    ? {
+                                          ...category,
+                                          skills: category.skills.filter(
+                                                (skill) => skill._id !== skillId
+                                          ),
+                                    }
+                                    : category
+                        );
                         state.success = true;
                   })
                   .addCase(deleteSkill.rejected, (state, action) => {

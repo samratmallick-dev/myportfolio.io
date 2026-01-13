@@ -34,6 +34,11 @@ const validateMongoId = [
       param("id").isMongoId().withMessage("Invalid ID format"),
 ];
 
+const validateSkillIds = [
+      param("categoryId").isMongoId().withMessage("Invalid category ID format"),
+      param("skillId").isMongoId().withMessage("Invalid skill ID format"),
+];
+
 const validateEducation = [
       body("title").notEmpty().withMessage("Title is required"),
       body("description").notEmpty().withMessage("Description is required"),
@@ -104,6 +109,7 @@ export {
       validateLogin,
       validateAdminInitialization,
       validateMongoId,
+      validateSkillIds,
       validateEducation,
       validateService,
       validateContactMessage,

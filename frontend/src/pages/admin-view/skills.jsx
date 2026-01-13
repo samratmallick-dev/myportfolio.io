@@ -152,7 +152,7 @@ const AdminViewSkills = () => {
                                                                   <ul className="space-y-2">
                                                                         {categoryItem.skills && categoryItem.skills.length > 0 ? (
                                                                               categoryItem.skills.map((skillItem) => (
-                                                                                    <li key={skillItem.name} className="flex items-center justify-between p-2 rounded-md bg-muted/50">
+                                                                                    <li key={skillItem._id} className="flex items-center justify-between p-2 rounded-md bg-muted/50">
                                                                                           <div>
                                                                                                 <p className="font-semibold">{skillItem.name}</p>
                                                                                                 <p className="text-sm text-muted-foreground">Level: {skillItem.level}%</p>

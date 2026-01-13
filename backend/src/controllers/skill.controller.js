@@ -19,8 +19,7 @@ class SkillController {
       });
 
       addSkillToCategory = asyncHandler(async (req, res) => {
-            const { id } = req.params;
-            const category = await skillService.addSkillToCategory(id, req.body);
+            const category = await skillService.addSkillToCategory(req.params.id, req.body);
             sendSuccess(res, "Skill added successfully", category);
       });
 
