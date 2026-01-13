@@ -1,182 +1,57 @@
-# Fullstack Portfolio System
+# Samrat Mallick – Fullstack Portfolio Platform
 
-**Private Repository - Internal Documentation**
+> Private, personal portfolio & CMS (not open source)
 
-Complete fullstack portfolio system for Samrat Mallick. Includes backend API for content management and frontend React application for public display and admin dashboard.
-
----
-
-## Tech Stack
-
-### Backend
-- **Runtime**: Node.js (ES Modules)
-- **Framework**: Express.js v5.2.1
-- **Database**: MongoDB (Mongoose v9.1.2)
-- **Authentication**: JWT (jsonwebtoken v9.0.3)
-- **Password Hashing**: bcryptjs v3.0.3
-- **File Upload**: Multer v2.0.2
-- **Cloud Storage**: Cloudinary v2.8.0
-- **Email**: Nodemailer v7.0.12
-- **Validation**: express-validator v7.0.1
-- **Logging**: Winston v3.19.0
-
-### Frontend
-- **Framework**: React 18+ with Vite
-- **Routing**: React Router v6
-- **State Management**: Context API / Redux
-- **Styling**: Tailwind CSS / CSS Modules
-- **HTTP Client**: Axios
-- **Form Handling**: React Hook Form
-- **Animations**: Framer Motion
-- **Icons**: React Icons
+Modern MERN-based platform powering Samrat Mallick’s public-facing portfolio and an authenticated admin console for managing all content (hero, projects, services, skills, education, about, contact).
 
 ---
 
-## Project Structure
-
-```
-Fullstack_Portfolio/
-├── backend/
-│   ├── logs/
-│   ├── src/
-│   │   ├── config/          # DB & logger config
-│   │   ├── controllers/     # HTTP handlers
-│   │   ├── middleware/      # Auth, validation, upload, error
-│   │   ├── model/           # Mongoose schemas
-│   │   ├── repository/      # Database operations
-│   │   ├── routes/          # API routes
-│   │   ├── service/         # Business logic
-│   │   ├── utilities/       # Cloudinary, email, error, response
-│   │   ├── app.js
-│   │   └── server.js
-│   ├── .env
-│   └── package.json
-├── frontend/
-│   ├── public/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── common/      # Reusable components
-│   │   │   ├── admin/       # Admin dashboard
-│   │   │   └── public/      # Public pages
-│   │   ├── pages/           # Route pages
-│   │   ├── context/         # State management
-│   │   ├── hooks/           # Custom hooks
-│   │   ├── services/        # API calls
-│   │   ├── utils/           # Helpers
-│   │   ├── styles/          # Global styles
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│   ├── .env
-│   └── package.json
-└── README.md
-```
+## Overview
+- **Public experience**: High-performing, responsive portfolio with featured projects, services, skills, education timeline, and contact form.
+- **Admin console**: Secure dashboard to manage all portfolio content, media uploads to Cloudinary, and OTP-backed account actions.
+- **API-first**: Layered Express + MongoDB backend with JWT auth, validation, logging, and cloud storage.
 
 ---
 
-## Environment Variables
+## End-to-End API Request Flow
+1. **Frontend call** (React + Axios) → `VITE_API_BASE_URL` (`/api/v1/...`).
+2. **Routing**: Express v5 mounts versioned routers (`/admin`, `/hero`, `/about`, `/education`, `/projects`, `/services`, `/contact`, `/skills`) @ backend/src/routes/v1Routes/v1.routes.js.
+3. **Middleware**:
+   - `authenticate` (JWT httpOnly cookie) protects admin-only routes.
+   - `validation.middleware` validates payloads (e.g., contact message, CRUD forms).
+   - `upload.middleware` handles Multer file buffers for media uploads.
+4. **Controllers → Services → Repositories → MongoDB**:
+   - Example public fetch: GET `/projects/get-all-projects` → project controller → service → repo → Mongo → JSON response.
+   - Example admin update: POST `/hero/add-and-update-hero-content` (auth, upload) → hero controller/service → Cloudinary upload → Mongo update.
+5. **Cloudinary**: Media buffers uploaded, returning `public_id` + `secure_url` stored in Mongo.
+6. **Email/OTP**: Nodemailer SMTP for contact acknowledgments and admin OTP flows.
+7. **Response format**: Standardized success/error envelope with timestamps.
 
-### Backend (.env)
-```env
-PORT=8000
-CLIENT_URL=http://localhost:5173
-MONGO_URL=mongodb+srv://<username>:<password>@<cluster>.mongodb.net
-MONGO_NAME=myportfolio
-CLOUD_NAME=<your_cloud_name>
-CLOUD_API_KEY=<your_api_key>
-CLOUD_API_SECRET=<your_api_secret>
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USER=<your_email>
-EMAIL_PASS=<app_password>
-JWT_SECRET=<your_jwt_secret>
-NODE_ENV=development
-```
+### Public-side calls
+- Content fetch: `/hero/get-hero-content`, `/about/get-about`, `/services/get-all-services`, `/skills/get-all-skills`, `/education/get-all-education`, `/projects/get-all-projects`, `/projects/get-featured-projects`, `/contact/get-contact-details`.
+- Contact form submit: POST `/contact/send-message` (validation, email notifications).
 
-### Frontend (.env)
-```env
-VITE_API_BASE_URL=http://localhost:8000/api/v1
-VITE_APP_NAME=Samrat Mallick Portfolio
-```
+### Admin-side calls (JWT required)
+- Auth: `/admin/initialize` (one-time), `/admin/login`, `/admin/logout`, OTP endpoints for email/password updates.
+- Content CRUD: hero, about, services, skills, education, projects (including set featured), contact details, message management (read/delete/count).
+- File uploads: Multer + Cloudinary for hero/profile, project images, service/contact images.
 
----
-
-## Database Schema
-
-### Admin Model
-```javascript
-{
-  username: String (unique, 3-50 chars),
-  email: String (unique),
-  password: String (bcrypt hashed),
-  role: String (default: "admin"),
-  isActive: Boolean,
-  lastLogin: Date,
-  otp: String (6-digit),
-  otpExpiry: Date,
-  newEmail: String
-}
-```
-
-### Hero Model
-```javascript
-{
-  name: String,
-  title: [String],
-  description: String,
-  resumeLink: String,
-  profileImage: { public_id, url },
-  isActive: Boolean
-}
-```
-
-### Project Model
-```javascript
-{
-  title: String,
-  description: String,
-  shortDescription: String,
-  technologies: [String],
-  category: String,
-  images: [{ public_id, url, alt }],
-  liveUrl: String,
-  githubUrl: String,
-  featured: Boolean,
-  status: String (completed/in-progress/planned),
-  startDate: Date,
-  endDate: Date,
-  teamSize: Number,
-  role: String,
-  challenges: [String],
-  solutions: [String],
-  isActive: Boolean
-}
-```
-
-### Skill Model
-```javascript
-{
-  category: String (unique),
-  skills: [{ name, level, iconName, iconColor }],
-  isActive: Boolean
-}
-```
-
-**Other Models**: About, Education, Service, Contact
+### Client handling
+- Axios base URL + interceptors (frontend/src/config/api.js) to send credentials, parse responses, and surface errors to UI.
+- Redux Toolkit thunks wrap API helpers (e.g., contact.slice for sending messages and fetching contact details).
 
 ---
 
 ## Authentication Flow
-
-1. **Admin Initialization**: POST `/api/v1/admin/initialize` (one-time)
-2. **Login**: POST `/api/v1/admin/login` (returns JWT in httpOnly cookie)
-3. **Protected Routes**: Use `authenticate` middleware
-4. **Token Storage**: httpOnly cookie named "token"
-5. **OTP System**: Email-based OTP for password/email changes
+1. **Admin Initialization**: POST `/api/v1/admin/initialize` (one-time).
+2. **Login**: POST `/api/v1/admin/login` (returns JWT in httpOnly cookie).
+3. **Protected Routes**: `authenticate` middleware guards admin endpoints.
+4. **Token Storage**: httpOnly cookie named `token`.
+5. **OTP System**: Email-based OTP for password/email changes.
 
 ---
 
 ## API Routes
-
 **Base URL**: `http://localhost:8000/api/v1`
 
 ### Admin Routes (`/admin`)
@@ -222,10 +97,10 @@ VITE_APP_NAME=Samrat Mallick Portfolio
 ### Request Flow
 ```
 User → Frontend (React) → API Call (Axios) → Backend (Express) → Database (MongoDB)
-                                                ↓
-                                        Cloudinary (Images)
-                                                ↓
-                                        Email Service (Nodemailer)
+                                               ↓
+                                       Cloudinary (Images)
+                                               ↓
+                                       Email Service (Nodemailer)
 ```
 
 ### Backend Layers
@@ -242,24 +117,109 @@ Routes → Controllers → Services → Repositories → Models → Database
 
 ---
 
-## Running Locally
+## Features
+### Public
+- Responsive landing, hero, featured projects, project listing, services, skills, education, and contact sections.
+- Contact form posting to backend API with validation and email delivery.
+- SEO-friendly metadata and smooth micro-animations.
 
+### Admin
+- Content management for hero, about, services, skills, education, projects, and contact details.
+- Media upload pipeline (Multer + Cloudinary) with URL storage.
+- Auth with JWT (httpOnly cookie), OTP flows for sensitive changes, and role-locked routes.
+- Dashboard analytics cards, list/detail views, and inline editing forms.
+
+### Platform
+- Express v5 API with layered architecture (routes → controllers → services → repositories → models).
+- MongoDB via Mongoose v9, structured validation, and Winston logging.
+- Frontend built with React (Vite), React Router v7, Redux Toolkit, Tailwind CSS v4 utilities, and Axios.
+
+---
+
+## Tech Stack
+**Frontend**
+- React 19 (Vite), React Router v7, Redux Toolkit, Axios
+- Tailwind CSS v4, class-variance-authority, lucide-react icons, Radix UI primitives
+
+**Backend**
+- Node.js 18+, Express 5, MongoDB + Mongoose 9
+- JWT auth, bcryptjs, cookie-parser, Multer, Cloudinary
+- Nodemailer (SMTP), express-validator, Winston logging, CORS
+
+---
+
+## Project Structure
+```
+Fullstack_Portfolio/
+├── backend/
+│   ├── src/
+│   │   ├── config/        # DB, logger, and app configuration
+│   │   ├── controllers/   # HTTP handlers
+│   │   ├── middleware/    # auth, validation, upload, error handling
+│   │   ├── model/         # Mongoose schemas
+│   │   ├── repository/    # Data access layer
+│   │   ├── routes/        # API route definitions
+│   │   ├── service/       # Business logic
+│   │   ├── utilities/     # Cloudinary, email, response helpers
+│   │   ├── app.js
+│   │   └── server.js
+│   └── package.json
+├── frontend/
+│   ├── public/
+│   ├── src/
+│   │   ├── assets/portfolio_web-view_screenshorts/  # Product screenshots
+│   │   ├── components/   # common, admin, public
+│   │   ├── pages/        # routed pages
+│   │   ├── context/      # state management
+│   │   ├── services/     # API clients
+│   │   ├── hooks/        # custom hooks
+│   │   ├── utils/        # helpers
+│   │   ├── styles/       # global styles
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   └── package.json
+└── README.md
+```
+
+---
+
+## Screenshots
+### Public experience
+| Hero & CTA | Featured projects |
+| --- | --- |
+| ![Public hero](frontend/src/assets/portfolio_web-view_screenshorts/user-view-hero-section.png) | ![Featured projects](frontend/src/assets/portfolio_web-view_screenshorts/user-view-feature_project-section.png) |
+| Services | Projects listing |
+| ![Services](frontend/src/assets/portfolio_web-view_screenshorts/user-view-services-section.png) | ![All projects](frontend/src/assets/portfolio_web-view_screenshorts/user-view-all-project-page-section.png) |
+| Skills | Contact |
+| ![Skills](frontend/src/assets/portfolio_web-view_screenshorts/user-view-skills-section.png) | ![Contact](frontend/src/assets/portfolio_web-view_screenshorts/user-view-contact-page-section.png) |
+
+### Admin console
+| Dashboard | Hero management |
+| --- | --- |
+| ![Admin dashboard](frontend/src/assets/portfolio_web-view_screenshorts/admin-view-dashboard-up-section.png) | ![Admin hero](frontend/src/assets/portfolio_web-view_screenshorts/admin-view-hero-section.png) |
+| Projects management | Settings |
+| ![Admin projects](frontend/src/assets/portfolio_web-view_screenshorts/admin-view-projects-section.png) | ![Admin settings](frontend/src/assets/portfolio_web-view_screenshorts/admin-view-settings-section.png) |
+| Contact/messages | Auth |
+| ![Contact details](frontend/src/assets/portfolio_web-view_screenshorts/admin-view-contact-details-section.png) | ![Auth](frontend/src/assets/portfolio_web-view_screenshorts/portfolio-auth-page-section.png) |
+
+---
+
+## Setup & Installation
 ### Prerequisites
 - Node.js v18+
-- MongoDB Atlas account
-- Cloudinary account
-- Gmail App Password
+- MongoDB Atlas database
+- Cloudinary account (API key/secret)
+- SMTP account (e.g., Gmail App Password) for email/OTP
 
-### Backend Setup
+### Backend
 ```bash
 cd backend
 npm install
-# Create .env file
-npm run dev          # Development
-npm start            # Production
+# create backend/.env using the values below
+npm run dev            # development
+npm start              # production
 ```
-
-**Initialize Admin** (first time):
+Initialize the first admin (one-time):
 ```bash
 POST http://localhost:8000/api/v1/admin/initialize
 {
@@ -269,207 +229,68 @@ POST http://localhost:8000/api/v1/admin/initialize
 }
 ```
 
-### Frontend Setup
+### Frontend
 ```bash
 cd frontend
 npm install
-# Create .env file
-npm run dev          # Development
-npm run build        # Production build
-npm run preview      # Preview build
+# create frontend/.env using the values below
+npm run dev            # development
+npm run build          # production build
+npm run preview        # preview build
 ```
 
 ### Access Points
-- **Backend API**: `http://localhost:8000/api/v1`
-- **Frontend**: `http://localhost:5173`
-- **Admin Dashboard**: `http://localhost:5173/admin`
+- Backend API: `http://localhost:8000/api/v1`
+- Frontend: `http://localhost:5173`
+- Admin dashboard: `http://localhost:5173/admin`
 
 ---
 
-## Key Features
-
-### Backend
-- RESTful API with Express.js
-- JWT authentication with httpOnly cookies
-- File upload to Cloudinary
-- Email notifications with OTP
-- Comprehensive error handling
-- Request validation
-- Winston logging
-- Repository pattern architecture
-
-### Frontend
-- Responsive design
-- Admin dashboard for content management
-- Public portfolio pages
-- Protected routes
-- Form validation
-- Image optimization
-- Smooth animations
-- SEO optimized
-
----
-
-## Middleware
-
-### 1. Authentication (`auth.middleware.js`)
-- Extracts JWT from cookie or Authorization header
-- Verifies token with JWT_SECRET
-- Attaches `req.admin` object
-
-### 2. Error Handler (`error.middleware.js`)
-- Catches all errors
-- Logs with Winston
-- Returns standardized responses
-
-### 3. Upload (`upload.middleware.js`)
-- Multer with memory storage
-- Allowed: JPEG, PNG, WebP, GIF
-- Max size: 5MB per file
-
-### 4. Validation (`validation.middleware.js`)
-- express-validator rules
-- Pre-defined validators for all routes
-
----
-
-## File Upload (Cloudinary)
-
-**Upload Process**:
-1. Multer receives file buffer
-2. Service calls `uploadToCloudinary(file, options)`
-3. Returns `{ public_id, url }`
-4. Store in database
-
-**Delete**: `deleteFromCloudinary(public_id, "image")`
-
----
-
-## API Response Format
-
-### Success
-```json
-{
-  "success": true,
-  "message": "Operation successful",
-  "data": { ... },
-  "timestamp": "2024-01-01T00:00:00.000Z"
-}
+## Environment Variables
+### Backend (`backend/.env`)
+```
+PORT=8000
+CLIENT_URL=http://localhost:5173
+MONGO_URL=mongodb+srv://<username>:<password>@<cluster>.mongodb.net
+MONGO_NAME=myportfolio
+CLOUD_NAME=<your_cloud_name>
+CLOUD_API_KEY=<your_api_key>
+CLOUD_API_SECRET=<your_api_secret>
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER=<your_email>
+EMAIL_PASS=<app_password>
+JWT_SECRET=<your_jwt_secret>
+NODE_ENV=development
 ```
 
-### Error
-```json
-{
-  "success": false,
-  "message": "Operation failed",
-  "timestamp": "2024-01-01T00:00:00.000Z",
-  "errors": ["detail1", "detail2"]
-}
+### Frontend (`frontend/.env`)
+```
+VITE_API_BASE_URL=http://localhost:8000/api/v1
+VITE_APP_NAME=Samrat Mallick Portfolio
 ```
 
 ---
 
-## Deployment
-
-### Backend (Railway/Render/Heroku)
-1. Set all environment variables
-2. Ensure MongoDB Atlas is accessible
-3. Set `NODE_ENV=production`
-4. Deploy from main branch
-
-### Frontend (Vercel/Netlify)
-1. Set `VITE_API_BASE_URL` to production API
-2. Build command: `npm run build`
-3. Output directory: `dist`
-4. Add redirects for SPA routing
-
-### Production Checklist
-- Update CORS origin to match frontend URL
-- Use production MongoDB cluster
-- Enable MongoDB IP whitelist
-- Use strong JWT_SECRET
-- Rotate API keys periodically
+## Development Notes
+- Layered backend: routes → controllers → services → repositories → models.
+- Validation and error handling centralized in middleware.
+- Media pipeline: Multer buffer → Cloudinary upload → stored URL + public_id.
+- Authentication: JWT in httpOnly cookie; guard protected routes server-side and client-side.
 
 ---
 
-## Known Issues & TODO
-
-### Backend
-- [ ] JWT_SECRET fallback (make required)
-- [ ] Single admin system (add multi-admin)
-- [ ] CORS hardcoded (use CLIENT_URL env)
-- [ ] No rate limiting (add express-rate-limit)
-- [ ] Pagination not implemented
-- [ ] Old images not deleted on update
-- [ ] OTP expiry not consistently enforced
-- [ ] Log rotation not implemented
-
-### Frontend
-- [ ] Add loading states for all API calls
-- [ ] Implement error boundaries
-- [ ] Add offline support
-- [ ] Optimize bundle size
-- [ ] Add unit tests
-- [ ] Implement lazy loading for images
+## License & Usage
+- Licensed under the [MIT License](LICENSE).
+- This repository is currently **private** and intended for personal portfolio use. External distribution or commercial use should only occur with explicit written consent from Samrat Mallick.
 
 ---
 
-## Troubleshooting
-
-### Backend
-- **MongoDB Connection**: Check MONGO_URL, IP whitelist, network
-- **JWT Invalid**: Verify JWT_SECRET, check expiration, clear cookies
-- **File Upload Fails**: Check file size (5MB max), type, Cloudinary credentials
-- **Email Not Sending**: Use Gmail App Password, verify SMTP settings
-- **CORS Errors**: Match frontend URL in CORS config
-
-### Frontend
-- **API Calls Fail**: Check VITE_API_BASE_URL, backend running, CORS
-- **Auth Not Working**: Check cookie settings, JWT token
-- **Images Not Loading**: Verify Cloudinary URLs, CORS headers
-- **Build Fails**: Clear node_modules, reinstall, check Node version
-
----
-
-## Coding Standards
-
-### Naming Conventions
-- **Files**: `kebab-case.js`
-- **Classes**: `PascalCase`
-- **Functions**: `camelCase`
-- **Constants**: `UPPER_SNAKE_CASE`
-- **Routes**: `kebab-case`
-
-### Architecture
-- Layered: Routes → Controllers → Services → Repositories → Models
-- Single responsibility per layer
-- Repository extends BaseRepository
-
-### Import Style
-```javascript
-import express from "express";
-import { authenticate } from "./middleware/auth.middleware.js";
-```
-- ES Modules (type: "module")
-- Always include `.js` extension
-
----
-
-## Contact & Notes
-
-**Project Owner**: Samrat Mallick  
-**Purpose**: Personal fullstack portfolio system  
-**Status**: Active Development
-
-**Connect**:  
-📧 Email: [My Email Address](mailto:samratmallick2002@gmail.com)  
-💼 LinkedIn: [My Linkedin Profile](https://linkedin.com/in/samrat-mallick01)  
-🐙 GitHub: [My Github Profile](https://github.com/samratmallick-dev)
-
----
+## Contact
+- Email: [samratmallick2002@gmail.com](mailto:samratmallick2002@gmail.com)
+- LinkedIn: [linkedin.com/in/samrat-mallick01](https://linkedin.com/in/samrat-mallick01)
+- GitHub: [github.com/samratmallick-dev](https://github.com/samratmallick-dev)
 
 <div align="center">
-
 © 2026 Samrat Mallick. All Rights Reserved.
-
 </div>
