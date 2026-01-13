@@ -1,4 +1,4 @@
-import { Skill } from "../models/skill.model.js";
+import { Skill } from "../model/skill.model.js";
 
 class SkillRepository {
       async findOne(query) {
