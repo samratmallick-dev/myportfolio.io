@@ -172,6 +172,8 @@ export const adminSkillFormIndex = [
             type: 'number',
             placeholder: 'e.g. 90',
             componentType: 'input',
+            max: 100,
+            min: 0
       },
       {
             name: 'iconName',
