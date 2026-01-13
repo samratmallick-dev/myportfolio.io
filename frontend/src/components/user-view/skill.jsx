@@ -22,7 +22,7 @@ const MySkills = () => {
                                     <SkillsSkeleton />
                               ) : (
                                     categories && categories.length > 0 ? (
-                                          categories.map((skillCategory, index) => (
+                                          categories.filter(skillCategory => skillCategory.skills && skillCategory.skills.length > 0).map((skillCategory, index) => (
                                                 <div key={skillCategory._id || index} className="animate-slide-up" style={{ animationDelay: `${(index + 3) * 0.2}s` }}>
                                                       <SkillCard
                                                             title={skillCategory.category}
