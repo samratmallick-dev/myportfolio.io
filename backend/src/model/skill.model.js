@@ -22,7 +22,7 @@ const skillItemSchema = new mongoose.Schema(
                   required: true,
             }
       },
-      { _id: false }
+      { timestamps: true }
 );
 
 const skillSchema = new mongoose.Schema(
