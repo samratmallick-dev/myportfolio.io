@@ -1,22 +1,33 @@
 import mongoose from "mongoose";
 
 const contactDetailsSchema = new mongoose.Schema({
+      name: {
+            type: String,
+            required: true,
+            trim: true,
+      },
       email: {
             type: String,
             required: true,
             trim: true,
       },
-      phone: {
+      mobile: {
             type: String,
+            required: true,
             trim: true,
       },
       address: {
             type: String,
+            required: true,
             trim: true,
       },
-      location: {
-            type: String,
-            trim: true,
+      contactImage: {
+            public_id: {
+                  type: String,
+            },
+            url: {
+                  type: String,
+            },
       },
       socialLinks: [{
             platform: {
@@ -34,16 +45,6 @@ const contactDetailsSchema = new mongoose.Schema({
                   trim: true,
             },
       }],
-      workingHours: {
-            weekdays: {
-                  type: String,
-                  trim: true,
-            },
-            weekends: {
-                  type: String,
-                  trim: true,
-            },
-      },
       isActive: {
             type: Boolean,
             default: true,
@@ -63,7 +64,7 @@ const messageSchema = new mongoose.Schema({
             required: true,
             trim: true,
       },
-      subject: {
+      mobile: {
             type: String,
             required: true,
             trim: true,
@@ -73,32 +74,10 @@ const messageSchema = new mongoose.Schema({
             required: true,
             trim: true,
       },
-      phone: {
-            type: String,
-            trim: true,
-      },
       status: {
             type: String,
             enum: ["unread", "read", "replied"],
             default: "unread",
-      },
-      priority: {
-            type: String,
-            enum: ["low", "medium", "high"],
-            default: "medium",
-      },
-      reply: {
-            content: {
-                  type: String,
-                  trim: true,
-            },
-            repliedAt: {
-                  type: Date,
-            },
-            repliedBy: {
-                  type: mongoose.Schema.Types.ObjectId,
-                  ref: "Admin",
-            },
       },
       isActive: {
             type: Boolean,

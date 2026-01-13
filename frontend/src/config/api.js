@@ -422,6 +422,75 @@ export const fetchAllServicesAdmin = async () => {
       return response.data;
 };
 
+// Contact endpoints
+export const contactEndpoints = {
+      addUpdateContactDetails: '/api/v1/contact/add-update-contact-details',
+      getContactDetails: '/api/v1/contact/get-contact-details',
+      updateContactDetails: '/api/v1/contact/update-contact-details/:id',
+      sendMessage: '/api/v1/contact/send-message',
+      getAllMessages: '/api/v1/contact/get-all-messages',
+      getMessageById: '/api/v1/contact/get-message/:messageId',
+      deleteMessage: '/api/v1/contact/delete-message/:messageId',
+      markAsRead: '/api/v1/contact/mark-as-read/:messageId',
+      getUnreadCount: '/api/v1/contact/get-unread-count',
+      getAllMessagesAdmin: '/api/v1/contact/get-all-messages-admin',
+};
+
+// Contact API functions
+export const fetchContactDetails = async () => {
+      const response = await api.get(contactEndpoints.getContactDetails);
+      return response.data;
+};
+
+export const addOrUpdateContactDetails = async (formData) => {
+      const response = await api.post(contactEndpoints.addUpdateContactDetails, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return response.data;
+};
+
+export const updateContactDetails = async (id, formData) => {
+      const response = await api.put(contactEndpoints.updateContactDetails.replace(':id', id), formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return response.data;
+};
+
+export const sendContactMessage = async (messageData) => {
+      const response = await api.post(contactEndpoints.sendMessage, messageData);
+      return response.data;
+};
+
+export const fetchAllMessages = async () => {
+      const response = await api.get(contactEndpoints.getAllMessages);
+      return response.data;
+};
+
+export const fetchMessageById = async (messageId) => {
+      const response = await api.get(contactEndpoints.getMessageById.replace(':messageId', messageId));
+      return response.data;
+};
+
+export const deleteMessage = async (messageId) => {
+      const response = await api.delete(contactEndpoints.deleteMessage.replace(':messageId', messageId));
+      return response.data;
+};
+
+export const markMessageAsRead = async (messageId) => {
+      const response = await api.put(contactEndpoints.markAsRead.replace(':messageId', messageId));
+      return response.data;
+};
+
+export const fetchUnreadCount = async () => {
+      const response = await api.get(contactEndpoints.getUnreadCount);
+      return response.data;
+};
+
+export const fetchAllMessagesAdmin = async () => {
+      const response = await api.get(contactEndpoints.getAllMessagesAdmin);
+      return response.data;
+};
+
 // Request interceptor to add auth token if available
 api.interceptors.request.use(
       (config) => {

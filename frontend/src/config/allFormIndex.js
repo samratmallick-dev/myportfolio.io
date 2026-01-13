@@ -354,3 +354,27 @@ export const adminPasswordOTPFormIndex = [
             componentType: 'input',
       }
 ];
+
+export const socialLinkFormControls = [
+      {
+            name: 'platform',
+            label: 'Platform',
+            type: 'text',
+            placeholder: 'e.g. Facebook, LinkedIn',
+            componentType: 'input',
+      },
+      {
+            name: 'url',
+            label: 'URL',
+            type: 'text',
+            placeholder: 'https://...',
+            componentType: 'input',
+      },
+      {
+            name: 'icon',
+            label: 'Icon (Lucide React)',
+            type: 'text',
+            placeholder: 'e.g. Facebook, Linkedin, Github',
+            componentType: 'input',
+      },
+];

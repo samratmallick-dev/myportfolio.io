@@ -5,9 +5,9 @@ import { asyncHandler } from "../utilities/error/asyncHandler.js";
 class ContactController {
       addUpdateContactDetails = asyncHandler(async (req, res) => {
             const contactData = req.body;
-            const images = req.files?.images || [];
+            const image = req.file;
 
-            const contact = await contactService.addUpdateContactDetails(contactData, images);
+            const contact = await contactService.addUpdateContactDetails(contactData, image);
 
             sendSuccess(res, "Contact details updated successfully", contact);
       });
@@ -21,9 +21,9 @@ class ContactController {
       updateContactDetails = asyncHandler(async (req, res) => {
             const { id } = req.params;
             const contactData = req.body;
-            const images = req.files?.images || [];
+            const image = req.file;
 
-            const contact = await contactService.updateContactDetails(id, contactData, images);
+            const contact = await contactService.updateContactDetails(id, contactData, image);
 
             sendSuccess(res, "Contact details updated successfully", contact);
       });
@@ -63,15 +63,6 @@ class ContactController {
             const message = await contactService.markMessageAsRead(messageId);
 
             sendSuccess(res, "Message marked as read", message);
-      });
-
-      replyToMessage = asyncHandler(async (req, res) => {
-            const { messageId } = req.params;
-            const replyData = req.body;
-
-            const message = await contactService.replyToMessage(messageId, replyData);
-
-            sendSuccess(res, "Reply sent successfully", message);
       });
 
       getUnreadMessagesCount = asyncHandler(async (req, res) => {

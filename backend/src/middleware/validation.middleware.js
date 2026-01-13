@@ -48,7 +48,7 @@ const validateService = [
 const validateContactMessage = [
       body("name").notEmpty().withMessage("Name is required").isLength({ max: 100 }).withMessage("Name must not exceed 100 characters"),
       body("email").isEmail().normalizeEmail().withMessage("Please provide a valid email"),
-      body("subject").notEmpty().withMessage("Subject is required").isLength({ max: 200 }).withMessage("Subject must not exceed 200 characters"),
+      body("mobile").notEmpty().withMessage("Mobile is required").isLength({ max: 15 }).withMessage("Mobile must not exceed 15 characters"),
       body("message").notEmpty().withMessage("Message is required").isLength({ max: 2000 }).withMessage("Message must not exceed 2000 characters"),
 ];
 
@@ -67,6 +67,13 @@ const validateGenerateOTP = [
 const validatePasswordUpdate = [
       body("newPassword").isLength({ min: 6 }).withMessage("New password must be at least 6 characters long"),
       otpRule(),
+];
+
+const validateContactDetails = [
+      body("name").notEmpty().withMessage("Name is required"),
+      body("email").isEmail().normalizeEmail().withMessage("Please provide a valid email"),
+      body("mobile").notEmpty().withMessage("Mobile is required"),
+      body("address").notEmpty().withMessage("Address is required"),
 ];
 
 const validateSkillCategory = [
@@ -100,6 +107,7 @@ export {
       validateEducation,
       validateService,
       validateContactMessage,
+      validateContactDetails,
       validateOTP,
       validateEmailUpdate,
       validatePasswordUpdate,

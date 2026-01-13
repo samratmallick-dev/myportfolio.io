@@ -5,35 +5,37 @@ import { sendEmail } from "../utilities/email/sendEmail.js";
 
 class ContactService {
       // Contact Details Methods
-      async addUpdateContactDetails(contactData, images) {
-            let contactDetails = await contactRepository.findActive();
+      async addUpdateContactDetails(contactData, image) {
+            let contactDetails = await contactRepository.findActiveContactDetails();
 
-            if (images && images.length > 0) {
-                  const uploadPromises = images.map(image =>
-                        uploadToCloudinary(image, "contact/images")
-                  );
-
-                  const cloudinaryResponses = await Promise.all(uploadPromises);
-
-                  if (cloudinaryResponses.length > 0) {
-                        contactDetails.profileImage = {
-                              public_id: cloudinaryResponses[0].public_id,
-                              url: cloudinaryResponses[0].secure_url,
-                        };
+            // Parse socialLinks if it's a string
+            if (contactData.socialLinks && typeof contactData.socialLinks === 'string') {
+                  try {
+                        contactData.socialLinks = JSON.parse(contactData.socialLinks);
+                  } catch (error) {
+                        console.error('Error parsing socialLinks:', error);
                   }
             }
 
+            if (image) {
+                  const cloudinaryResponse = await uploadToCloudinary(image, "contact/images");
+                  contactData.contactImage = {
+                        public_id: cloudinaryResponse.public_id,
+                        url: cloudinaryResponse.secure_url,
+                  };
+            }
+
             if (contactDetails) {
-                  contactDetails = await contactRepository.updateById(contactDetails._id, contactData);
+                  contactDetails = await contactRepository.updateContactDetails(contactDetails._id, contactData);
             } else {
-                  contactDetails = await contactRepository.create(contactData);
+                  contactDetails = await contactRepository.createContactDetails(contactData);
             }
 
             return contactDetails;
       }
 
       async getContactDetails() {
-            const contactDetails = await contactRepository.findActive();
+            const contactDetails = await contactRepository.findActiveContactDetails();
 
             if (!contactDetails) {
                   throw ApiError.notFound("Contact details not found");
@@ -42,29 +44,22 @@ class ContactService {
             return contactDetails;
       }
 
-      async updateContactDetails(id, contactData, images) {
-            const existingContact = await contactRepository.findById(id);
+      async updateContactDetails(id, contactData, image) {
+            const existingContact = await contactRepository.findContactDetails({ _id: id });
 
             if (!existingContact) {
                   throw ApiError.notFound("Contact details not found");
             }
 
-            if (images && images.length > 0) {
-                  const uploadPromises = images.map(image =>
-                        uploadToCloudinary(image, "contact/images")
-                  );
-
-                  const cloudinaryResponses = await Promise.all(uploadPromises);
-
-                  if (cloudinaryResponses.length > 0) {
-                        contactData.profileImage = {
-                              public_id: cloudinaryResponses[0].public_id,
-                              url: cloudinaryResponses[0].secure_url,
-                        };
-                  }
+            if (image) {
+                  const cloudinaryResponse = await uploadToCloudinary(image, "contact/images");
+                  contactData.contactImage = {
+                        public_id: cloudinaryResponse.public_id,
+                        url: cloudinaryResponse.secure_url,
+                  };
             }
 
-            const updatedContact = await contactRepository.updateById(id, contactData);
+            const updatedContact = await contactRepository.updateContactDetails(id, contactData);
             return updatedContact;
       }
 
@@ -72,19 +67,30 @@ class ContactService {
       async sendMessage(messageData) {
             const message = await contactRepository.createMessage(messageData);
 
+            // Check total message count and delete oldest 20 if exceeds 20
+            const totalMessages = await contactRepository.countMessages();
+            if (totalMessages > 20) {
+                  const allMessages = await contactRepository.findAllMessages();
+                  const messagesToDelete = allMessages.slice(20); // Get messages after the first 20 (newest)
+                  
+                  for (const msg of messagesToDelete) {
+                        await contactRepository.deleteMessageById(msg._id);
+                  }
+            }
+
             try {
                   await sendEmail({
                         to: messageData.email,
                         subject: "Message Received - Thank You",
-                        text: `Thank you for contacting us. We have received your message and will get back to you soon.\n\nMessage details:\nSubject: ${messageData.subject}\nMessage: ${messageData.message}`,
+                        text: `Thank you for contacting us. We have received your message and will get back to you soon.\n\nYour message:\n${messageData.message}`,
                   });
 
-                  const contactDetails = await contactRepository.findActive();
+                  const contactDetails = await contactRepository.findActiveContactDetails();
                   if (contactDetails && contactDetails.email) {
                         await sendEmail({
                               to: contactDetails.email,
-                              subject: `New Contact Message: ${messageData.subject}`,
-                              text: `You have received a new message from ${messageData.name} (${messageData.email}):\n\nSubject: ${messageData.subject}\nMessage: ${messageData.message}`,
+                              subject: `New Contact Message from ${messageData.name}`,
+                              text: `You have received a new message from ${messageData.name} (${messageData.email}):\n\nMobile: ${messageData.mobile}\nMessage: ${messageData.message}`,
                         });
                   }
             } catch (error) {
@@ -129,26 +135,6 @@ class ContactService {
 
             if (!message) {
                   throw ApiError.notFound("Message not found");
-            }
-
-            return message;
-      }
-
-      async replyToMessage(messageId, replyData) {
-            const message = await contactRepository.replyToMessage(messageId, replyData);
-
-            if (!message) {
-                  throw ApiError.notFound("Message not found");
-            }
-
-            try {
-                  await sendEmail({
-                        to: message.email,
-                        subject: `Re: ${message.subject}`,
-                        text: replyData.content,
-                  });
-            } catch (error) {
-                  console.error("Error sending reply email:", error);
             }
 
             return message;

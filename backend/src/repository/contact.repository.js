@@ -34,15 +34,15 @@ class ContactRepository extends BaseRepository {
       }
 
       async findMessageById(id) {
-            return await this.MessageModel.findById(id).populate("reply.repliedBy", "username email");
+            return await this.MessageModel.findById(id);
       }
 
       async findAllMessages(filter = {}) {
-            return await this.MessageModel.find(filter).sort({ createdAt: -1 }).populate("reply.repliedBy", "username email");
+            return await this.MessageModel.find(filter).sort({ createdAt: -1 });
       }
 
       async findActiveMessages(filter = {}) {
-            return await this.MessageModel.find({ ...filter, isActive: true }).sort({ createdAt: -1 }).populate("reply.repliedBy", "username email");
+            return await this.MessageModel.find({ ...filter, isActive: true }).sort({ createdAt: -1 });
       }
 
       async updateMessageById(id, updateData) {
@@ -63,20 +63,6 @@ class ContactRepository extends BaseRepository {
 
       async markMessageAsRead(id) {
             return await this.MessageModel.findByIdAndUpdate(id, { status: "read" }, { new: true });
-      }
-
-      async replyToMessage(id, replyData) {
-            return await this.MessageModel.findByIdAndUpdate(
-                  id,
-                  {
-                        status: "replied",
-                        reply: {
-                              ...replyData,
-                              repliedAt: new Date(),
-                        },
-                  },
-                  { new: true, runValidators: true }
-            ).populate("reply.repliedBy", "username email");
       }
 }
 

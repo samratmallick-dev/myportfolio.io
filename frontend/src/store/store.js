@@ -15,8 +15,8 @@ export const store = configureStore({
             about: aboutSlice,
             education: educationSlice,
             skills: skillsSlice,
-            contact: contactSlice,
             project: projectSlice,
-            services: serviceSlice
+            services: serviceSlice,
+            contact: contactSlice,
       },
 });
