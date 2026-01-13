@@ -19,6 +19,13 @@ connectDb().then(
                   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
                   Logger.info(`Server is running on port: http://localhost:${PORT}`);
             });
+
+            App.listen(process.env.CLIENT_URL, () => {
+                  console.log(`🚀 Server is running on ${process.env.CLIENT_URL}`);
+                  console.log(`📚 API Documentation ${process.env.CLIENT_URL}/api`);
+                  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+                  Logger.info(`Server is running on ${process.env.CLIENT_URL}`);
+            });
       }
 ).catch((error) => {
       console.error('❌ MongoDB connection Failed:', error.message);
