@@ -1,297 +1,145 @@
-import React, { Fragment, useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { toast } from "sonner";
-import CommonForm from "@/components/common/form";
-import {
-      Card,
-      CardContent,
-      CardHeader,
-      CardTitle,
-} from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-      Mail,
-      MapPin,
-      Phone,
-      UserRound,
-      Plus,
-      Trash2,
-} from "lucide-react";
-import { adminContactFormIndex } from "@/config/allFormIndex";
-import {
-      addUpdateContact,
-      getContactDetails,
-} from "@/store/contact.slice";
+import React, { Fragment, useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'sonner';
+import CommonForm from '@/components/common/form';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { adminContactFormIndex } from '@/config/allFormIndex';
+import { addUpdateContactDetails, getContactDetails } from '@/store/contact.slice';
+import { Mail, MapPin, Phone, UserRound } from 'lucide-react';
 
 const initialFormData = {
-      contactImage: "",
-      name: "",
-      email: "",
-      mobile: "",
-      address: "",
-      socialLinks: [],
+      contactImage: '',
+      name: '',
+      email: '',
+      mobile: '',
+      address: ''
 };
 
 const AdminViewContactDetails = () => {
-      const dispatch = useDispatch();
-      const { contactDetails, loading } = useSelector(
-            (state) => state?.contact || {}
-      );
-
       const [formData, setFormData] = useState(initialFormData);
+      const dispatch = useDispatch();
+      const { contactDetails, loading } = useSelector((state) => state.contact);
 
       useEffect(() => {
-            dispatch(getContactDetails()).catch(() => { });
+            dispatch(getContactDetails());
       }, [dispatch]);
 
       useEffect(() => {
-            if (!contactDetails) return;
-
-            setFormData({
-                  contactImage: "",
-                  name: contactDetails.name || "",
-                  email: contactDetails.email || "",
-                  mobile: contactDetails.mobile || "",
-                  address: contactDetails.address || "",
-                  socialLinks: contactDetails.socialLinks || [],
-            });
+            if (contactDetails) {
+                  setFormData({
+                        contactImage: contactDetails.contactImage || '',
+                        name: contactDetails.name || '',
+                        email: contactDetails.email || '',
+                        mobile: contactDetails.mobile || '',
+                        address: contactDetails.address || ''
+                  });
+            }
       }, [contactDetails]);
 
       const handleChange = (name, value) => {
-            if (name === "contactImage" && value instanceof File) {
-                  const maxSize = 20 * 1024 * 1024;
-                  if (value.size > maxSize) {
-                        toast.error("Image must be under 20MB");
-                        return;
-                  }
-            }
-
             setFormData((prev) => ({
                   ...prev,
                   [name]: value,
             }));
       };
 
-      const handleAddSocialLink = () => {
-            setFormData((prev) => ({
-                  ...prev,
-                  socialLinks: [
-                        ...prev.socialLinks,
-                        { platform: "", url: "", icon: "" },
-                  ],
-            }));
-      };
-
-      const handleRemoveSocialLink = (index) => {
-            setFormData((prev) => ({
-                  ...prev,
-                  socialLinks: prev.socialLinks.filter((_, i) => i !== index),
-            }));
-      };
-
-      const handleSocialLinkChange = (index, field, value) => {
-            setFormData((prev) => {
-                  const updated = [...prev.socialLinks];
-                  updated[index] = { ...updated[index], [field]: value };
-                  return { ...prev, socialLinks: updated };
-            });
-      };
-
       const handleSubmit = async (e) => {
             e.preventDefault();
 
-            const data = new FormData();
+            const submissionData = new FormData();
 
             if (formData.contactImage instanceof File) {
-                  data.append("contactImage", formData.contactImage);
+                  submissionData.append('contactImage', formData.contactImage);
             }
-
-            data.append("name", formData.name.trim());
-            data.append("email", formData.email.trim());
-            data.append("mobile", formData.mobile.trim());
-            data.append("address", formData.address.trim());
-            data.append(
-                  "socialLinks",
-                  JSON.stringify(formData.socialLinks)
-            );
+            if (formData.name) submissionData.append('name', formData.name.trim());
+            if (formData.email) submissionData.append('email', formData.email.trim());
+            if (formData.mobile) submissionData.append('mobile', formData.mobile.trim());
+            if (formData.address) submissionData.append('address', formData.address.trim());
 
             try {
-                  await dispatch(addUpdateContact(data)).unwrap();
-                  toast.success("Contact details updated");
-                  dispatch(getContactDetails());
-            } catch (error) {
-                  toast.error(error || "Update failed");
+                  await dispatch(addUpdateContactDetails(submissionData)).unwrap();
+                  toast.success('Contact details saved successfully');
+            } catch (err) {
+                  toast.error(err || 'Failed to save contact details');
             }
       };
 
       return (
             <Fragment>
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-                        <Card>
-                              <CardHeader>
-                                    <CardTitle>Current Contact Details</CardTitle>
-                              </CardHeader>
-                              <CardContent>
-                                    {loading ? (
-                                          <Skeleton className="h-40 w-full" />
-                                    ) : contactDetails ? (
-                                          <div className="text-center space-y-2">
-                                                {contactDetails.contactImage?.url && (
-                                                      <img
-                                                            src={contactDetails.contactImage.url}
-                                                            className="w-40 h-40 rounded-full mx-auto object-cover"
-                                                            alt="Contact"
-                                                      />
-                                                )}
+                        <div>
+                              <Card>
+                                    <CardHeader>
+                                          <CardTitle>Current Contact Details</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                          {loading ? (
+                                                <div className="container mx-auto px-4 text-center">
+                                                      <Skeleton className="w-40 h-40 rounded-full mx-auto mb-6" />
+                                                      <Skeleton className="h-6 w-3/4 mx-auto mb-2" />
+                                                      <Skeleton className="h-6 w-5/6 mx-auto mb-2" />
+                                                      <Skeleton className="h-6 w-2/3 mx-auto" />
+                                                </div>
+                                          ) : contactDetails ? (
+                                                <div className="container mx-auto px-4 text-center space-y-2">
+                                                      {contactDetails.contactImage && (
+                                                            <img
+                                                                  src={contactDetails.contactImage}
+                                                                  alt="Contact"
+                                                                  className="w-40 h-40 object-cover rounded-full mx-auto mb-6 border-4 border-primary/20"
+                                                            />
+                                                      )}
+                                                      {contactDetails.name && (
+                                                            <div className="font-semibold flex items-center gap-2 justify-center"><UserRound className="h-4 w-4" /> {contactDetails.name}</div>
+                                                      )}
+                                                      {contactDetails.email && (
+                                                            <div className="text-sm text-muted-foreground flex items-center gap-2 justify-center"><Mail className="h-4 w-4" /> {contactDetails.email}</div>
+                                                      )}
+                                                      {contactDetails.mobile && (
+                                                            <div className="text-sm text-muted-foreground flex items-center gap-2 justify-center"><Phone className="h-4 w-4" /> {contactDetails.mobile}</div>
+                                                      )}
+                                                      {contactDetails.address && (
+                                                            <div className="text-sm text-muted-foreground flex items-center gap-2 justify-center"><MapPin className="h-4 w-4" /> {contactDetails.address}</div>
+                                                      )}
+                                                </div>
+                                          ) : (
+                                                <div className="text-center p-8 text-muted-foreground">
+                                                      <p>No contact details found.</p>
+                                                      <p>Please use the form to add details.</p>
+                                                </div>
+                                          )}
+                                    </CardContent>
+                              </Card>
+                        </div>
 
-                                                {contactDetails.name && (
-                                                      <div className="flex justify-center gap-2">
-                                                            <UserRound size={16} /> {contactDetails.name}
-                                                      </div>
-                                                )}
-
-                                                {contactDetails.email && (
-                                                      <div className="flex justify-center gap-2 text-sm">
-                                                            <Mail size={14} /> {contactDetails.email}
-                                                      </div>
-                                                )}
-
-                                                {contactDetails.mobile && (
-                                                      <div className="flex justify-center gap-2 text-sm">
-                                                            <Phone size={14} /> {contactDetails.mobile}
-                                                      </div>
-                                                )}
-
-                                                {contactDetails.address && (
-                                                      <div className="flex justify-center gap-2 text-sm">
-                                                            <MapPin size={14} /> {contactDetails.address}
-                                                      </div>
-                                                )}
-
-                                                {contactDetails.socialLinks?.length > 0 && (
-                                                      <div className="mt-4 space-y-1">
-                                                            <p className="font-semibold text-sm">
-                                                                  Social Links
-                                                            </p>
-                                                            {contactDetails.socialLinks.map((link, i) => (
-                                                                  <div key={i} className="text-xs">
-                                                                        {link.platform} — {link.url}
-                                                                  </div>
-                                                            ))}
-                                                      </div>
-                                                )}
-                                          </div>
-                                    ) : (
-                                          <p className="text-center text-muted-foreground">
-                                                No contact details found
-                                          </p>
-                                    )}
-                              </CardContent>
-                        </Card>
-                        <Card>
-                              <CardHeader>
-                                    <CardTitle>Update Contact Details</CardTitle>
-                              </CardHeader>
-                              <CardContent>
-                                    {loading ? (
-                                          <Skeleton className="h-40 w-full" />
-                                    ) : (
-                                          <>
+                        <div>
+                              <Card>
+                                    <CardHeader>
+                                          <CardTitle>Update Contact Details</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                          {loading ? (
+                                                <div className="space-y-4">
+                                                      <Skeleton className="h-10 w-full" />
+                                                      <Skeleton className="h-10 w-full" />
+                                                      <Skeleton className="h-10 w-full" />
+                                                      <Skeleton className="h-24 w-full" />
+                                                      <Skeleton className="h-10 w-32" />
+                                                </div>
+                                          ) : (
                                                 <CommonForm
                                                       formControls={adminContactFormIndex}
+                                                      buttonText="Save Changes"
+                                                      onSubmit={handleSubmit}
                                                       values={formData}
                                                       onChange={handleChange}
-                                                      onSubmit={handleSubmit}
-                                                      buttonText="Save Changes"
                                                       isLoading={loading}
                                                 />
-                                                <div className="mt-6 space-y-4">
-                                                      <div className="flex justify-between items-center">
-                                                            <Label className="font-semibold">
-                                                                  Social Links
-                                                            </Label>
-                                                            <Button
-                                                                  type="button"
-                                                                  size="sm"
-                                                                  variant="outline"
-                                                                  onClick={handleAddSocialLink}
-                                                            >
-                                                                  <Plus size={14} className="mr-1" />
-                                                                  Add Link
-                                                            </Button>
-                                                      </div>
-
-                                                      {formData.socialLinks.map((link, index) => (
-                                                            <Card key={index} className="p-4 space-y-3">
-                                                                  <div className="flex justify-between items-center">
-                                                                        <span className="text-sm">
-                                                                              Link {index + 1}
-                                                                        </span>
-                                                                        <Button
-                                                                              type="button"
-                                                                              size="sm"
-                                                                              variant="destructive"
-                                                                              onClick={() =>
-                                                                                    handleRemoveSocialLink(index)
-                                                                              }
-                                                                        >
-                                                                              <Trash2 size={14} />
-                                                                        </Button>
-                                                                  </div>
-
-                                                                  <div className="space-y-2">
-                                                                        <div>
-                                                                              <Label>Platform</Label>
-                                                                              <Input
-                                                                                    value={link.platform}
-                                                                                    onChange={(e) =>
-                                                                                          handleSocialLinkChange(
-                                                                                                index,
-                                                                                                "platform",
-                                                                                                e.target.value
-                                                                                          )
-                                                                                    }
-                                                                              />
-                                                                        </div>
-
-                                                                        <div>
-                                                                              <Label>URL</Label>
-                                                                              <Input
-                                                                                    value={link.url}
-                                                                                    onChange={(e) =>
-                                                                                          handleSocialLinkChange(
-                                                                                                index,
-                                                                                                "url",
-                                                                                                e.target.value
-                                                                                          )
-                                                                                    }
-                                                                              />
-                                                                        </div>
-
-                                                                        <div>
-                                                                              <Label>Icon</Label>
-                                                                              <Input
-                                                                                    value={link.icon}
-                                                                                    onChange={(e) =>
-                                                                                          handleSocialLinkChange(
-                                                                                                index,
-                                                                                                "icon",
-                                                                                                e.target.value
-                                                                                          )
-                                                                                    }
-                                                                              />
-                                                                        </div>
-                                                                  </div>
-                                                            </Card>
-                                                      ))}
-                                                </div>
-                                          </>
-                                    )}
-                              </CardContent>
-                        </Card>
+                                          )}
+                                    </CardContent>
+                              </Card>
+                        </div>
                   </div>
             </Fragment>
       );

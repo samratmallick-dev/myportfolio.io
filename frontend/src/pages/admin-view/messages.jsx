@@ -2,37 +2,36 @@ import React, { Fragment, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { getAllMessagesAdmin, removeMessage, markAsRead } from '@/store/contact.slice';
+import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { Mail, Phone, Clock, CheckCircle2, Circle } from 'lucide-react';
+import { Mail, Phone, Clock, Trash2, Eye } from 'lucide-react';
+import { getAllMessages, deleteMessageById, markAsRead, getUnreadCount } from '@/store/contact.slice';
 
 const AdminMessages = () => {
       const dispatch = useDispatch();
-      const { messages, loading } = useSelector((state) => state.contact);
+      const { messages, loading, unreadCount } = useSelector((state) => state.contact);
 
       useEffect(() => {
-            dispatch(getAllMessagesAdmin());
+            dispatch(getAllMessages());
+            dispatch(getUnreadCount());
       }, [dispatch]);
 
       const handleDelete = async (id) => {
-            if (!window.confirm('Are you sure you want to delete this message?')) return;
-            
             try {
-                  await dispatch(removeMessage(id)).unwrap();
+                  await dispatch(deleteMessageById(id)).unwrap();
                   toast.success('Message deleted successfully');
+                  dispatch(getUnreadCount());
             } catch (err) {
                   toast.error(err || 'Failed to delete message');
             }
       };
 
-      const handleMarkAsRead = async (id, currentStatus) => {
-            if (currentStatus === 'read') return;
-            
+      const handleMarkAsRead = async (id) => {
             try {
                   await dispatch(markAsRead(id)).unwrap();
                   toast.success('Message marked as read');
+                  dispatch(getUnreadCount());
             } catch (err) {
                   toast.error(err || 'Failed to mark as read');
             }
@@ -42,84 +41,82 @@ const AdminMessages = () => {
             (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
       );
 
-      const getStatusBadge = (status) => {
-            const variants = {
-                  unread: 'destructive',
-                  read: 'secondary',
-                  replied: 'default'
-            };
-            return <Badge variant={variants[status] || 'secondary'}>{status}</Badge>;
-      };
-
       return (
             <Fragment>
                   <Card className="shadow-sm">
                         <CardHeader>
                               <div className="flex items-center justify-between">
                                     <CardTitle className="text-xl font-semibold">Contact Messages</CardTitle>
-                                    <Badge variant="outline">{sortedMessages.length} Total</Badge>
+                                    {unreadCount > 0 && (
+                                          <Badge variant="destructive" className="ml-2">
+                                                {unreadCount} unread
+                                          </Badge>
+                                    )}
                               </div>
                         </CardHeader>
                         <CardContent className="space-y-4">
                               {loading ? (
                                     <div className="space-y-4">
-                                          <Skeleton className="h-32 w-full" />
-                                          <Skeleton className="h-32 w-full" />
-                                          <Skeleton className="h-32 w-full" />
+                                          <Skeleton className="h-20 w-full" />
+                                          <Skeleton className="h-20 w-full" />
+                                          <Skeleton className="h-20 w-full" />
                                     </div>
                               ) : sortedMessages.length > 0 ? (
                                     sortedMessages.map((m) => (
                                           <div
                                                 key={m._id}
-                                                className={`p-4 rounded-md border flex flex-col gap-3 transition-all ${
-                                                      m.status === 'unread' ? 'bg-primary/5 border-primary/20' : ''
+                                                className={`p-4 rounded-lg border transition-colors ${
+                                                      !m.isRead ? 'bg-blue-50 border-blue-200' : 'bg-white'
                                                 }`}
                                           >
-                                                <div className="flex items-start justify-between gap-2">
+                                                <div className="flex items-start justify-between mb-3">
                                                       <div className="flex items-center gap-2">
-                                                            {m.status === 'unread' ? (
-                                                                  <Circle className="h-4 w-4 text-primary fill-primary" />
-                                                            ) : (
-                                                                  <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
-                                                            )}
                                                             <span className="font-semibold text-lg">{m.name}</span>
+                                                            {!m.isRead && (
+                                                                  <Badge variant="secondary" className="text-xs">
+                                                                        New
+                                                                  </Badge>
+                                                            )}
                                                       </div>
-                                                      <div className="flex items-center gap-2">
-                                                            {getStatusBadge(m.status)}
-                                                            <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                                                  <Clock className="h-3 w-3" />
-                                                                  {new Date(m.createdAt).toLocaleString()}
-                                                            </span>
+                                                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                                            <Clock className="w-3 h-3" />
+                                                            {new Date(m.createdAt).toLocaleString()}
                                                       </div>
                                                 </div>
 
-                                                <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                                                      <div className="flex items-center gap-1">
-                                                            <Mail className="h-4 w-4" />
-                                                            <a href={`mailto:${m.email}`} className="hover:text-primary">
-                                                                  {m.email}
-                                                            </a>
-                                                      </div>
-                                                      <div className="flex items-center gap-1">
-                                                            <Phone className="h-4 w-4" />
-                                                            <a href={`tel:${m.mobile}`} className="hover:text-primary">
+                                                <div className="flex items-center gap-4 mb-3 text-sm text-muted-foreground">
+                                                      <a
+                                                            href={`mailto:${m.email}`}
+                                                            className="flex items-center gap-1 hover:text-blue-600 transition-colors"
+                                                      >
+                                                            <Mail className="w-4 h-4" />
+                                                            {m.email}
+                                                      </a>
+                                                      {m.mobile && (
+                                                            <a
+                                                                  href={`tel:${m.mobile}`}
+                                                                  className="flex items-center gap-1 hover:text-blue-600 transition-colors"
+                                                            >
+                                                                  <Phone className="w-4 h-4" />
                                                                   {m.mobile}
                                                             </a>
-                                                      </div>
+                                                      )}
                                                 </div>
 
-                                                <div className="text-sm leading-relaxed p-3 bg-muted/50 rounded">
+                                                <div className="text-sm leading-relaxed mb-4 p-3 bg-gray-50 rounded-md">
                                                       {m.message}
                                                 </div>
 
                                                 <div className="flex justify-end gap-2">
-                                                      {m.status === 'unread' && (
+                                                      {!m.isRead && (
                                                             <Button
                                                                   variant="outline"
                                                                   size="sm"
-                                                                  onClick={() => handleMarkAsRead(m._id, m.status)}
+                                                                  onClick={() => handleMarkAsRead(m._id)}
                                                                   disabled={loading}
+                                                                  className="flex items-center gap-1"
                                                             >
+                                                                  <Eye className="w-3 h-3" />
                                                                   Mark as Read
                                                             </Button>
                                                       )}
@@ -128,16 +125,19 @@ const AdminMessages = () => {
                                                             size="sm"
                                                             onClick={() => handleDelete(m._id)}
                                                             disabled={loading}
+                                                            className="flex items-center gap-1"
                                                       >
+                                                            <Trash2 className="w-3 h-3" />
                                                             Delete
                                                       </Button>
                                                 </div>
                                           </div>
                                     ))
                               ) : (
-                                    <div className="text-center py-10 text-muted-foreground">
-                                          <p className="text-lg">No messages found.</p>
-                                          <p className="text-sm mt-2">Messages from the contact form will appear here.</p>
+                                    <div className="text-center py-12 text-muted-foreground">
+                                          <Mail className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                                          <p className="text-lg font-medium mb-2">No messages yet</p>
+                                          <p className="text-sm">Messages from your contact form will appear here.</p>
                                     </div>
                               )}
                         </CardContent>

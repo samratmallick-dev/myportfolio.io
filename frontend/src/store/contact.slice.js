@@ -4,12 +4,11 @@ import {
       addOrUpdateContactDetails,
       updateContactDetails,
       sendContactMessage,
-      fetchAllMessages,
+      fetchAllMessagesAdmin,
       fetchMessageById,
       deleteMessage,
       markMessageAsRead,
-      fetchUnreadCount,
-      fetchAllMessagesAdmin,
+      fetchUnreadCount
 } from "../config/api.js";
 
 // Async thunks
@@ -25,26 +24,26 @@ export const getContactDetails = createAsyncThunk(
       }
 );
 
-export const addUpdateContact = createAsyncThunk(
-      "contact/addUpdateContact",
+export const addUpdateContactDetails = createAsyncThunk(
+      "contact/addUpdateContactDetails",
       async (formData, { rejectWithValue }) => {
             try {
                   const response = await addOrUpdateContactDetails(formData);
                   return response.data;
             } catch (error) {
-                  return rejectWithValue(error.message || "Failed to add/update contact");
+                  return rejectWithValue(error.message || "Failed to update contact details");
             }
       }
 );
 
-export const updateContact = createAsyncThunk(
-      "contact/updateContact",
+export const updateContactDetailsById = createAsyncThunk(
+      "contact/updateContactDetailsById",
       async ({ id, formData }, { rejectWithValue }) => {
             try {
                   const response = await updateContactDetails(id, formData);
                   return response.data;
             } catch (error) {
-                  return rejectWithValue(error.message || "Failed to update contact");
+                  return rejectWithValue(error.message || "Failed to update contact details");
             }
       }
 );
@@ -65,7 +64,7 @@ export const getAllMessages = createAsyncThunk(
       "contact/getAllMessages",
       async (_, { rejectWithValue }) => {
             try {
-                  const response = await fetchAllMessages();
+                  const response = await fetchAllMessagesAdmin();
                   return response.data;
             } catch (error) {
                   return rejectWithValue(error.message || "Failed to fetch messages");
@@ -85,8 +84,8 @@ export const getMessageById = createAsyncThunk(
       }
 );
 
-export const removeMessage = createAsyncThunk(
-      "contact/removeMessage",
+export const deleteMessageById = createAsyncThunk(
+      "contact/deleteMessageById",
       async (messageId, { rejectWithValue }) => {
             try {
                   await deleteMessage(messageId);
@@ -121,18 +120,6 @@ export const getUnreadCount = createAsyncThunk(
       }
 );
 
-export const getAllMessagesAdmin = createAsyncThunk(
-      "contact/getAllMessagesAdmin",
-      async (_, { rejectWithValue }) => {
-            try {
-                  const response = await fetchAllMessagesAdmin();
-                  return response.data;
-            } catch (error) {
-                  return rejectWithValue(error.message || "Failed to fetch admin messages");
-            }
-      }
-);
-
 const contactSlice = createSlice({
       name: "contact",
       initialState: {
@@ -161,35 +148,31 @@ const contactSlice = createSlice({
                   })
                   .addCase(getContactDetails.rejected, (state, action) => {
                         state.loading = false;
-                        state.contactDetails = null;
-                        // Don't set error for 404 - it's expected when no contact exists
-                        if (!action.payload?.includes('not found')) {
-                              state.error = action.payload;
-                        }
+                        state.error = action.payload;
                   })
-                  // Add/Update contact
-                  .addCase(addUpdateContact.pending, (state) => {
+                  // Add/Update contact details
+                  .addCase(addUpdateContactDetails.pending, (state) => {
                         state.loading = true;
                         state.error = null;
                   })
-                  .addCase(addUpdateContact.fulfilled, (state, action) => {
+                  .addCase(addUpdateContactDetails.fulfilled, (state, action) => {
                         state.loading = false;
                         state.contactDetails = action.payload;
                   })
-                  .addCase(addUpdateContact.rejected, (state, action) => {
+                  .addCase(addUpdateContactDetails.rejected, (state, action) => {
                         state.loading = false;
                         state.error = action.payload;
                   })
-                  // Update contact
-                  .addCase(updateContact.pending, (state) => {
+                  // Update contact details by ID
+                  .addCase(updateContactDetailsById.pending, (state) => {
                         state.loading = true;
                         state.error = null;
                   })
-                  .addCase(updateContact.fulfilled, (state, action) => {
+                  .addCase(updateContactDetailsById.fulfilled, (state, action) => {
                         state.loading = false;
                         state.contactDetails = action.payload;
                   })
-                  .addCase(updateContact.rejected, (state, action) => {
+                  .addCase(updateContactDetailsById.rejected, (state, action) => {
                         state.loading = false;
                         state.error = action.payload;
                   })
@@ -231,54 +214,47 @@ const contactSlice = createSlice({
                         state.loading = false;
                         state.error = action.payload;
                   })
-                  // Remove message
-                  .addCase(removeMessage.pending, (state) => {
+                  // Delete message
+                  .addCase(deleteMessageById.pending, (state) => {
                         state.loading = true;
                         state.error = null;
                   })
-                  .addCase(removeMessage.fulfilled, (state, action) => {
+                  .addCase(deleteMessageById.fulfilled, (state, action) => {
                         state.loading = false;
                         state.messages = state.messages.filter(msg => msg._id !== action.payload);
                   })
-                  .addCase(removeMessage.rejected, (state, action) => {
+                  .addCase(deleteMessageById.rejected, (state, action) => {
                         state.loading = false;
                         state.error = action.payload;
                   })
                   // Mark as read
                   .addCase(markAsRead.pending, (state) => {
-                        state.loading = true;
                         state.error = null;
                   })
                   .addCase(markAsRead.fulfilled, (state, action) => {
-                        state.loading = false;
-                        const index = state.messages.findIndex(msg => msg._id === action.payload._id);
-                        if (index !== -1) {
-                              state.messages[index] = action.payload;
+                        const messageIndex = state.messages.findIndex(msg => msg._id === action.payload._id);
+                        if (messageIndex !== -1) {
+                              state.messages[messageIndex] = action.payload;
+                        }
+                        if (state.currentMessage && state.currentMessage._id === action.payload._id) {
+                              state.currentMessage = action.payload;
                         }
                   })
                   .addCase(markAsRead.rejected, (state, action) => {
-                        state.loading = false;
                         state.error = action.payload;
                   })
                   // Get unread count
-                  .addCase(getUnreadCount.fulfilled, (state, action) => {
-                        state.unreadCount = action.payload.count;
-                  })
-                  // Get all messages admin
-                  .addCase(getAllMessagesAdmin.pending, (state) => {
-                        state.loading = true;
+                  .addCase(getUnreadCount.pending, (state) => {
                         state.error = null;
                   })
-                  .addCase(getAllMessagesAdmin.fulfilled, (state, action) => {
-                        state.loading = false;
-                        state.messages = action.payload;
+                  .addCase(getUnreadCount.fulfilled, (state, action) => {
+                        state.unreadCount = action.payload;
                   })
-                  .addCase(getAllMessagesAdmin.rejected, (state, action) => {
-                        state.loading = false;
+                  .addCase(getUnreadCount.rejected, (state, action) => {
                         state.error = action.payload;
                   });
       },
 });
 
-export const contactActions = contactSlice.actions;
+export const { clearError } = contactSlice.actions;
 export default contactSlice;
