@@ -6,21 +6,37 @@ import apiRoutes from "./routes/api.routes.js";
 
 const app = express();
 
-const allowedOrigins = [
-      "http://localhost:5173",
-      "http://localhost:5174",
-      "http://localhost:3000",
-      "http://localhost:3001",
-      process.env.CLIENT_URL,
-].filter(Boolean);
+const allowedOrigins = (
+      process.env.ALLOWED_ORIGINS ||
+      [
+            "http://localhost:5173",
+            "http://localhost:5174",
+            "http://localhost:3000",
+            "http://localhost:3001",
+            process.env.CLIENT_URL,
+      ].filter(Boolean).join(",")
+).split(",").map((origin) => origin.trim()).filter(Boolean);
 
 app.use(
       cors({
             origin: function (origin, callback) {
                   if (!origin) return callback(null, true);
-                  if (allowedOrigins.includes(origin)) {
-                        return callback(null, true);
-                  }
+
+                  const isAllowed =
+                        allowedOrigins.length === 0 ||
+                        allowedOrigins.some((allowed) => {
+                              if (allowed === "*") return true;
+                              if (origin === allowed) return true;
+                              try {
+                                    const originHost = new URL(origin).hostname;
+                                    const allowedHost = new URL(allowed).hostname;
+                                    return originHost === allowedHost || originHost.endsWith(`.${allowedHost}`);
+                              } catch {
+                                    return false;
+                              }
+                        });
+
+                  if (isAllowed) return callback(null, true);
                   return callback(new Error("Not allowed by CORS"));
             },
             credentials: true,
