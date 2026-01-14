@@ -66,7 +66,8 @@ const validateEmailUpdate = [
 ];
 
 const validateGenerateOTP = [
-      body("newEmail").isEmail().normalizeEmail().withMessage("Please provide a valid email"),
+      body("purpose").notEmpty().withMessage("Purpose is required"),
+      body("newEmail").optional().isEmail().normalizeEmail().withMessage("Please provide a valid email"),
 ];
 
 const validatePasswordUpdate = [

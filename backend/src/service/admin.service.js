@@ -63,11 +63,11 @@ class AdminService {
 
       async generateOTPForEmailUpdate(data) {
             Logger.info('generateOTPForEmailUpdate - received data:', data);
-            const { adminId, newEmail } = data;
+            const { adminId, purpose, newEmail } = data;
             
-            if (!newEmail) {
-                  Logger.error('generateOTPForEmailUpdate - newEmail is missing:', newEmail);
-                  throw ApiError.badRequest("New email is required");
+            if (purpose === 'email_update' && !newEmail) {
+                  Logger.error('generateOTPForEmailUpdate - newEmail is missing for email update:', newEmail);
+                  throw ApiError.badRequest("New email is required for email update");
             }
 
             const admin = await adminRepository.findById(adminId);
@@ -76,26 +76,43 @@ class AdminService {
             const otp = generateOTP();
             const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
-            await adminRepository.updateById(adminId, {
+            // For email update, store the new email; for password update, don't
+            const updateData = {
                   otp,
                   otpExpiry,
-                  newEmail,
-            });
+            };
+            
+            if (purpose === 'email_update') {
+                  updateData.newEmail = newEmail;
+            }
 
-            Logger.info('Attempting to send OTP email for email update', {
+            await adminRepository.updateById(adminId, updateData);
+
+            // Determine email destination and subject based on purpose
+            const emailTo = purpose === 'email_update' ? newEmail : admin.email;
+            const subject = purpose === 'email_update' ? "Email Update OTP" : "Password Update OTP";
+            const message = purpose === 'email_update' 
+                  ? `Your OTP for email update is ${otp}. Valid for 10 minutes.`
+                  : `Your OTP for password update is ${otp}. Valid for 10 minutes.`;
+
+            Logger.info('Attempting to send OTP email', {
                   adminId,
-                  newEmail,
+                  purpose,
+                  emailTo,
                   otp
             });
 
             await sendEmail({
-                  to: newEmail,
-                  subject: "Email Update OTP",
-                  text: `Your OTP is ${otp}. Valid for 10 minutes.`,
+                  to: emailTo,
+                  subject: subject,
+                  text: message,
             });
 
-            Logger.info('OTP email sent successfully for email update');
-            return { message: "OTP sent to new email" };
+            Logger.info('OTP email sent successfully', { purpose });
+            const responseMessage = purpose === 'email_update' 
+                  ? "OTP sent to new email" 
+                  : "OTP sent to your email";
+            return { message: responseMessage };
       }
 
 
