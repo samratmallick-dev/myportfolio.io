@@ -86,17 +86,16 @@ export const checkAuth = createAsyncThunk(
 );
 
 export const generateOTPThunk = createAsyncThunk(
-      'auth/generateOTP',
+      "auth/generateOTP",
       async ({ purpose, newEmail }, { rejectWithValue }) => {
             try {
-                  const response = await generateOTP({ purpose, newEmail });
-                  return response;
-            } catch (error) {
-                  const errorMessage = error?.message || error?.data?.message || 'Failed to generate OTP.';
-                  return rejectWithValue(errorMessage);
+                  return await generateOTP({ purpose, newEmail });
+            } catch (err) {
+                  return rejectWithValue(err.message || "OTP failed");
             }
       }
 );
+
 
 export const verifyOTPAndUpdateEmailThunk = createAsyncThunk(
       'auth/verifyOTPAndUpdateEmail',
