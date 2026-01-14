@@ -5,7 +5,7 @@ import CommonForm from '@/components/common/form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { adminContactFormIndex } from '@/config/allFormIndex';
-import { addUpdateContactDetails, getContactDetails } from '@/store/contact.slice';
+import { addUpdateContactDetails, getContactDetails, resetMessageState } from '@/store/contact.slice';
 import { Mail, MapPin, Phone, UserRound } from 'lucide-react';
 
 const initialFormData = {
@@ -18,6 +18,7 @@ const initialFormData = {
 
 const AdminViewContactDetails = () => {
       const [formData, setFormData] = useState(initialFormData);
+      const [isSubmitting, setIsSubmitting] = useState(false);
       const dispatch = useDispatch();
       const { contactDetails, loading } = useSelector((state) => state.contact);
 
@@ -47,6 +48,7 @@ const AdminViewContactDetails = () => {
 
       const handleSubmit = async (e) => {
             e.preventDefault();
+            setIsSubmitting(true);
 
             const submissionData = new FormData();
 
@@ -61,8 +63,13 @@ const AdminViewContactDetails = () => {
             try {
                   await dispatch(addUpdateContactDetails(submissionData)).unwrap();
                   toast.success('Contact details saved successfully');
+                  // Refresh contact details after successful update
+                  dispatch(getContactDetails());
             } catch (err) {
+                  console.error('Save contact details error:', err);
                   toast.error(err || 'Failed to save contact details');
+            } finally {
+                  setIsSubmitting(false);
             }
       };
 
@@ -95,7 +102,7 @@ const AdminViewContactDetails = () => {
                                                                   }}
                                                             />
                                                       ) : null}
-                                                      <div className="w-40 h-40 bg-muted rounded-full mx-auto mb-6 border-4 border-primary/20 flex items-center justify-center" style={{display: contactDetails.contactImage?.url ? 'none' : 'flex'}}>
+                                                      <div className="w-40 h-40 bg-muted rounded-full mx-auto mb-6 border-4 border-primary/20 flex items-center justify-center" style={{ display: contactDetails.contactImage?.url ? 'none' : 'flex' }}>
                                                             <UserRound className="h-16 w-16 text-muted-foreground" />
                                                       </div>
                                                       {contactDetails.name && (
@@ -127,7 +134,7 @@ const AdminViewContactDetails = () => {
                                           <CardTitle>Update Contact Details</CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                          {loading ? (
+                                          {loading && !contactDetails ? (
                                                 <div className="space-y-4">
                                                       <Skeleton className="h-10 w-full" />
                                                       <Skeleton className="h-10 w-full" />
@@ -138,11 +145,11 @@ const AdminViewContactDetails = () => {
                                           ) : (
                                                 <CommonForm
                                                       formControls={adminContactFormIndex}
-                                                      buttonText="Save Changes"
+                                                      buttonText={isSubmitting ? "Saving..." : "Save Changes"}
                                                       onSubmit={handleSubmit}
                                                       values={formData}
                                                       onChange={handleChange}
-                                                      isLoading={loading}
+                                                      isLoading={isSubmitting}
                                                 />
                                           )}
                                     </CardContent>

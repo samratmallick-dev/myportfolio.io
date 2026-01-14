@@ -76,7 +76,7 @@ const MyContact = () => {
                                                 )}
                                           </CardContent>
                                           <CardFooter className={'flex items-center gap-4 flex-wrap'}>
-                                                <Button
+                                                {/* <Button
                                                       onClick={() => window.open('https://www.facebook.com/samratmallick.dev/', '_blank')}
                                                       variant="outline"
                                                       size="sm"
@@ -111,7 +111,21 @@ const MyContact = () => {
                                                 >
                                                       <Linkedin className="w-5 h-5 mr-2" />
                                                       LinkedIn
-                                                </Button>
+                                                </Button> */}
+                                                {
+                                                      contactDetails?.socialLinks?.map((item, index) => (
+                                                            <Button
+                                                                  key={index}
+                                                                  onClick={() => window.open(item.url, '_blank')}
+                                                                  variant="outline"
+                                                                  size="sm"
+                                                                  className="hover:bg-primary text-muted-foreground hover:text-white transition-colors duration-300 ease-out"
+                                                            >
+                                                                  <item.icon className="w-5 h-5 mr-2" />
+                                                                  {item.name}
+                                                            </Button>
+                                                      ))
+                                                }
                                           </CardFooter>
                                     </Card>
                               </div>

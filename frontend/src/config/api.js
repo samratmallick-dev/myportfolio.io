@@ -7,7 +7,8 @@ const api = axios.create({
       headers: {
             'Content-Type': 'application/json',
       },
-      withCredentials: true, 
+      withCredentials: true,
+      timeout: 30000, // 30 second timeout for all requests
 });
 
 // Admin authentication endpoints
@@ -437,73 +438,119 @@ export const contactEndpoints = {
 
 // Contact API functions
 export const fetchContactDetails = async () => {
-      const response = await api.get(contactEndpoints.getContactDetails);
-      return response.data;
+      try {
+            const response = await api.get(contactEndpoints.getContactDetails);
+            return response.data;
+      } catch (error) {
+            throw error.response?.data || error;
+      }
 };
 
 export const addOrUpdateContactDetails = async (formData) => {
-      const response = await api.post(contactEndpoints.addUpdateContactDetails, formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      return response.data;
+      try {
+            const response = await api.post(contactEndpoints.addUpdateContactDetails, formData, {
+                  headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            return response.data;
+      } catch (error) {
+            throw error.response?.data || error;
+      }
 };
 
 export const updateContactDetails = async (id, formData) => {
-      const response = await api.put(contactEndpoints.updateContactDetails.replace(':id', id), formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      return response.data;
+      try {
+            const response = await api.put(contactEndpoints.updateContactDetails.replace(':id', id), formData, {
+                  headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            return response.data;
+      } catch (error) {
+            throw error.response?.data || error;
+      }
 };
 
 export const sendContactMessage = async (messageData) => {
-      const response = await api.post(contactEndpoints.sendMessage, messageData);
-      return response.data;
+      try {
+            const response = await api.post(contactEndpoints.sendMessage, messageData, {
+                  timeout: 10000, 
+            });
+            return response.data;
+      } catch (error) {
+            console.error('sendContactMessage API error:', error);
+            if (error.code === 'ECONNABORTED') {
+                  throw new Error('Request timeout. Please try again.');
+            }
+            if (error.response?.status === 500) {
+                  throw new Error(error.response?.data?.message || 'Server error. Please try again later.');
+            }
+            throw error.response?.data || error;
+      }
 };
 
 export const fetchAllMessages = async () => {
-      const response = await api.get(contactEndpoints.getAllMessages);
-      return response.data;
+      try {
+            const response = await api.get(contactEndpoints.getAllMessages);
+            return response.data;
+      } catch (error) {
+            throw error.response?.data || error;
+      }
 };
 
 export const fetchMessageById = async (messageId) => {
-      const response = await api.get(contactEndpoints.getMessageById.replace(':messageId', messageId));
-      return response.data;
+      try {
+            const response = await api.get(contactEndpoints.getMessageById.replace(':messageId', messageId));
+            return response.data;
+      } catch (error) {
+            throw error.response?.data || error;
+      }
 };
 
 export const deleteMessage = async (messageId) => {
-      const response = await api.delete(contactEndpoints.deleteMessage.replace(':messageId', messageId));
-      return response.data;
+      try {
+            const response = await api.delete(contactEndpoints.deleteMessage.replace(':messageId', messageId));
+            return response.data;
+      } catch (error) {
+            throw error.response?.data || error;
+      }
 };
 
 export const markMessageAsRead = async (messageId) => {
-      const response = await api.put(contactEndpoints.markAsRead.replace(':messageId', messageId));
-      return response.data;
+      try {
+            const response = await api.put(contactEndpoints.markAsRead.replace(':messageId', messageId));
+            return response.data;
+      } catch (error) {
+            throw error.response?.data || error;
+      }
 };
 
 export const fetchUnreadCount = async () => {
-      const response = await api.get(contactEndpoints.getUnreadCount);
-      return response.data;
+      try {
+            const response = await api.get(contactEndpoints.getUnreadCount);
+            return response.data;
+      } catch (error) {
+            throw error.response?.data || error;
+      }
 };
 
 export const fetchAllMessagesAdmin = async () => {
-      const response = await api.get(contactEndpoints.getAllMessagesAdmin);
-      return response.data;
+      try {
+            const response = await api.get(contactEndpoints.getAllMessagesAdmin);
+            return response.data;
+      } catch (error) {
+            throw error.response?.data || error;
+      }
 };
 
 // Request interceptor to add auth token if available
 api.interceptors.request.use(
       (config) => {
             const token = localStorage.getItem('adminToken');
-            // console.log('Request interceptor - Token:', token);
-            // console.log('Request interceptor - URL:', config.url);
-            // console.log('Request interceptor - Method:', config.method);
             if (token) {
                   config.headers.Authorization = `Bearer ${token}`;
-                  // console.log('Request interceptor - Headers:', config.headers);
             }
             return config;
       },
       (error) => {
+            console.error('Request interceptor error:', error);
             return Promise.reject(error);
       }
 );
@@ -512,16 +559,28 @@ api.interceptors.request.use(
 api.interceptors.response.use(
       (response) => response,
       (error) => {
-            console.log('Response interceptor - Error:', error);
-            console.log('Response interceptor - Error response:', error.response);
-            console.log('Response interceptor - Status:', error.response?.status);
-            console.log('Response interceptor - Data:', error.response?.data);
+            console.error('API Response Error:', {
+                  status: error.response?.status,
+                  message: error.response?.data?.message || error.message,
+                  url: error.config?.url,
+            });
+
+            // Handle 401 Unauthorized
             if (error.response?.status === 401) {
-                  // Token expired or invalid, clear local storage
                   localStorage.removeItem('adminToken');
                   localStorage.removeItem('adminUser');
-                  // Redirect to login page could be handled here or in the auth slice
+                  // Only redirect if not already on login page
+                  if (!window.location.pathname.includes('/login')) {
+                        window.location.href = '/admin/login';
+                  }
             }
+
+            // Handle network errors
+            if (!error.response) {
+                  console.error('Network error - no response received');
+                  error.message = 'Network error. Please check your internet connection.';
+            }
+
             return Promise.reject(error);
       }
 );

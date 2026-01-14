@@ -33,7 +33,7 @@ class ContactController {
 
             const message = await contactService.sendMessage(messageData);
 
-            sendCreated(res, "Message sent successfully", message);
+            sendCreated(res, "Message sent successfully. You will receive a confirmation email shortly.", message);
       });
 
       getAllMessages = asyncHandler(async (req, res) => {
@@ -64,7 +64,7 @@ class ContactController {
 
             sendSuccess(res, "Message marked as read", message);
       });
-      
+
       getUnreadMessagesCount = asyncHandler(async (req, res) => {
             const count = await contactService.getUnreadMessagesCount();
 

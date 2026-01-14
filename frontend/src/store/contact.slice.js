@@ -19,6 +19,7 @@ export const getContactDetails = createAsyncThunk(
                   const response = await fetchContactDetails();
                   return response.data;
             } catch (error) {
+                  console.error('Get contact details error:', error);
                   return rejectWithValue(error.message || "Failed to fetch contact details");
             }
       }
@@ -31,6 +32,7 @@ export const addUpdateContactDetails = createAsyncThunk(
                   const response = await addOrUpdateContactDetails(formData);
                   return response.data;
             } catch (error) {
+                  console.error('Add/update contact details error:', error);
                   return rejectWithValue(error.message || "Failed to update contact details");
             }
       }
@@ -43,6 +45,7 @@ export const updateContactDetailsById = createAsyncThunk(
                   const response = await updateContactDetails(id, formData);
                   return response.data;
             } catch (error) {
+                  console.error('Update contact details error:', error);
                   return rejectWithValue(error.message || "Failed to update contact details");
             }
       }
@@ -56,7 +59,19 @@ export const sendMessage = createAsyncThunk(
                   return response.data;
             } catch (error) {
                   console.error('Send message error:', error);
-                  return rejectWithValue(error.response?.data?.message || error.message || "Failed to send message");
+
+                  // Extract error message properly
+                  let errorMessage = "Failed to send message. Please try again.";
+
+                  if (error.message) {
+                        errorMessage = error.message;
+                  } else if (error.response?.data?.message) {
+                        errorMessage = error.response.data.message;
+                  } else if (typeof error === 'string') {
+                        errorMessage = error;
+                  }
+
+                  return rejectWithValue(errorMessage);
             }
       }
 );
@@ -68,6 +83,7 @@ export const getAllMessages = createAsyncThunk(
                   const response = await fetchAllMessagesAdmin();
                   return response.data;
             } catch (error) {
+                  console.error('Get all messages error:', error);
                   return rejectWithValue(error.message || "Failed to fetch messages");
             }
       }
@@ -80,6 +96,7 @@ export const getMessageById = createAsyncThunk(
                   const response = await fetchMessageById(messageId);
                   return response.data;
             } catch (error) {
+                  console.error('Get message by ID error:', error);
                   return rejectWithValue(error.message || "Failed to fetch message");
             }
       }
@@ -92,6 +109,7 @@ export const deleteMessageById = createAsyncThunk(
                   await deleteMessage(messageId);
                   return messageId;
             } catch (error) {
+                  console.error('Delete message error:', error);
                   return rejectWithValue(error.message || "Failed to delete message");
             }
       }
@@ -104,6 +122,7 @@ export const markAsRead = createAsyncThunk(
                   const response = await markMessageAsRead(messageId);
                   return { ...response.data, _id: messageId };
             } catch (error) {
+                  console.error('Mark as read error:', error);
                   return rejectWithValue(error.message || "Failed to mark as read");
             }
       }
@@ -116,6 +135,7 @@ export const getUnreadCount = createAsyncThunk(
                   const response = await fetchUnreadCount();
                   return response.data;
             } catch (error) {
+                  console.error('Get unread count error:', error);
                   return rejectWithValue(error.message || "Failed to fetch unread count");
             }
       }
@@ -130,9 +150,19 @@ const contactSlice = createSlice({
             unreadCount: 0,
             loading: false,
             error: null,
+            messageSubmitting: false,
+            messageSuccess: false,
       },
       reducers: {
             clearError: (state) => {
+                  state.error = null;
+            },
+            clearMessageSuccess: (state) => {
+                  state.messageSuccess = false;
+            },
+            resetMessageState: (state) => {
+                  state.messageSubmitting = false;
+                  state.messageSuccess = false;
                   state.error = null;
             },
       },
@@ -179,14 +209,18 @@ const contactSlice = createSlice({
                   })
                   // Send message
                   .addCase(sendMessage.pending, (state) => {
-                        state.loading = true;
+                        state.messageSubmitting = true;
+                        state.messageSuccess = false;
                         state.error = null;
                   })
                   .addCase(sendMessage.fulfilled, (state) => {
-                        state.loading = false;
+                        state.messageSubmitting = false;
+                        state.messageSuccess = true;
+                        state.error = null;
                   })
                   .addCase(sendMessage.rejected, (state, action) => {
-                        state.loading = false;
+                        state.messageSubmitting = false;
+                        state.messageSuccess = false;
                         state.error = action.payload;
                   })
                   // Get all messages
@@ -240,13 +274,11 @@ const contactSlice = createSlice({
                         if (state.currentMessage && state.currentMessage._id === action.payload._id) {
                               state.currentMessage.status = 'read';
                         }
-                        // Update unread count
                         state.unreadCount = Math.max(0, state.unreadCount - 1);
                   })
                   .addCase(markAsRead.rejected, (state, action) => {
                         state.error = action.payload;
                   })
-                  // Get unread count
                   .addCase(getUnreadCount.pending, (state) => {
                         state.error = null;
                   })
@@ -259,5 +291,5 @@ const contactSlice = createSlice({
       },
 });
 
-export const { clearError } = contactSlice.actions;
+export const { clearError, clearMessageSuccess, resetMessageState } = contactSlice.actions;
 export default contactSlice.reducer;

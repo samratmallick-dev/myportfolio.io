@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import { getAllMessages, deleteMessageById, markAsRead, getUnreadCount } from '@
 const AdminMessages = () => {
       const dispatch = useDispatch();
       const { messages, loading, unreadCount } = useSelector((state) => state.contact);
+      const [processingId, setProcessingId] = useState(null);
 
       useEffect(() => {
             dispatch(getAllMessages());
@@ -18,22 +19,34 @@ const AdminMessages = () => {
       }, [dispatch]);
 
       const handleDelete = async (id) => {
+            if (processingId) return; 
+
+            setProcessingId(id);
             try {
                   await dispatch(deleteMessageById(id)).unwrap();
                   toast.success('Message deleted successfully');
                   dispatch(getUnreadCount());
             } catch (err) {
+                  console.error('Delete message error:', err);
                   toast.error(err || 'Failed to delete message');
+            } finally {
+                  setProcessingId(null);
             }
       };
 
       const handleMarkAsRead = async (id) => {
+            if (processingId) return; // Prevent multiple simultaneous operations
+
+            setProcessingId(id);
             try {
                   await dispatch(markAsRead(id)).unwrap();
                   toast.success('Message marked as read');
-                  dispatch(getUnreadCount());
+                  // Unread count is updated automatically in the reducer
             } catch (err) {
+                  console.error('Mark as read error:', err);
                   toast.error(err || 'Failed to mark as read');
+            } finally {
+                  setProcessingId(null);
             }
       };
 
@@ -65,9 +78,8 @@ const AdminMessages = () => {
                                     sortedMessages.map((m) => (
                                           <div
                                                 key={m._id}
-                                                className={`p-4 rounded-lg border transition-colors hover-lift ${
-                                                      m.status === 'unread' ? 'bg-background border-accent/30 hover:tech-glow' : 'card-gradient border-border'
-                                                }`}
+                                                className={`p-4 rounded-lg border transition-colors hover-lift ${m.status === 'unread' ? 'bg-background border-accent/30 hover:tech-glow' : 'card-gradient border-border'
+                                                      }`}
                                           >
                                                 <div className="flex items-start justify-between mb-3">
                                                       <div className="flex items-center gap-2">
@@ -113,22 +125,22 @@ const AdminMessages = () => {
                                                                   variant="outline"
                                                                   size="sm"
                                                                   onClick={() => handleMarkAsRead(m._id)}
-                                                                  disabled={loading}
+                                                                  disabled={processingId === m._id || loading}
                                                                   className="flex items-center gap-1"
                                                             >
                                                                   <Eye className="w-3 h-3" />
-                                                                  Mark as Read
+                                                                  {processingId === m._id ? 'Marking...' : 'Mark as Read'}
                                                             </Button>
                                                       )}
                                                       <Button
                                                             variant="destructive"
                                                             size="sm"
                                                             onClick={() => handleDelete(m._id)}
-                                                            disabled={loading}
+                                                            disabled={processingId === m._id || loading}
                                                             className="flex items-center gap-1"
                                                       >
                                                             <Trash2 className="w-3 h-3" />
-                                                            Delete
+                                                            {processingId === m._id ? 'Deleting...' : 'Delete'}
                                                       </Button>
                                                 </div>
                                           </div>
