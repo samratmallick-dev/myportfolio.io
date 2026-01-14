@@ -87,7 +87,7 @@ const AdminMessages = () => {
                   read: 'secondary',
                   replied: 'default'
             };
-            return <Badge variant={variants[status] || 'secondary'}>{status}</Badge>;
+            return <Badge variant={variants[status] || 'secondary'} className={"text-white"}>{status}</Badge>;
       };
 
       return (
