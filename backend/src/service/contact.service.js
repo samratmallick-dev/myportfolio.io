@@ -71,34 +71,36 @@ class ContactService {
             const totalMessages = await contactRepository.countMessages();
             if (totalMessages > 20) {
                   const allMessages = await contactRepository.findAllMessages();
-                  const messagesToDelete = allMessages.slice(20); // Get messages after the first 20 (newest)
+                  const messagesToDelete = allMessages.slice(20);
                   
                   for (const msg of messagesToDelete) {
                         await contactRepository.deleteMessageById(msg._id);
                   }
             }
 
-            // Send emails without blocking the response
-            setImmediate(async () => {
-                  try {
-                        await sendEmail({
-                              to: messageData.email,
-                              subject: "Message Received - Thank You",
-                              text: `Thank you for contacting us. We have received your message and will get back to you soon.\n\nYour message:\n${messageData.message}`,
-                        });
+            try {
+                  // Send confirmation email to user
+                  await sendEmail({
+                        to: messageData.email,
+                        subject: "Message Received - Thank You",
+                        text: `Thank you for contacting us. We have received your message and will get back to you soon.\n\nYour message:\n${messageData.message}`,
+                  });
+                  console.log(`Confirmation email sent to ${messageData.email}`);
 
-                        const contactDetails = await contactRepository.findActiveContactDetails();
-                        if (contactDetails && contactDetails.email) {
-                              await sendEmail({
-                                    to: contactDetails.email,
-                                    subject: `New Contact Message from ${messageData.name}`,
-                                    text: `You have received a new message from ${messageData.name} (${messageData.email}):\n\nMobile: ${messageData.mobile}\nMessage: ${messageData.message}`,
-                              });
-                        }
-                  } catch (error) {
-                        console.error("Error sending notification emails:", error);
+                  // Send notification to admin
+                  const contactDetails = await contactRepository.findActiveContactDetails();
+                  if (contactDetails && contactDetails.email) {
+                        await sendEmail({
+                              to: contactDetails.email,
+                              subject: `New Contact Message from ${messageData.name}`,
+                              text: `You have received a new message from ${messageData.name} (${messageData.email}):\n\nMobile: ${messageData.mobile}\nMessage: ${messageData.message}`,
+                        });
+                        console.log(`Notification email sent to admin: ${contactDetails.email}`);
                   }
-            });
+            } catch (error) {
+                  console.error("Email sending error:", error.message);
+                  // Don't throw error - message is already saved
+            }
 
             return message;
       }
