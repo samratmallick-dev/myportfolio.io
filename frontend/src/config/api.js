@@ -433,6 +433,7 @@ export const contactEndpoints = {
       markAsRead: '/api/v1/contact/mark-as-read/:messageId',
       getUnreadCount: '/api/v1/contact/get-unread-count',
       getAllMessagesAdmin: '/api/v1/contact/get-all-messages-admin',
+      replyToMessage: '/api/v1/contact/reply-to-message/:messageId',
 };
 
 // Contact API functions
@@ -487,6 +488,11 @@ export const fetchUnreadCount = async () => {
 
 export const fetchAllMessagesAdmin = async () => {
       const response = await api.get(contactEndpoints.getAllMessagesAdmin);
+      return response.data;
+};
+
+export const replyToMessage = async (messageId, replyData) => {
+      const response = await api.put(contactEndpoints.replyToMessage.replace(':messageId', messageId), replyData);
       return response.data;
 };
 

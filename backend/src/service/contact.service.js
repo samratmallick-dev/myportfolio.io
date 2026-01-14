@@ -149,6 +149,32 @@ class ContactService {
             const messages = await contactRepository.findAllMessages();
             return messages;
       }
+
+      async replyToMessage(messageId, replyData) {
+            const message = await contactRepository.findMessageById(messageId);
+
+            if (!message) {
+                  throw ApiError.notFound("Message not found");
+            }
+
+            if (!message.isActive) {
+                  throw ApiError.badRequest("Message is not active");
+            }
+
+            const updatedMessage = await contactRepository.replyToMessage(messageId, replyData);
+
+            try {
+                  await sendEmail({
+                        to: message.email,
+                        subject: "Reply to Your Message",
+                        text: `Hi ${message.name},\n\nThank you for contacting us. Here is our reply:\n\n${replyData.replyMessage}\n\nOriginal message:\n${message.message}\n\nBest regards,\n${replyData.repliedBy || 'Admin'}`,
+                  });
+            } catch (error) {
+                  console.error("Error sending reply email:", error);
+            }
+
+            return updatedMessage;
+      }
 }
 
 export default new ContactService();
