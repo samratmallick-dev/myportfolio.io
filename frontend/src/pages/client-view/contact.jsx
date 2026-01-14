@@ -45,7 +45,7 @@ const MyContact = () => {
             }
       };
 
-      console.log(contactDetails);
+      console.log(contactDetails.socialLinks);
       
 
       return (
@@ -125,7 +125,7 @@ const MyContact = () => {
                                                                   className="hover:bg-primary text-muted-foreground hover:text-white transition-colors duration-300 ease-out"
                                                             >
                                                                   <item.icon className="w-5 h-5 mr-2" />
-                                                                  {item.name}
+                                                                  {item.platform}
                                                             </Button>
                                                       ))
                                                 }
