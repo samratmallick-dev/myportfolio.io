@@ -202,7 +202,7 @@ const AdminViewContactDetails = () => {
                                                                         type="button"
                                                                         onClick={addSocialLink}
                                                                         size="sm"
-                                                                        className="flex items-center gap-2"
+                                                                        className="flex items-center gap-2 hero-gradient text-muted"
                                                                   >
                                                                         <Plus className="h-4 w-4" />
                                                                         Add Link
