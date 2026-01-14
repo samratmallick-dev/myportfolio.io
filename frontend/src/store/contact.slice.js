@@ -257,4 +257,4 @@ const contactSlice = createSlice({
 });
 
 export const { clearError } = contactSlice.actions;
-export default contactSlice;
+export default contactSlice.reducer;
