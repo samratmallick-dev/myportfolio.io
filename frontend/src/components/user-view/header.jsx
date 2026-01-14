@@ -93,7 +93,7 @@ const Header = () => {
                                                                         window.scrollTo({ top: 0, behavior: 'smooth' });
                                                                   }}
                                                                   className={({ isActive }) => (
-                                                                        `${isActive ? "font-bold underline underline-offset-8" : " hover:underline hover:underline-offset-8"} capitalize transition-colors cursor-pointer `
+                                                                        `${isActive ? "font-bold underline underline-offset-8" : " hover:underline hover:underline-offset-8"} capitalize cursor-pointer `
                                                                   )}
                                                             >
                                                                   {menu.label}
@@ -126,7 +126,7 @@ const Header = () => {
                                                                         toggleMenu();
                                                                   }}
                                                                   className={({ isActive }) => (
-                                                                        `${isActive ? "font-bold underline underline-offset-8" : "hover:underline hover:underline-offset-8"} capitalize transition-colors cursor-pointer`
+                                                                        `${isActive ? "font-bold underline underline-offset-8" : "hover:underline hover:underline-offset-8"} capitalize cursor-pointer`
                                                                   )}
                                                             >
                                                                   {menu.label}

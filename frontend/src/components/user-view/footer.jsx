@@ -63,7 +63,7 @@ const Footer = () => {
                                                                         navigate(link.path);
                                                                         scrollToTop();
                                                                   }}
-                                                                  className="hover:text-primary transition-colors duration-300 cursor-pointer"
+                                                                  className="cursor-pointer"
                                                             >
                                                                   {link.label}
                                                             </button>
