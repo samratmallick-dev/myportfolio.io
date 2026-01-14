@@ -37,14 +37,6 @@ const sendEmail = async (options) => {
 
             const transporter = createTransporter();
 
-            const verifyPromise = transporter.verify();
-            const timeoutPromise = new Promise((_, reject) => {
-                  setTimeout(() => reject(new Error('SMTP verification timeout')), 8000);
-            });
-
-            await Promise.race([verifyPromise, timeoutPromise]);
-            Logger.info("SMTP connection verified successfully");
-
             const mailOptions = {
                   from: `"Portfolio Contact" <${process.env.EMAIL_USER}>`,
                   to: options.to,
@@ -59,12 +51,7 @@ const sendEmail = async (options) => {
                   subject: mailOptions.subject
             });
 
-            const sendPromise = transporter.sendMail(mailOptions);
-            const sendTimeoutPromise = new Promise((_, reject) => {
-                  setTimeout(() => reject(new Error('Email send timeout')), 12000);
-            });
-
-            const info = await Promise.race([sendPromise, sendTimeoutPromise]);
+            const info = await transporter.sendMail(mailOptions);
 
             const duration = Date.now() - startTime;
             Logger.info("Email sent successfully", {
