@@ -7,7 +7,7 @@ const logFormat = printf(({ level, message, label, timestamp }) => {
 });
 
 const commonFormat = combine(
-      label({ label: "Abar Khabo Services" }),
+      label({ label: "Portfolio Backend API Services" }),
       timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
       logFormat
 );

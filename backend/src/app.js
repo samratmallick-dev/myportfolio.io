@@ -82,17 +82,13 @@ app.use(
                   "Cache-Control",
                   "Expires",
                   "Pragma",
-                  "X-Requested-With",
-                  "Set-Cookie",
-                  "Access-Control-Allow-Origin",
+                  "X-Requested-With"
             ],
-            exposedHeaders: ["Set-Cookie"],
-            maxAge: 86400, // 24 hours
       })
 );
 
 // Handle preflight requests
-app.options('/*', cors());
+app.options('*', cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
