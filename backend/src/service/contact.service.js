@@ -164,13 +164,19 @@ class ContactService {
             const updatedMessage = await contactRepository.replyToMessage(messageId, replyData);
 
             try {
+                  console.log("Attempting to send reply email to:", message.email);
+                  console.log("Reply data:", replyData);
+                  
                   await sendEmail({
                         to: message.email,
                         subject: "Reply to Your Message",
                         text: `Hi ${message.name},\n\nThank you for contacting us. Here is our reply:\n\n${replyData.replyMessage}\n\nOriginal message:\n${message.message}\n\nBest regards,\n${replyData.repliedBy || 'Admin'}`,
                   });
+                  
+                  console.log("Reply email sent successfully to:", message.email);
             } catch (error) {
                   console.error("Error sending reply email:", error);
+                  throw ApiError.internal("Failed to send reply email. Please try again.");
             }
 
             return updatedMessage;
