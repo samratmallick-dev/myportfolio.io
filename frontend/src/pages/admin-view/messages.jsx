@@ -66,13 +66,13 @@ const AdminMessages = () => {
                                           <div
                                                 key={m._id}
                                                 className={`p-4 rounded-lg border transition-colors hover-lift ${
-                                                      !m.isRead ? 'bg-background border-accent/30 hover:tech-glow' : 'card-gradient border-border'
+                                                      m.status === 'unread' ? 'bg-background border-accent/30 hover:tech-glow' : 'card-gradient border-border'
                                                 }`}
                                           >
                                                 <div className="flex items-start justify-between mb-3">
                                                       <div className="flex items-center gap-2">
                                                             <span className="font-semibold text-lg">{m.name}</span>
-                                                            {!m.isRead && (
+                                                            {m.status === 'unread' && (
                                                                   <Badge variant="secondary" className="text-xs bg-accent text-accent-foreground">
                                                                         New
                                                                   </Badge>
@@ -108,7 +108,7 @@ const AdminMessages = () => {
                                                 </div>
 
                                                 <div className="flex justify-end gap-2">
-                                                      {!m.isRead && (
+                                                      {m.status === 'unread' && (
                                                             <Button
                                                                   variant="outline"
                                                                   size="sm"

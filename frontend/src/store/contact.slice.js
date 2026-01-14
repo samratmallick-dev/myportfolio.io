@@ -101,7 +101,7 @@ export const markAsRead = createAsyncThunk(
       async (messageId, { rejectWithValue }) => {
             try {
                   const response = await markMessageAsRead(messageId);
-                  return response.data;
+                  return { ...response.data, _id: messageId };
             } catch (error) {
                   return rejectWithValue(error.message || "Failed to mark as read");
             }
@@ -234,11 +234,13 @@ const contactSlice = createSlice({
                   .addCase(markAsRead.fulfilled, (state, action) => {
                         const messageIndex = state.messages.findIndex(msg => msg._id === action.payload._id);
                         if (messageIndex !== -1) {
-                              state.messages[messageIndex] = action.payload;
+                              state.messages[messageIndex].status = 'read';
                         }
                         if (state.currentMessage && state.currentMessage._id === action.payload._id) {
-                              state.currentMessage = action.payload;
+                              state.currentMessage.status = 'read';
                         }
+                        // Update unread count
+                        state.unreadCount = Math.max(0, state.unreadCount - 1);
                   })
                   .addCase(markAsRead.rejected, (state, action) => {
                         state.error = action.payload;
