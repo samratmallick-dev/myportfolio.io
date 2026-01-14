@@ -33,40 +33,46 @@ class ContactService {
       }
 
       async sendMessage(messageData) {
-            const message = await contactRepository.createMessage(messageData);
+      const message = await contactRepository.createMessage(messageData);
 
-            const count = await contactRepository.countMessages();
-            if (count > 20) {
-                  const messages = await contactRepository.findAllMessages();
-                  const excess = messages.slice(20);
-                  for (const msg of excess) {
-                        await contactRepository.deleteMessageById(msg._id);
-                  }
+      const count = await contactRepository.countMessages();
+      if (count > 20) {
+            const messages = await contactRepository.findAllMessages();
+            const excess = messages.slice(20);
+            for (const msg of excess) {
+                  await contactRepository.deleteMessageById(msg._id);
             }
-
-            await sendEmail({
-                  to: messageData.email,
-                  subject: "Message Received",
-                  text: `Hi ${messageData.name},
-                  We received your message and will contact you soon.
-                  Your message:
-                  ${messageData.message}`,
-            });
-
-            const contact = await contactRepository.findActiveContactDetails();
-            if (contact?.email) {
-                  await sendEmail({
-                        to: contact.email,
-                        subject: `New Contact Message - ${messageData.name}`,
-                        text: `Name: ${messageData.name}
-                              Email: ${messageData.email}
-                              Mobile: ${messageData.mobile}
-                              Message:${messageData.message}`,
-                  });
-            }
-
-            return message;
       }
+
+      sendEmail({
+            to: messageData.email,
+            subject: "Message Received",
+            text: `Hi ${messageData.name},
+
+            We received your message and will contact you soon.
+
+            Your message:
+            ${messageData.message}`
+      }).catch(err => {
+            console.error("User email failed:", err.message);
+      });
+
+      const contact = await contactRepository.findActiveContactDetails();
+      if (contact?.email) {
+            sendEmail({
+                  to: contact.email,
+                  subject: `New Contact Message - ${messageData.name}`,
+                  text: `Name: ${messageData.name}
+                        Email: ${messageData.email}
+                        Mobile: ${messageData.mobile}
+                        Message: ${messageData.message}`
+            }).catch(err => {
+                  console.error("Admin email failed:", err.message);
+            });
+      }
+
+      return message;
+}
 
       async getAllMessages() {
             return await contactRepository.findActiveMessages();
