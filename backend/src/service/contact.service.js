@@ -4,140 +4,85 @@ import { uploadToCloudinary } from "../utilities/cloudinary/upload.js";
 import { sendEmail } from "../utilities/email/sendEmail.js";
 
 class ContactService {
-      // Contact Details Methods
       async addUpdateContactDetails(contactData, image) {
             let contactDetails = await contactRepository.findActiveContactDetails();
 
-            // Parse socialLinks if it's a string
-            if (contactData.socialLinks && typeof contactData.socialLinks === 'string') {
-                  try {
-                        contactData.socialLinks = JSON.parse(contactData.socialLinks);
-                  } catch (error) {
-                        console.error('Error parsing socialLinks:', error);
-                  }
+            if (contactData.socialLinks && typeof contactData.socialLinks === "string") {
+                  contactData.socialLinks = JSON.parse(contactData.socialLinks);
             }
 
             if (image) {
-                  const cloudinaryResponse = await uploadToCloudinary(image, "contact/images");
+                  const uploaded = await uploadToCloudinary(image, "contact/images");
                   contactData.contactImage = {
-                        public_id: cloudinaryResponse.public_id,
-                        url: cloudinaryResponse.secure_url,
+                        public_id: uploaded.public_id,
+                        url: uploaded.secure_url,
                   };
             }
 
             if (contactDetails) {
-                  contactDetails = await contactRepository.updateContactDetails(contactDetails._id, contactData);
-            } else {
-                  contactDetails = await contactRepository.createContactDetails(contactData);
+                  return await contactRepository.updateContactDetails(contactDetails._id, contactData);
             }
 
-            return contactDetails;
+            return await contactRepository.createContactDetails(contactData);
       }
 
       async getContactDetails() {
-            const contactDetails = await contactRepository.findActiveContactDetails();
-
-            if (!contactDetails) {
-                  throw ApiError.notFound("Contact details not found");
-            }
-
-            return contactDetails;
+            const contact = await contactRepository.findActiveContactDetails();
+            if (!contact) throw ApiError.notFound("Contact details not found");
+            return contact;
       }
 
-      async updateContactDetails(id, contactData, image) {
-            const existingContact = await contactRepository.findContactDetails({ _id: id });
-
-            if (!existingContact) {
-                  throw ApiError.notFound("Contact details not found");
-            }
-
-            if (image) {
-                  const cloudinaryResponse = await uploadToCloudinary(image, "contact/images");
-                  contactData.contactImage = {
-                        public_id: cloudinaryResponse.public_id,
-                        url: cloudinaryResponse.secure_url,
-                  };
-            }
-
-            const updatedContact = await contactRepository.updateContactDetails(id, contactData);
-            return updatedContact;
-      }
-
-      // Message Methods
       async sendMessage(messageData) {
             const message = await contactRepository.createMessage(messageData);
 
-            // Check total message count and delete oldest 20 if exceeds 20
-            const totalMessages = await contactRepository.countMessages();
-            if (totalMessages > 20) {
-                  const allMessages = await contactRepository.findAllMessages();
-                  const messagesToDelete = allMessages.slice(20); // Get messages after the first 20 (newest)
-                  
-                  for (const msg of messagesToDelete) {
+            const count = await contactRepository.countMessages();
+            if (count > 20) {
+                  const messages = await contactRepository.findAllMessages();
+                  const excess = messages.slice(20);
+                  for (const msg of excess) {
                         await contactRepository.deleteMessageById(msg._id);
                   }
             }
 
-            try {
-                  await sendEmail({
-                        to: messageData.email,
-                        subject: "Message Received - Thank You",
-                        text: `Thank you for contacting us. We have received your message and will get back to you soon.\n\nYour message:\n${messageData.message}`,
-                  });
+            await sendEmail({
+                  to: messageData.email,
+                  subject: "Message Received",
+                  text: `Hi ${messageData.name},
+                  We received your message and will contact you soon.
+                  Your message:
+                  ${messageData.message}`,
+            });
 
-                  const contactDetails = await contactRepository.findActiveContactDetails();
-                  if (contactDetails && contactDetails.email) {
-                        await sendEmail({
-                              to: contactDetails.email,
-                              subject: `New Contact Message from ${messageData.name}`,
-                              text: `You have received a new message from ${messageData.name} (${messageData.email}):\n\nMobile: ${messageData.mobile}\nMessage: ${messageData.message}`,
-                        });
-                  }
-            } catch (error) {
-                  console.error("Error sending notification emails:", error);
+            const contact = await contactRepository.findActiveContactDetails();
+            if (contact?.email) {
+                  await sendEmail({
+                        to: contact.email,
+                        subject: `New Contact Message - ${messageData.name}`,
+                        text: `Name: ${messageData.name}
+                              Email: ${messageData.email}
+                              Mobile: ${messageData.mobile}
+                              Message:${messageData.message}`,
+                  });
             }
 
             return message;
       }
 
       async getAllMessages() {
-            const messages = await contactRepository.findActiveMessages();
-            return messages;
+            return await contactRepository.findActiveMessages();
       }
 
-      async getMessageById(messageId) {
-            const message = await contactRepository.findMessageById(messageId);
-
-            if (!message) {
-                  throw ApiError.notFound("Message not found");
-            }
-
-            if (!message.isActive) {
-                  throw ApiError.badRequest("Message is not active");
-            }
-
-            return message;
+      async deleteMessage(id) {
+            const msg = await contactRepository.findMessageById(id);
+            if (!msg) throw ApiError.notFound("Message not found");
+            await contactRepository.deleteMessageById(id);
+            return true;
       }
 
-      async deleteMessage(messageId) {
-            const message = await contactRepository.findMessageById(messageId);
-
-            if (!message) {
-                  throw ApiError.notFound("Message not found");
-            }
-
-            await contactRepository.deleteMessageById(messageId);
-            return { message: "Message deleted successfully" };
-      }
-
-      async markMessageAsRead(messageId) {
-            const message = await contactRepository.markMessageAsRead(messageId);
-
-            if (!message) {
-                  throw ApiError.notFound("Message not found");
-            }
-
-            return message;
+      async markMessageAsRead(id) {
+            const msg = await contactRepository.markMessageAsRead(id);
+            if (!msg) throw ApiError.notFound("Message not found");
+            return msg;
       }
 
       async getUnreadMessagesCount() {
@@ -146,9 +91,9 @@ class ContactService {
       }
 
       async getAllMessagesAdmin() {
-            const messages = await contactRepository.findAllMessages();
-            return messages;
+            return await contactRepository.findAllMessages();
       }
-}
+
+      }
 
 export default new ContactService();
