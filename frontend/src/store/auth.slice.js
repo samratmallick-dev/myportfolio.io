@@ -92,7 +92,8 @@ export const generateOTPThunk = createAsyncThunk(
                   const response = await generateOTP({ purpose, newEmail });
                   return response;
             } catch (error) {
-                  return rejectWithValue(error.message || 'Failed to generate OTP.');
+                  const errorMessage = error?.message || error?.data?.message || 'Failed to generate OTP.';
+                  return rejectWithValue(errorMessage);
             }
       }
 );
@@ -110,6 +111,7 @@ export const verifyOTPAndUpdateEmailThunk = createAsyncThunk(
                         await logoutAdmin();
                   } catch (logoutError) {
                         // Continue even if logout API fails
+                        console.error('Logout failed:', logoutError);
                   }
                   return { ...response, shouldLogout: true };
             } catch (error) {
@@ -131,6 +133,7 @@ export const verifyOTPAndUpdatePasswordThunk = createAsyncThunk(
                         await logoutAdmin();
                   } catch (logoutError) {
                         // Continue even if logout API fails
+                        console.error('Logout failed:', logoutError);
                   }
                   return { ...response, shouldLogout: true };
             } catch (error) {

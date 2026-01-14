@@ -1,13 +1,13 @@
 export const EmailConfig = {
-      host: process.env.SMTP_HOST,
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
       port: Number(process.env.SMTP_PORT || 587),
-      secure: String(process.env.SMTP_SECURE || "false").toLowerCase() === "true",
+      secure: false,
       auth:
             process.env.SMTP_USER && process.env.SMTP_PASSWORD
                   ? {
                         user: process.env.SMTP_USER,
-                        pass: String(process.env.SMTP_PASSWORD)
+                        pass: process.env.SMTP_PASSWORD?.replace(/\s/g, "")
                   }
                   : null,
-      from: `"Portfolio" ${process.env.SMTP_FROM || process.env.SMTP_USER}`
+      from: `"Portfolio" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`
 };

@@ -19,9 +19,13 @@ class EmailService {
             this.transporter = nodemailer.createTransport({
                   service: 'gmail',
                   auth: EmailConfig.auth,
-                  connectionTimeout: 60000,
-                  greetingTimeout: 30000,
-                  socketTimeout: 60000,
+                  connectionTimeout: 30000,
+                  greetingTimeout: 15000,
+                  socketTimeout: 30000,
+                  pool: true,
+                  maxConnections: 1,
+                  rateDelta: 20000,
+                  rateLimit: 5
             });
 
             this.enabled = true;

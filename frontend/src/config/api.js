@@ -8,7 +8,7 @@ const api = axios.create({
             'Content-Type': 'application/json',
       },
       withCredentials: true,
-      timeout: 30000, // 30 second timeout for all requests
+      timeout: 60000, // 
 });
 
 // Admin authentication endpoints
@@ -50,8 +50,14 @@ export const checkAdminAuth = async () => {
 };
 
 export const generateOTP = async (data) => {
-      const res = await api.post(adminAuthEndpoints.generateOTP, data);
-      return res.data;
+      try {
+            const res = await api.post(adminAuthEndpoints.generateOTP, data, {
+                  timeout: 90000 
+            });
+            return res.data;
+      } catch (error) {
+            throw error.response?.data || error;
+      }
 };
 
 
