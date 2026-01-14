@@ -2,18 +2,20 @@ import React, { Fragment, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
 import CommonForm from '@/components/common/form';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { adminContactFormIndex } from '@/config/allFormIndex';
+import { adminContactFormIndex, socialLinkFormControls } from '@/config/allFormIndex';
 import { addUpdateContactDetails, getContactDetails, resetMessageState } from '@/store/contact.slice';
-import { Mail, MapPin, Phone, UserRound } from 'lucide-react';
+import { Mail, MapPin, Phone, UserRound, Plus, Trash2 } from 'lucide-react';
 
 const initialFormData = {
       contactImage: '',
       name: '',
       email: '',
       mobile: '',
-      address: ''
+      address: '',
+      socialLinks: []
 };
 
 const AdminViewContactDetails = () => {
@@ -34,7 +36,8 @@ const AdminViewContactDetails = () => {
                         name: contactDetails.name || '',
                         email: contactDetails.email || '',
                         mobile: contactDetails.mobile || '',
-                        address: contactDetails.address || ''
+                        address: contactDetails.address || '',
+                        socialLinks: contactDetails.socialLinks || []
                   });
             }
       }, [contactDetails]);
@@ -43,6 +46,29 @@ const AdminViewContactDetails = () => {
             setFormData((prev) => ({
                   ...prev,
                   [name]: value,
+            }));
+      };
+
+      const addSocialLink = () => {
+            setFormData(prev => ({
+                  ...prev,
+                  socialLinks: [...prev.socialLinks, { platform: '', url: '', icon: '' }]
+            }));
+      };
+
+      const removeSocialLink = (index) => {
+            setFormData(prev => ({
+                  ...prev,
+                  socialLinks: prev.socialLinks.filter((_, i) => i !== index)
+            }));
+      };
+
+      const updateSocialLink = (index, field, value) => {
+            setFormData(prev => ({
+                  ...prev,
+                  socialLinks: prev.socialLinks.map((link, i) => 
+                        i === index ? { ...link, [field]: value } : link
+                  )
             }));
       };
 
@@ -59,6 +85,9 @@ const AdminViewContactDetails = () => {
             if (formData.email) submissionData.append('email', formData.email.trim());
             if (formData.mobile) submissionData.append('mobile', formData.mobile.trim());
             if (formData.address) submissionData.append('address', formData.address.trim());
+            if (formData.socialLinks.length > 0) {
+                  submissionData.append('socialLinks', JSON.stringify(formData.socialLinks));
+            }
 
             try {
                   await dispatch(addUpdateContactDetails(submissionData)).unwrap();
@@ -117,6 +146,18 @@ const AdminViewContactDetails = () => {
                                                       {contactDetails.address && (
                                                             <div className="text-sm text-muted-foreground flex items-center gap-2 justify-center"><MapPin className="h-4 w-4" /> {contactDetails.address}</div>
                                                       )}
+                                                      {contactDetails.socialLinks && contactDetails.socialLinks.length > 0 && (
+                                                            <div className="mt-4">
+                                                                  <h4 className="font-medium mb-2">Social Links:</h4>
+                                                                  <div className="flex flex-wrap gap-2 justify-center">
+                                                                        {contactDetails.socialLinks.map((link, index) => (
+                                                                              <span key={index} className="text-xs bg-muted px-2 py-1 rounded">
+                                                                                    {link.platform}
+                                                                              </span>
+                                                                        ))}
+                                                                  </div>
+                                                            </div>
+                                                      )}
                                                 </div>
                                           ) : (
                                                 <div className="text-center p-8 text-muted-foreground">
@@ -143,14 +184,59 @@ const AdminViewContactDetails = () => {
                                                       <Skeleton className="h-10 w-32" />
                                                 </div>
                                           ) : (
-                                                <CommonForm
-                                                      formControls={adminContactFormIndex}
-                                                      buttonText={isSubmitting ? "Saving..." : "Save Changes"}
-                                                      onSubmit={handleSubmit}
-                                                      values={formData}
-                                                      onChange={handleChange}
-                                                      isLoading={isSubmitting}
-                                                />
+                                                <div className="space-y-6">
+                                                      <CommonForm
+                                                            formControls={adminContactFormIndex}
+                                                            buttonText={isSubmitting ? "Saving..." : "Save Changes"}
+                                                            onSubmit={handleSubmit}
+                                                            values={formData}
+                                                            onChange={handleChange}
+                                                            isLoading={isSubmitting}
+                                                      />
+                                                      
+                                                      {/* Social Links Section */}
+                                                      <div className="border-t pt-6">
+                                                            <div className="flex items-center justify-between mb-4">
+                                                                  <h3 className="text-lg font-semibold">Social Links</h3>
+                                                                  <Button
+                                                                        type="button"
+                                                                        onClick={addSocialLink}
+                                                                        size="sm"
+                                                                        className="flex items-center gap-2"
+                                                                  >
+                                                                        <Plus className="h-4 w-4" />
+                                                                        Add Link
+                                                                  </Button>
+                                                            </div>
+                                                            
+                                                            {formData.socialLinks.map((link, index) => (
+                                                                  <div key={index} className="flex gap-2 mb-4 p-4 border rounded-lg">
+                                                                        <div className="flex-1">
+                                                                              <CommonForm
+                                                                                    formControls={socialLinkFormControls}
+                                                                                    buttonText=""
+                                                                                    values={link}
+                                                                                    onChange={(name, value) => updateSocialLink(index, name, value)}
+                                                                                    onSubmit={(e) => e.preventDefault()}
+                                                                              />
+                                                                        </div>
+                                                                        <Button
+                                                                              type="button"
+                                                                              onClick={() => removeSocialLink(index)}
+                                                                              variant="destructive"
+                                                                              size="sm"
+                                                                              className="self-start mt-2"
+                                                                        >
+                                                                              <Trash2 className="h-4 w-4" />
+                                                                        </Button>
+                                                                  </div>
+                                                            ))}
+                                                            
+                                                            {formData.socialLinks.length === 0 && (
+                                                                  <p className="text-muted-foreground text-sm">No social links added yet.</p>
+                                                            )}
+                                                      </div>
+                                                </div>
                                           )}
                                     </CardContent>
                               </Card>

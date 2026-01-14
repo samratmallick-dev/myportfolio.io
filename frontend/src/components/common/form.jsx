@@ -133,9 +133,11 @@ const CommonForm = ({
                               ))
                         }
                   </div>
-                  <Button type="submit" className="w-full hero-gradient text-muted hover:opacity-90 mt-8" disabled={isLoading}>
-                        {isLoading ? <Loader className="animate-spin mx-auto" /> : (buttonText || 'Submit')}
-                  </Button>
+                  {buttonText && (
+                        <Button type="submit" className="w-full hero-gradient text-muted hover:opacity-90 mt-8" disabled={isLoading}>
+                              {isLoading ? <Loader className="animate-spin mx-auto" /> : buttonText}
+                        </Button>
+                  )}
             </form>
       );
 };

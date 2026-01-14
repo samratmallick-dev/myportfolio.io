@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import ContactDetail from '@/components/user-view/contact-details';
 import { contactFormIndex } from '@/config/allFormIndex';
-import { Facebook, Github, Instagram, Linkedin } from 'lucide-react';
+import { Facebook, Github, Instagram, Linkedin, Twitter, Youtube, Globe, Mail, Phone } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import profileImage from '@/assets/profileimage.png';
 import { Link } from 'react-router-dom';
@@ -22,6 +22,22 @@ const MyContact = () => {
       const dispatch = useDispatch();
       const { contactDetails, loading } = useSelector((state) => state.contact);
       const [formData, setFormData] = useState(initialFormData);
+
+      // Icon mapping for social links
+      const getIconComponent = (iconName) => {
+            const icons = {
+                  Facebook,
+                  Github,
+                  Instagram,
+                  Linkedin,
+                  Twitter,
+                  Youtube,
+                  Globe,
+                  Mail,
+                  Phone
+            };
+            return icons[iconName] || Globe;
+      };
 
       useEffect(() => {
             dispatch(getContactDetails());
@@ -45,8 +61,7 @@ const MyContact = () => {
             }
       };
 
-      console.log(contactDetails.socialLinks);
-      
+
 
       return (
             <section id="contact" className="py-20 mt-10">
@@ -116,18 +131,21 @@ const MyContact = () => {
                                                       LinkedIn
                                                 </Button> */}
                                                 {
-                                                      contactDetails?.socialLinks?.map((item, index) => (
-                                                            <Button
-                                                                  key={index}
-                                                                  onClick={() => window.open(item.url, '_blank')}
-                                                                  variant="outline"
-                                                                  size="sm"
-                                                                  className="hover:bg-primary text-muted-foreground hover:text-white transition-colors duration-300 ease-out"
-                                                            >
-                                                                  <item.icon className="w-5 h-5 mr-2" />
-                                                                  {item.platform}
-                                                            </Button>
-                                                      ))
+                                                      contactDetails?.socialLinks?.map((item, index) => {
+                                                            const IconComponent = getIconComponent(item.icon);
+                                                            return (
+                                                                  <Button
+                                                                        key={index}
+                                                                        onClick={() => window.open(item.url, '_blank')}
+                                                                        variant="outline"
+                                                                        size="sm"
+                                                                        className="hover:bg-primary text-muted-foreground hover:text-white transition-colors duration-300 ease-out"
+                                                                  >
+                                                                        <IconComponent className="w-5 h-5 mr-2" />
+                                                                        {item.platform}
+                                                                  </Button>
+                                                            );
+                                                      })
                                                 }
                                           </CardFooter>
                                     </Card>
