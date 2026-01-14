@@ -10,13 +10,13 @@ import serviceSlice from './services.slice.js';
 
 export const store = configureStore({
       reducer: {
-            auth: authSlice,
-            hero: heroSlice,
-            about: aboutSlice,
-            education: educationSlice,
-            skills: skillsSlice,
-            project: projectSlice,
-            services: serviceSlice,
-            contact: contactSlice,
+            auth: authSlice.reducer,
+            hero: heroSlice.reducer,
+            about: aboutSlice.reducer,
+            education: educationSlice.reducer,
+            skills: skillsSlice.reducer,
+            project: projectSlice.reducer,
+            services: serviceSlice.reducer,
+            contact: contactSlice.reducer,
       },
 });
