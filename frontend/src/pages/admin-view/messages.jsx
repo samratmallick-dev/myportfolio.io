@@ -65,15 +65,15 @@ const AdminMessages = () => {
                                     sortedMessages.map((m) => (
                                           <div
                                                 key={m._id}
-                                                className={`p-4 rounded-lg border transition-colors ${
-                                                      !m.isRead ? 'bg-blue-50 border-blue-200' : 'bg-white'
+                                                className={`p-4 rounded-lg border transition-colors hover-lift ${
+                                                      !m.isRead ? 'bg-accent/10 border-accent/30 tech-glow' : 'card-gradient border-border'
                                                 }`}
                                           >
                                                 <div className="flex items-start justify-between mb-3">
                                                       <div className="flex items-center gap-2">
                                                             <span className="font-semibold text-lg">{m.name}</span>
                                                             {!m.isRead && (
-                                                                  <Badge variant="secondary" className="text-xs">
+                                                                  <Badge variant="secondary" className="text-xs bg-accent text-accent-foreground">
                                                                         New
                                                                   </Badge>
                                                             )}
@@ -87,23 +87,23 @@ const AdminMessages = () => {
                                                 <div className="flex items-center gap-4 mb-3 text-sm text-muted-foreground">
                                                       <a
                                                             href={`mailto:${m.email}`}
-                                                            className="flex items-center gap-1 hover:text-blue-600 transition-colors"
+                                                            className="flex items-center gap-1 hover:text-primary transition-colors"
                                                       >
-                                                            <Mail className="w-4 h-4" />
+                                                            <Mail className="w-4 h-4 text-primary" />
                                                             {m.email}
                                                       </a>
                                                       {m.mobile && (
                                                             <a
                                                                   href={`tel:${m.mobile}`}
-                                                                  className="flex items-center gap-1 hover:text-blue-600 transition-colors"
+                                                                  className="flex items-center gap-1 hover:text-primary transition-colors"
                                                             >
-                                                                  <Phone className="w-4 h-4" />
+                                                                  <Phone className="w-4 h-4 text-primary" />
                                                                   {m.mobile}
                                                             </a>
                                                       )}
                                                 </div>
 
-                                                <div className="text-sm leading-relaxed mb-4 p-3 bg-gray-50 rounded-md">
+                                                <div className="text-sm leading-relaxed mb-4 p-3 bg-muted/50 rounded-md">
                                                       {m.message}
                                                 </div>
 
