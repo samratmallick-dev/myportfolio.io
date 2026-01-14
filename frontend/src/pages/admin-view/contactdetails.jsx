@@ -27,8 +27,9 @@ const AdminViewContactDetails = () => {
 
       useEffect(() => {
             if (contactDetails) {
+                  console.log('Contact Details:', contactDetails); // Debug log
                   setFormData({
-                        contactImage: contactDetails.contactImage || '',
+                        contactImage: contactDetails.contactImage?.url || '',
                         name: contactDetails.name || '',
                         email: contactDetails.email || '',
                         mobile: contactDetails.mobile || '',
@@ -83,13 +84,20 @@ const AdminViewContactDetails = () => {
                                                 </div>
                                           ) : contactDetails ? (
                                                 <div className="container mx-auto px-4 text-center space-y-2">
-                                                      {contactDetails.contactImage && (
+                                                      {contactDetails.contactImage?.url ? (
                                                             <img
-                                                                  src={contactDetails.contactImage}
+                                                                  src={contactDetails.contactImage.url}
                                                                   alt="Contact"
                                                                   className="w-40 h-40 object-cover rounded-full mx-auto mb-6 border-4 border-primary/20"
+                                                                  onError={(e) => {
+                                                                        e.target.style.display = 'none';
+                                                                        e.target.nextSibling.style.display = 'flex';
+                                                                  }}
                                                             />
-                                                      )}
+                                                      ) : null}
+                                                      <div className="w-40 h-40 bg-muted rounded-full mx-auto mb-6 border-4 border-primary/20 flex items-center justify-center" style={{display: contactDetails.contactImage?.url ? 'none' : 'flex'}}>
+                                                            <UserRound className="h-16 w-16 text-muted-foreground" />
+                                                      </div>
                                                       {contactDetails.name && (
                                                             <div className="font-semibold flex items-center gap-2 justify-center"><UserRound className="h-4 w-4" /> {contactDetails.name}</div>
                                                       )}

@@ -54,7 +54,7 @@ const MyContact = () => {
                         </div>
                         <div className='w-full flex flex-col md:flex-row items-center gap-4 mt-8'>
                               <div className='md:w-1/2 w-full flex flex-col items-center justify-center gap-8'>
-                                    <img src={contactDetails?.contactImage || profileImage} alt="Contact" className="w-40 h-40 rounded-full mx-auto border-4 border-primary/20 object-cover" />
+                                    <img src={contactDetails?.contactImage?.url || profileImage} alt="Contact" className="w-40 h-40 rounded-full mx-auto border-4 border-primary/20 object-cover" onError={(e) => {e.target.src = profileImage}} />
                                     <Card className="hover-lift tech-glow">
                                           <CardHeader className="text-center text-3xl font-bold text-gradient">
                                                 <CardTitle>Contact & Location</CardTitle>
