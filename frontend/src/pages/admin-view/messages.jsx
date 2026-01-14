@@ -103,7 +103,7 @@ const AdminMessages = () => {
                                                       )}
                                                 </div>
 
-                                                <div className="text-sm leading-relaxed mb-4 p-3 rounded-md border-border">
+                                                <div className="text-sm leading-relaxed mb-4 p-3 rounded-md bg-muted-foreground/90 border-border">
                                                       {m.message}
                                                 </div>
 
