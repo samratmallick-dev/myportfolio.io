@@ -183,7 +183,7 @@ class AdminService {
                   otp
             });
 
-            await sendEmail({
+            await emailService.sendMail({
                   to: admin.email,
                   subject: "Password Reset OTP",
                   text: `Your OTP for password reset is: ${otp}. It will expire in 10 minutes.`,

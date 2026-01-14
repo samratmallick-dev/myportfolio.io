@@ -10,22 +10,17 @@ class EmailService {
       }
 
       initialize() {
-            if (!EmailConfig.auth?.user || !EmailConfig.auth?.pass) {
-                  Logger.warn('Email service disabled: Gmail credentials not configured');
+            if (!EmailConfig.host || !EmailConfig.port) {
+                  Logger.warn('Email service disabled: SMTP not configured');
                   this.enabled = false;
                   return;
             }
 
             this.transporter = nodemailer.createTransport({
-                  service: 'gmail',
-                  auth: EmailConfig.auth,
-                  connectionTimeout: 30000,
-                  greetingTimeout: 15000,
-                  socketTimeout: 30000,
-                  pool: true,
-                  maxConnections: 1,
-                  rateDelta: 20000,
-                  rateLimit: 5
+                  host: EmailConfig.host,
+                  port: EmailConfig.port,
+                  secure: EmailConfig.secure,
+                  auth: EmailConfig.auth
             });
 
             this.enabled = true;
