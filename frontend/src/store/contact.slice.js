@@ -281,3 +281,4 @@ const contactSlice = createSlice({
 });
 
 export const contactActions = contactSlice.actions;
+export default contactSlice;
