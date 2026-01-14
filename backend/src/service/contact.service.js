@@ -1,4 +1,4 @@
-import Logger from "../../config/logger/logger.config.js";
+import Logger from "../config/logger/logger.config.js";
 import contactRepository from "../repository/contact.repository.js";
 import ApiError from "../utilities/error/apiError.js";
 import { uploadToCloudinary } from "../utilities/cloudinary/upload.js";
