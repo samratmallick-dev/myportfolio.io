@@ -64,19 +64,6 @@ class ContactRepository extends BaseRepository {
       async markMessageAsRead(id) {
             return await this.MessageModel.findByIdAndUpdate(id, { status: "read" }, { new: true });
       }
-
-      async replyToMessage(id, replyData) {
-            return await this.MessageModel.findByIdAndUpdate(
-                  id,
-                  {
-                        replyMessage: replyData.replyMessage,
-                        repliedAt: new Date(),
-                        repliedBy: replyData.repliedBy,
-                        status: "replied"
-                  },
-                  { new: true, runValidators: true }
-            );
-      }
 }
 
 export default new ContactRepository();

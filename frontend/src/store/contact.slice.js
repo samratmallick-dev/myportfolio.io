@@ -10,7 +10,6 @@ import {
       markMessageAsRead,
       fetchUnreadCount,
       fetchAllMessagesAdmin,
-      replyToMessage,
 } from "../config/api.js";
 
 // Async thunks
@@ -130,18 +129,6 @@ export const getAllMessagesAdmin = createAsyncThunk(
                   return response.data;
             } catch (error) {
                   return rejectWithValue(error.message || "Failed to fetch admin messages");
-            }
-      }
-);
-
-export const replyToMessageThunk = createAsyncThunk(
-      "contact/replyToMessage",
-      async ({ messageId, replyData }, { rejectWithValue }) => {
-            try {
-                  const response = await replyToMessage(messageId, replyData);
-                  return response.data;
-            } catch (error) {
-                  return rejectWithValue(error.message || "Failed to send reply");
             }
       }
 );
@@ -287,22 +274,6 @@ const contactSlice = createSlice({
                         state.messages = action.payload;
                   })
                   .addCase(getAllMessagesAdmin.rejected, (state, action) => {
-                        state.loading = false;
-                        state.error = action.payload;
-                  })
-                  // Reply to message
-                  .addCase(replyToMessageThunk.pending, (state) => {
-                        state.loading = true;
-                        state.error = null;
-                  })
-                  .addCase(replyToMessageThunk.fulfilled, (state, action) => {
-                        state.loading = false;
-                        const index = state.messages.findIndex(msg => msg._id === action.payload._id);
-                        if (index !== -1) {
-                              state.messages[index] = action.payload;
-                        }
-                  })
-                  .addCase(replyToMessageThunk.rejected, (state, action) => {
                         state.loading = false;
                         state.error = action.payload;
                   });

@@ -76,15 +76,6 @@ class ContactController {
 
             sendSuccess(res, "All messages retrieved successfully", messages);
       });
-
-      replyToMessage = asyncHandler(async (req, res) => {
-            const { messageId } = req.params;
-            const replyData = req.body;
-
-            const message = await contactService.replyToMessage(messageId, replyData);
-
-            sendSuccess(res, "Reply sent successfully", message);
-      });
 }
 
 export default new ContactController();
