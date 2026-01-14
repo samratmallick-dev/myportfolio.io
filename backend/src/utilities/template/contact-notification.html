@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>New Contact Message</title>
+      <style>
+            body {
+                  font-family: Arial, sans-serif;
+                  line-height: 1.6;
+                  color: #333;
+            }
+
+            .container {
+                  max-width: 600px;
+                  margin: 0 auto;
+                  padding: 20px;
+            }
+
+            .header {
+                  background: linear-gradient(135deg, #FF6B6B 0%, #ee5a52 100%);
+                  color: white;
+                  padding: 30px;
+                  text-align: center;
+                  border-radius: 10px 10px 0 0;
+            }
+
+            .content {
+                  background: #f9f9f9;
+                  padding: 30px;
+                  border-radius: 0 0 10px 10px;
+            }
+
+            .contact-info {
+                  background: white;
+                  padding: 20px;
+                  margin: 20px 0;
+                  border-radius: 8px;
+                  border: 1px solid #ddd;
+            }
+
+            .info-row {
+                  margin: 10px 0;
+            }
+
+            .label {
+                  font-weight: bold;
+                  color: #555;
+            }
+
+            .footer {
+                  text-align: center;
+                  margin-top: 20px;
+                  color: #666;
+                  font-size: 14px;
+            }
+      </style>
+</head>
+<body>
+      <div class="container">
+            <div class="header">
+                  <h1>New Contact Message Received</h1>
+            </div>
+            <div class="content">
+                  <p>You have received a new message through your portfolio contact form.</p>
+
+                  <div class="contact-info">
+                        <div class="info-row">
+                              <span class="label">Name:</span> {{name}}
+                        </div>
+                        <div class="info-row">
+                              <span class="label">Email:</span> {{email}}
+                        </div>
+                        <div class="info-row">
+                              <span class="label">Mobile:</span> {{mobile}}
+                        </div>
+                        <div class="info-row">
+                              <span class="label">Subject:</span> {{subject}}
+                        </div>
+                        <div class="info-row">
+                              <span class="label">Message:</span><br>
+                              {{message}}
+                        </div>
+                        <div class="info-row">
+                              <span class="label">Received:</span> {{date}}
+                        </div>
+                  </div>
+
+                  <p>Please respond to this inquiry at your earliest convenience.</p>
+            </div>
+            <div class="footer">
+                  <p>Portfolio Contact Form Notification</p>
+            </div>
+      </div>
+</body>
+</html>

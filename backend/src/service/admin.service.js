@@ -2,7 +2,8 @@ import jwt from "jsonwebtoken";
 import adminRepository from "../repository/admin.repository.js";
 import ApiError from "../utilities/error/apiError.js";
 import { generateOTP } from "../utilities/email/generateOTP.js";
-import { sendEmail } from "../utilities/email/sendEmail.js";
+import emailService from "../utilities/email/email.service.js";
+import templateService from "../utilities/email/template.service.js";
 import Logger from "../config/logger/logger.config.js";
 
 class AdminService {
@@ -102,10 +103,24 @@ class AdminService {
                   otp
             });
 
-            await sendEmail({
+            const emailTitle = purpose === 'email_update' ? "Email Update Verification" : "Password Update Verification";
+            const emailMessage = purpose === 'email_update' 
+                  ? "You requested to update your email address. Please use the verification code below to confirm this change."
+                  : "You requested to update your password. Please use the verification code below to confirm this change.";
+
+            const html = await templateService.render('otp-email', {
+                  title: emailTitle,
+                  message: emailMessage,
+                  otp: otp,
+                  expiryMinutes: '10',
+                  senderName: 'Portfolio Admin'
+            });
+
+            await emailService.sendMail({
                   to: emailTo,
                   subject: subject,
-                  text: message,
+                  html: html,
+                  text: message
             });
 
             Logger.info('OTP email sent successfully', { purpose });

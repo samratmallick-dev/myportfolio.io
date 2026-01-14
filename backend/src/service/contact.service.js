@@ -2,7 +2,8 @@ import Logger from "../config/logger/logger.config.js";
 import contactRepository from "../repository/contact.repository.js";
 import ApiError from "../utilities/error/apiError.js";
 import { uploadToCloudinary } from "../utilities/cloudinary/upload.js";
-import { sendEmail } from "../utilities/email/sendEmail.js";
+import emailService from "../utilities/email/email.service.js";
+import templateService from "../utilities/email/template.service.js";
 
 class ContactService {
       // Contact Details Methods
@@ -103,46 +104,46 @@ class ContactService {
                   const contactDetails = await contactRepository.findActiveContactDetails();
 
                   const emailPromises = [
-                        sendEmail({
-                              to: messageData.email,
-                              subject: "Message Received - Thank You",
-                              text: `Dear ${messageData.name},\n\nThank you for contacting us. We have received your message and will get back to you soon.\n\nYour message:\n${messageData.message}\n\nBest regards,\nThe Team`,
-                              html: `
-                                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                                          <h2 style="color: #333;">Thank You for Contacting Us!</h2>
-                                          <p>Dear ${messageData.name},</p>
-                                          <p>We have received your message and will get back to you soon.</p>
-                                          <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
-                                                <h3 style="margin-top: 0;">Your Message:</h3>
-                                                <p>${messageData.message}</p>
-                                          </div>
-                                          <p>Best regards,<br>The Team</p>
-                                    </div>
-                              `
-                        }).then(() => {
+                        // Send acknowledgment to user
+                        (async () => {
+                              const html = await templateService.render('contact-acknowledgment', {
+                                    name: messageData.name,
+                                    subject: 'Contact Form Submission',
+                                    message: messageData.message,
+                                    date: new Date().toLocaleDateString(),
+                                    senderName: 'Portfolio Team'
+                              });
+                              
+                              return emailService.sendMail({
+                                    to: messageData.email,
+                                    subject: "Message Received - Thank You",
+                                    html: html,
+                                    text: `Dear ${messageData.name},\n\nThank you for contacting us. We have received your message and will get back to you soon.\n\nYour message:\n${messageData.message}\n\nBest regards,\nThe Team`
+                              });
+                        })().then(() => {
                               Logger.info(`Confirmation email sent successfully to ${messageData.email}`);
                               return { type: 'user', success: true };
                         }),
 
+                        // Send notification to admin
                         contactDetails && contactDetails.email ?
-                              sendEmail({
-                                    to: contactDetails.email,
-                                    subject: `New Contact Message from ${messageData.name}`,
-                                    text: `You have received a new message from ${messageData.name} (${messageData.email}):\n\nMobile: ${messageData.mobile || 'Not provided'}\nMessage: ${messageData.message}`,
-                                    html: `
-                                          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                                                <h2 style="color: #333;">New Contact Message</h2>
-                                                <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
-                                                      <p><strong>From:</strong> ${messageData.name}</p>
-                                                      <p><strong>Email:</strong> ${messageData.email}</p>
-                                                      <p><strong>Mobile:</strong> ${messageData.mobile || 'Not provided'}</p>
-                                                      <hr style="border: none; border-top: 1px solid #ddd; margin: 15px 0;">
-                                                      <p><strong>Message:</strong></p>
-                                                      <p>${messageData.message}</p>
-                                                </div>
-                                          </div>
-                                    `
-                              }).then(() => {
+                              (async () => {
+                                    const html = await templateService.render('contact-notification', {
+                                          name: messageData.name,
+                                          email: messageData.email,
+                                          mobile: messageData.mobile || 'Not provided',
+                                          subject: 'Contact Form Submission',
+                                          message: messageData.message,
+                                          date: new Date().toLocaleString()
+                                    });
+                                    
+                                    return emailService.sendMail({
+                                          to: contactDetails.email,
+                                          subject: `New Contact Message from ${messageData.name}`,
+                                          html: html,
+                                          text: `You have received a new message from ${messageData.name} (${messageData.email}):\n\nMobile: ${messageData.mobile || 'Not provided'}\nMessage: ${messageData.message}`
+                                    });
+                              })().then(() => {
                                     Logger.info(`Notification email sent successfully to admin: ${contactDetails.email}`);
                                     return { type: 'admin', success: true };
                               })
