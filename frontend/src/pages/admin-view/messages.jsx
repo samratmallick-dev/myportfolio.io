@@ -66,7 +66,7 @@ const AdminMessages = () => {
                                           <div
                                                 key={m._id}
                                                 className={`p-4 rounded-lg border transition-colors hover-lift ${
-                                                      !m.isRead ? 'bg-accent/10 border-accent/30 tech-glow' : 'card-gradient border-border'
+                                                      !m.isRead ? 'bg-background border-accent/30 tech-glow' : 'card-gradient border-border'
                                                 }`}
                                           >
                                                 <div className="flex items-start justify-between mb-3">
@@ -103,7 +103,7 @@ const AdminMessages = () => {
                                                       )}
                                                 </div>
 
-                                                <div className="text-sm leading-relaxed mb-4 p-3 bg-muted/50 rounded-md">
+                                                <div className="text-sm leading-relaxed mb-4 p-3 rounded-md">
                                                       {m.message}
                                                 </div>
 
