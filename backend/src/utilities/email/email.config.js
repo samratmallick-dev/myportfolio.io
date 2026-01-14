@@ -6,7 +6,7 @@ export const EmailConfig = {
             process.env.SMTP_USER && process.env.SMTP_PASSWORD
                   ? {
                         user: process.env.SMTP_USER,
-                        pass: process.env.SMTP_PASSWORD?.replace(/\s/g, "")
+                        pass: process.env.SMTP_PASSWORD
                   }
                   : null,
       from: `"Portfolio" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`

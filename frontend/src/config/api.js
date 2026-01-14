@@ -52,7 +52,7 @@ export const checkAdminAuth = async () => {
 export const generateOTP = async (data) => {
       try {
             const res = await api.post(adminAuthEndpoints.generateOTP, data, {
-                  timeout: 15000 
+                  timeout: 50000 
             });
             return res.data;
       } catch (error) {

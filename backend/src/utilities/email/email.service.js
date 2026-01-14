@@ -21,9 +21,9 @@ class EmailService {
                   port: EmailConfig.port,
                   secure: EmailConfig.secure,
                   auth: EmailConfig.auth,
-                  connectionTimeout: 10000,
-                  greetingTimeout: 10000,
-                  socketTimeout: 10000
+                  connectionTimeout: 15000,
+                  greetingTimeout: 15000,
+                  socketTimeout: 15000
             });
 
             this.enabled = true;
@@ -32,10 +32,13 @@ class EmailService {
 
       async sendMail({ to, subject, html, text }) {
             if (!this.enabled || !this.transporter) {
+                  Logger.error('Email service not configured');
                   throw new Error("Email service is not configured");
             }
 
             try {
+                  Logger.info(`Sending email to ${to}...`);
+                  
                   const sendPromise = this.transporter.sendMail({
                         from: EmailConfig.from,
                         to,
@@ -45,14 +48,18 @@ class EmailService {
                   });
 
                   const timeoutPromise = new Promise((_, reject) => 
-                        setTimeout(() => reject(new Error('Email sending timeout')), 30000)
+                        setTimeout(() => reject(new Error('Email sending timeout after 45s')), 45000)
                   );
 
                   const result = await Promise.race([sendPromise, timeoutPromise]);
                   Logger.info(`Email sent successfully to ${to}: ${result.messageId}`);
                   return result;
             } catch (error) {
-                  Logger.error(`Failed to send email to ${to}:`, error);
+                  Logger.error(`Failed to send email to ${to}:`, { 
+                        message: error.message,
+                        code: error.code,
+                        command: error.command 
+                  });
                   throw new Error(`Email delivery failed: ${error.message}`);
             }
       }
