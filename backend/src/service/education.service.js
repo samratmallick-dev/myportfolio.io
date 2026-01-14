@@ -1,9 +1,12 @@
 import educationRepository from "../repository/education.repository.js";
 import ApiError from "../utilities/error/apiError.js";
+import Logger from "../config/logger/logger.config.js";
 
 class EducationService {
       async createEducation(educationData) {
+            Logger.info('Creating new education entry', { institution: educationData.institution });
             const education = await educationRepository.create(educationData);
+            Logger.info('Education created successfully', { educationId: education._id });
             return education;
       }
 
@@ -38,13 +41,16 @@ class EducationService {
       }
 
       async deleteEducation(id) {
+            Logger.info('Deleting education entry', { educationId: id });
             const education = await educationRepository.findById(id);
 
             if (!education) {
+                  Logger.error('Education deletion failed - not found', { educationId: id });
                   throw ApiError.notFound("Education not found");
             }
 
             await educationRepository.deleteById(id);
+            Logger.info('Education deleted successfully', { educationId: id });
             return { message: "Education deleted successfully" };
       }
 

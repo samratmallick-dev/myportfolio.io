@@ -1,4 +1,5 @@
 import { v2 as cloudinary } from "cloudinary";
+import Logger from "../../config/logger/logger.config.js";
 
 const CLOUDINARY_CLOUD_NAME = process.env.CLOUD_NAME;
 const CLOUDINARY_API_KEY = process.env.CLOUD_API_KEY;
@@ -30,12 +31,14 @@ const fileToBuffer = async (file) => {
 
 export const uploadToCloudinary = async (file, options = {}) => {
       try {
+            Logger.info('Starting Cloudinary upload', { folder: options.folder || "portfolio" });
             const buffer = await fileToBuffer(file);
             if (!buffer) {
+                  Logger.error('Cloudinary upload failed - invalid file format');
                   throw new Error("Invalid file format");
             }
 
-            return await new Promise((resolve, reject) => {
+            const result = await new Promise((resolve, reject) => {
                   const uploadOptions = {
                         resource_type: "auto",
                         folder: options.folder || "portfolio",
@@ -47,14 +50,24 @@ export const uploadToCloudinary = async (file, options = {}) => {
                   const uploadStream = cloudinary.uploader.upload_stream(
                         uploadOptions,
                         (error, result) => {
-                              if (error) return reject(error);
+                              if (error) {
+                                    Logger.error('Cloudinary upload stream error', { error: error.message });
+                                    return reject(error);
+                              }
+                              Logger.info('Cloudinary upload successful', { 
+                                    public_id: result.public_id, 
+                                    secure_url: result.secure_url 
+                              });
                               resolve(result);
                         }
                   );
 
                   uploadStream.end(buffer);
             });
+            
+            return result;
       } catch (error) {
+            Logger.error('Cloudinary upload failed', { error: error.message });
             throw new Error(`Cloudinary upload failed: ${error.message}`);
       }
 };
@@ -64,10 +77,14 @@ export const deleteFromCloudinary = async (
       resourceType = "image"
 ) => {
       try {
-            return await cloudinary.uploader.destroy(publicId, {
+            Logger.info('Deleting from Cloudinary', { publicId, resourceType });
+            const result = await cloudinary.uploader.destroy(publicId, {
                   resource_type: resourceType,
             });
+            Logger.info('Cloudinary deletion successful', { publicId, result: result.result });
+            return result;
       } catch (error) {
+            Logger.error('Cloudinary deletion failed', { publicId, error: error.message });
             throw new Error(`Cloudinary deletion failed: ${error.message}`);
       }
 };

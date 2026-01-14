@@ -1,12 +1,15 @@
 import aboutRepository from "../repository/about.repository.js";
 import ApiError from "../utilities/error/apiError.js";
 import { uploadToCloudinary } from "../utilities/cloudinary/upload.js";
+import Logger from "../config/logger/logger.config.js";
 
 class AboutService {
       async addUpdateAboutContent(aboutData, aboutImage) {
+            Logger.info('Adding/updating about content', { hasImage: !!aboutImage });
             let aboutContent = await aboutRepository.findActive();
 
             if (aboutImage) {
+                  Logger.info('Uploading about image to Cloudinary');
                   const cloudinaryResponse = await uploadToCloudinary(aboutImage, "about/profile");
                   aboutData.aboutImage = {
                         public_id: cloudinaryResponse.public_id,
@@ -15,11 +18,14 @@ class AboutService {
             }
 
             if (aboutContent) {
+                  Logger.info('Updating existing about content', { aboutId: aboutContent._id });
                   aboutContent = await aboutRepository.updateById(aboutContent._id, aboutData);
             } else {
+                  Logger.info('Creating new about content');
                   aboutContent = await aboutRepository.create(aboutData);
             }
 
+            Logger.info('About content operation completed successfully');
             return aboutContent;
       }
 

@@ -1,12 +1,15 @@
 import projectRepository from "../repository/project.repository.js";
 import ApiError from "../utilities/error/apiError.js";
+import Logger from "../config/logger/logger.config.js";
 
 class ProjectService {
       async createProject(projectData) {
+            Logger.info('Creating new project', { title: projectData.title });
             if (projectData.technologies && typeof projectData.technologies === 'string') {
                   projectData.technologies = projectData.technologies.split(',').map(t => t.trim()).filter(Boolean);
             }
             const project = await projectRepository.create(projectData);
+            Logger.info('Project created successfully', { projectId: project._id });
             return project;
       }
 
@@ -45,13 +48,16 @@ class ProjectService {
       }
 
       async deleteProject(id) {
+            Logger.info('Deleting project', { projectId: id });
             const project = await projectRepository.findById(id);
 
             if (!project) {
+                  Logger.error('Project deletion failed - project not found', { projectId: id });
                   throw ApiError.notFound("Project not found");
             }
 
             await projectRepository.deleteById(id);
+            Logger.info('Project deleted successfully', { projectId: id });
             return { message: "Project deleted successfully" };
       }
 

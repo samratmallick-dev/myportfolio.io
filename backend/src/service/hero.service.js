@@ -1,17 +1,19 @@
 import heroRepository from "../repository/hero.repository.js";
 import ApiError from "../utilities/error/apiError.js";
 import { uploadToCloudinary } from "../utilities/cloudinary/upload.js";
+import Logger from "../config/logger/logger.config.js";
 
 class HeroService {
       async addUpdateHeroContent(heroData, profileImage) {
+            Logger.info('Adding/updating hero content', { hasImage: !!profileImage });
             let heroContent = await heroRepository.findActive();
 
-            // Handle title as array
             if (heroData.title && typeof heroData.title === 'string') {
                   heroData.title = heroData.title.split(',').map(title => title.trim()).filter(title => title);
             }
 
             if (profileImage) {
+                  Logger.info('Uploading hero profile image to Cloudinary');
                   const cloudinaryResponse = await uploadToCloudinary(profileImage, "hero/profile");
                   heroData.profileImage = {
                         public_id: cloudinaryResponse.public_id,
@@ -20,11 +22,14 @@ class HeroService {
             }
 
             if (heroContent) {
+                  Logger.info('Updating existing hero content', { heroId: heroContent._id });
                   heroContent = await heroRepository.updateById(heroContent._id, heroData);
             } else {
+                  Logger.info('Creating new hero content');
                   heroContent = await heroRepository.create(heroData);
             }
 
+            Logger.info('Hero content operation completed successfully');
             return heroContent;
       }
 

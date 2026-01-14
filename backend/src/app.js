@@ -3,6 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { errorHandler } from "./middleware/error.middleware.js";
 import apiRoutes from "./routes/api.routes.js";
+import Logger from "./config/logger/logger.config.js";
 
 const app = express();
 
@@ -36,7 +37,11 @@ app.use(
                               }
                         });
 
-                  if (isAllowed) return callback(null, true);
+                  if (isAllowed) {
+                        Logger.info('CORS request allowed', { origin });
+                        return callback(null, true);
+                  }
+                  Logger.warn('CORS request blocked', { origin, allowedOrigins });
                   return callback(new Error("Not allowed by CORS"));
             },
             credentials: true,
@@ -67,6 +72,7 @@ app.get("/", (req, res) => {
 });
 
 app.use((req, res) => {
+      Logger.warn('Route not found', { path: req.originalUrl, method: req.method, ip: req.ip });
       res.status(404).json({
             success: false,
             message: "Route not found",

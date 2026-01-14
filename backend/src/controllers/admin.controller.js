@@ -1,6 +1,7 @@
 import adminService from "../service/admin.service.js";
 import { sendCreated, sendSuccess } from "../utilities/response/apiResponse.js";
 import { asyncHandler } from "../utilities/error/asyncHandler.js";
+import Logger from "../config/logger/logger.config.js";
 
 class AdminController {
       initializeAdmin = asyncHandler(async (req, res) => {
@@ -38,9 +39,7 @@ class AdminController {
       generateOTP = asyncHandler(async (req, res) => {
             const { purpose } = req.body;
             const adminId = req.admin.id;
-            console.log('generateOTP controller - req.body:', req.body);
-            console.log('generateOTP controller - adminId:', adminId);
-            console.log('generateOTP controller - purpose:', purpose);
+            Logger.info('OTP generation request', { adminId, purpose, newEmail: req.body.newEmail });
             
             const result = await adminService.generateOTPForEmailUpdate({ adminId, purpose, newEmail: req.body.newEmail });
             sendSuccess(res, result.message);

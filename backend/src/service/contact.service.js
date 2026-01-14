@@ -1,3 +1,4 @@
+import Logger from "../../config/logger/logger.config.js";
 import contactRepository from "../repository/contact.repository.js";
 import ApiError from "../utilities/error/apiError.js";
 import { uploadToCloudinary } from "../utilities/cloudinary/upload.js";
@@ -79,13 +80,18 @@ class ContactService {
             }
 
             try {
+                  Logger.info("Attempting to send confirmation and notification emails", {
+                        userEmail: messageData.email,
+                        userName: messageData.name
+                  });
+
                   // Send confirmation email to user
                   await sendEmail({
                         to: messageData.email,
                         subject: "Message Received - Thank You",
                         text: `Thank you for contacting us. We have received your message and will get back to you soon.\n\nYour message:\n${messageData.message}`,
                   });
-                  console.log(`Confirmation email sent to ${messageData.email}`);
+                  Logger.info(`Confirmation email sent successfully to ${messageData.email}`);
 
                   // Send notification to admin
                   const contactDetails = await contactRepository.findActiveContactDetails();
@@ -95,10 +101,17 @@ class ContactService {
                               subject: `New Contact Message from ${messageData.name}`,
                               text: `You have received a new message from ${messageData.name} (${messageData.email}):\n\nMobile: ${messageData.mobile}\nMessage: ${messageData.message}`,
                         });
-                        console.log(`Notification email sent to admin: ${contactDetails.email}`);
+                        Logger.info(`Notification email sent successfully to admin: ${contactDetails.email}`);
+                  } else {
+                        Logger.warn("No admin contact details found for notification email");
                   }
             } catch (error) {
-                  console.error("Email sending error:", error.message);
+                  Logger.error("Email sending error in contact service", {
+                        error: error.message,
+                        stack: error.stack,
+                        userEmail: messageData.email,
+                        userName: messageData.name
+                  });
                   // Don't throw error - message is already saved
             }
 
