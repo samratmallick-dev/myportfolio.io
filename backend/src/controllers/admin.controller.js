@@ -14,11 +14,13 @@ class AdminController {
             const loginData = req.body;
             const { admin, token } = await adminService.login(loginData);
 
+            const isProduction = process.env.NODE_ENV === "production";
+
             const options = {
                   httpOnly: true,
-                  secure: process.env.NODE_ENV === "production",
-                  sameSite: "strict",
-                  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+                  secure: isProduction,           // ❌ false on localhost
+                  sameSite: isProduction ? "none" : "lax",
+                  maxAge: 7 * 24 * 60 * 60 * 1000,
             };
 
             res.cookie("token", token, options);
@@ -26,7 +28,16 @@ class AdminController {
       });
 
       logout = asyncHandler(async (req, res) => {
-            res.clearCookie("token");
+            const isProduction = process.env.NODE_ENV === "production";
+
+            const options = {
+                  httpOnly: true,
+                  secure: isProduction,
+                  sameSite: isProduction ? "none" : "lax",
+                  maxAge: 7 * 24 * 60 * 60 * 1000,
+            };
+
+            res.clearCookie("token", options);
             sendSuccess(res, "Logout successful");
       });
 
@@ -40,7 +51,7 @@ class AdminController {
             const { purpose, newEmail } = req.body;
             const adminId = req.admin.id;
             Logger.info('OTP generation request', { adminId, purpose, newEmail });
-            
+
             const result = await adminService.generateOTPForEmailUpdate({ adminId, purpose, newEmail });
             sendSuccess(res, result.message);
       });
@@ -60,6 +71,7 @@ class AdminController {
       });
 }
 // console.log("initializeAdmin length:", this.initializeAdmin.length);
+console.log(typeof adminService.login);
 
 export default new AdminController();
 

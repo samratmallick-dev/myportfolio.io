@@ -8,10 +8,46 @@ import Logger from "../config/logger/logger.config.js";
 
 class AdminService {
 
-      async generateOTPForEmailUpdate(data) {
-            Logger.info("Generate OTP request", data);
+      async initializeAdmin(adminData) {
+            const existingAdmin = await adminRepository.findByEmail(adminData.email);
+            if (existingAdmin) {
+                  throw ApiError.badRequest("Admin already exists");
+            }
+            return adminRepository.create(adminData);
+      }
 
-            const { adminId, purpose, newEmail } = data;
+      async login(loginData) {
+            const { email, password } = loginData;
+
+            const admin = await adminRepository.findByEmail(email);
+            if (!admin) {
+                  throw ApiError.unauthorized("Invalid credentials");
+            }
+
+            const isPasswordValid = await admin.comparePassword(password);
+            if (!isPasswordValid) {
+                  throw ApiError.unauthorized("Invalid credentials");
+            }
+
+            if (!admin.isActive) {
+                  throw ApiError.unauthorized("Account is deactivated");
+            }
+
+            await adminRepository.updateLastLogin(admin._id);
+            const token = this.generateToken(admin._id);
+
+            return { admin, token };
+      }
+
+      async getAdminUser(adminId) {
+            const admin = await adminRepository.findById(adminId);
+            if (!admin) throw ApiError.notFound("Admin not found");
+            if (!admin.isActive) throw ApiError.unauthorized("Account is deactivated");
+            return admin;
+      }
+
+      async generateOTPForEmailUpdate({ adminId, purpose, newEmail }) {
+            Logger.info("Generate OTP request", { adminId, purpose });
 
             if (purpose === "email_update" && !newEmail) {
                   throw ApiError.badRequest("New email is required");
@@ -28,53 +64,30 @@ class AdminService {
 
             await adminRepository.updateById(adminId, updateData);
 
-            const emailTo =
-                  purpose === "email_update" ? newEmail : admin.email;
-
+            const emailTo = purpose === "email_update" ? newEmail : admin.email;
             const subject =
                   purpose === "email_update"
                         ? "Email Update OTP"
                         : "Password Update OTP";
 
-            const text =
-                  purpose === "email_update"
-                        ? `Your OTP for email update is ${otp}. Valid for 10 minutes.`
-                        : `Your OTP for password update is ${otp}. Valid for 10 minutes.`;
-
-            const emailTitle =
-                  purpose === "email_update"
-                        ? "Email Update Verification"
-                        : "Password Update Verification";
-
-            const emailMessage =
-                  purpose === "email_update"
-                        ? "You requested to update your email address."
-                        : "You requested to update your password.";
-
             const html = await templateService.render("otp-email", {
-                  title: emailTitle,
-                  message: emailMessage,
+                  title: "OTP Verification",
+                  message: "Use the OTP below to continue.",
                   otp,
                   expiryMinutes: "10",
                   senderName: "Portfolio Admin",
             });
 
-            // 🔥 NON-BLOCKING EMAIL (FIX)
-            emailService
-                  .sendMail({
-                        to: emailTo,
-                        subject,
-                        html,
-                        text,
-                  })
-                  .then(() => {
-                        Logger.info("OTP email sent", { emailTo });
-                  })
-                  .catch((err) => {
-                        Logger.error("OTP email failed (background)", err);
-                  });
+            // 🔥 NON-BLOCKING EMAIL
+            emailService.sendMail({
+                  to: emailTo,
+                  subject,
+                  html,
+                  text: `Your OTP is ${otp}`,
+            }).catch(err => {
+                  Logger.error("OTP email failed (background)", err);
+            });
 
-            // 🚀 RESPONSE RETURNS IMMEDIATELY
             return {
                   success: true,
                   message:
@@ -88,28 +101,51 @@ class AdminService {
             const admin = await adminRepository.findById(adminId);
             if (!admin) throw ApiError.notFound("Admin not found");
 
-            if (!admin.otp || !admin.otpExpiry)
+            if (!admin.otp || !admin.otpExpiry) {
                   throw ApiError.badRequest("No OTP request found");
+            }
 
-            if (admin.otp !== otp)
+            if (admin.otp !== otp) {
                   throw ApiError.badRequest("Invalid OTP");
+            }
 
-            if (admin.otpExpiry < new Date())
+            if (admin.otpExpiry < new Date()) {
                   throw ApiError.badRequest("OTP expired");
+            }
 
-            const updatedAdmin = await adminRepository.updateById(adminId, {
+            return adminRepository.updateById(adminId, {
                   email: admin.newEmail,
                   $unset: { otp: 1, otpExpiry: 1, newEmail: 1 },
             });
+      }
 
-            return updatedAdmin;
+      async verifyOTPAndUpdatePassword(adminId, otp, newPassword) {
+            const admin = await adminRepository.findById(adminId);
+            if (!admin) throw ApiError.notFound("Admin not found");
+
+            if (!admin.otp || !admin.otpExpiry) {
+                  throw ApiError.badRequest("No OTP request found");
+            }
+
+            if (admin.otp !== otp) {
+                  throw ApiError.badRequest("Invalid OTP");
+            }
+
+            if (admin.otpExpiry < new Date()) {
+                  throw ApiError.badRequest("OTP expired");
+            }
+
+            return adminRepository.updateById(adminId, {
+                  password: newPassword,
+                  $unset: { otp: 1, otpExpiry: 1 },
+            });
       }
 
       generateToken(adminId) {
             return jwt.sign(
                   { adminId },
                   process.env.JWT_SECRET || "fallback_secret",
-                  { expiresIn: "7d" }
+                  { expiresIn: "1d" }
             );
       }
 }
