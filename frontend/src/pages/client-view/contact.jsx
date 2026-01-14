@@ -20,7 +20,7 @@ const initialFormData = {
 
 const MyContact = () => {
       const dispatch = useDispatch();
-      const { contactDetails, loading } = useSelector((state) => state.contact);
+      const { contactDetails, loading } = useSelector((state) => state?.contact || {});
       const [formData, setFormData] = useState(initialFormData);
 
       useEffect(() => {

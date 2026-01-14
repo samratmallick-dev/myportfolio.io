@@ -38,7 +38,7 @@ const initialFormData = {
 const AdminViewContactDetails = () => {
       const dispatch = useDispatch();
       const { contactDetails, loading } = useSelector(
-            (state) => state.contact
+            (state) => state?.contact || {}
       );
 
       const [formData, setFormData] = useState(initialFormData);

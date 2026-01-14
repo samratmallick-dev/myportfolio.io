@@ -23,7 +23,7 @@ const AdminViewDashboard = () => {
       const { educationData, isLoading: educationLoading } = useSelector((s) => s.education);
       const { heroData, isLoading: heroLoading } = useSelector((s) => s.hero);
       const { aboutData, isLoading: aboutLoading } = useSelector((s) => s.about);
-      const { messages, contactDetails, loading: contactLoading } = useSelector((s) => s.contact);
+      const { messages, contactDetails, loading: contactLoading } = useSelector((s) => s?.contact || {});
 
       useEffect(() => {
             dispatch(getHeroData());
