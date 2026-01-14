@@ -237,7 +237,7 @@ const AdminMessages = () => {
                                                                           <Button
                                                                                 onClick={handleSendReply}
                                                                                 disabled={loading || !replyText.trim()}
-                                                                                className={"hero-gradient text-muted hover:opacity-90"}
+                                                                                className={"hero-gradient text-muted"}
                                                                           >
                                                                                 <Send className="h-4 w-4 mr-1" />
                                                                                 Send Reply
