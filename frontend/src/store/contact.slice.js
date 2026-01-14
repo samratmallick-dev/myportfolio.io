@@ -55,7 +55,8 @@ export const sendMessage = createAsyncThunk(
                   const response = await sendContactMessage(messageData);
                   return response.data;
             } catch (error) {
-                  return rejectWithValue(error.message || "Failed to send message");
+                  console.error('Send message error:', error);
+                  return rejectWithValue(error.response?.data?.message || error.message || "Failed to send message");
             }
       }
 );

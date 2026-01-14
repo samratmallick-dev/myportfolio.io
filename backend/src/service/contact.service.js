@@ -78,24 +78,27 @@ class ContactService {
                   }
             }
 
-            try {
-                  await sendEmail({
-                        to: messageData.email,
-                        subject: "Message Received - Thank You",
-                        text: `Thank you for contacting us. We have received your message and will get back to you soon.\n\nYour message:\n${messageData.message}`,
-                  });
-
-                  const contactDetails = await contactRepository.findActiveContactDetails();
-                  if (contactDetails && contactDetails.email) {
+            // Send emails without blocking the response
+            setImmediate(async () => {
+                  try {
                         await sendEmail({
-                              to: contactDetails.email,
-                              subject: `New Contact Message from ${messageData.name}`,
-                              text: `You have received a new message from ${messageData.name} (${messageData.email}):\n\nMobile: ${messageData.mobile}\nMessage: ${messageData.message}`,
+                              to: messageData.email,
+                              subject: "Message Received - Thank You",
+                              text: `Thank you for contacting us. We have received your message and will get back to you soon.\n\nYour message:\n${messageData.message}`,
                         });
+
+                        const contactDetails = await contactRepository.findActiveContactDetails();
+                        if (contactDetails && contactDetails.email) {
+                              await sendEmail({
+                                    to: contactDetails.email,
+                                    subject: `New Contact Message from ${messageData.name}`,
+                                    text: `You have received a new message from ${messageData.name} (${messageData.email}):\n\nMobile: ${messageData.mobile}\nMessage: ${messageData.message}`,
+                              });
+                        }
+                  } catch (error) {
+                        console.error("Error sending notification emails:", error);
                   }
-            } catch (error) {
-                  console.error("Error sending notification emails:", error);
-            }
+            });
 
             return message;
       }

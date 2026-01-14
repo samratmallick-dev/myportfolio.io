@@ -8,13 +8,17 @@ const createTransporter = () => {
             secure: false,
             auth: {
                   user: process.env.EMAIL_USER,
-                  pass: process.env.EMAIL_PASS.replace(/\s/g, ""),
+                  pass: process.env.EMAIL_PASS,
             },
       });
 };
 
 const sendEmail = async (options) => {
       try {
+            if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+                  throw new Error("Email credentials not configured");
+            }
+
             const transporter = createTransporter();
 
             const mailOptions = {
@@ -31,8 +35,6 @@ const sendEmail = async (options) => {
                   to: options.to,
                   subject: options.subject,
             });
-            console.log(info);
-            
 
             return info;
       } catch (error) {
