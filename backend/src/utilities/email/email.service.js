@@ -29,7 +29,10 @@ class EmailService {
                   auth: EmailConfig.auth,
                   tls: EmailConfig.tls,
                   debug: EmailConfig.debug,
-                  logger: EmailConfig.logger
+                  logger: EmailConfig.logger,
+                  connectionTimeout: 10000,
+                  greetingTimeout: 5000,
+                  socketTimeout: 10000
             });
 
             this.enabled = true;

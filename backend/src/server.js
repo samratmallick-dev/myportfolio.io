@@ -14,6 +14,8 @@ emailService.testConnection().then(success => {
       } else {
             Logger.warn('Email service test failed - check your credentials');
       }
+}).catch(error => {
+      Logger.error('Email service test error:', error);
 });
 
 connectDb().then(
