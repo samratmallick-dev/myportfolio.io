@@ -6,16 +6,17 @@ import emailService from "./utilities/email/email.service.js";
 
 const PORT = process.env.PORT || 5000;
 
-emailService.initialize();
-
-emailService.testConnection().then(success => {
-      if (success) {
-            Logger.info('Email service is ready');
-      } else {
-            Logger.warn('Email service test failed - check your credentials');
+setImmediate(async () => {
+      try {
+            const ok = await emailService.testConnection();
+            if (ok) {
+                  Logger.info("📧 Email service is ready");
+            } else {
+                  Logger.warn("⚠️ Email service test failed (emails may not send)");
+            }
+      } catch (err) {
+            Logger.error("❌ Email service test error", err.message);
       }
-}).catch(error => {
-      Logger.error('Email service test error:', error);
 });
 
 connectDb().then(

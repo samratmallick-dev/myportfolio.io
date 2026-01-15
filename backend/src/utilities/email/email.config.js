@@ -1,16 +1,16 @@
+// backend/src/utilities/email/email.config.js
 export const EmailConfig = {
-      service: 'gmail',
-      host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT) || 587,
-      secure: false,
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false, // STARTTLS
       auth: {
             user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASSWORD
+            pass: process.env.SMTP_PASSWORD // Gmail App Password
       },
       from: `"Portfolio Admin" <${process.env.SMTP_USER}>`,
-      tls: {
-            rejectUnauthorized: false
-      },
+      connectionTimeout: 10000,
+      greetingTimeout: 5000,
+      socketTimeout: 10000,
       debug: true,
       logger: true
 };

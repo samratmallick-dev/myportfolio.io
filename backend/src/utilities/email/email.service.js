@@ -1,6 +1,7 @@
+// backend/src/utilities/email/email.service.js
 import nodemailer from "nodemailer";
 import { EmailConfig } from "./email.config.js";
-import Logger from '../../config/logger/logger.config.js';
+import Logger from "../../config/logger/logger.config.js";
 
 class EmailService {
       constructor() {
@@ -10,106 +11,46 @@ class EmailService {
       }
 
       initialize() {
-            if (
-                  !EmailConfig.host ||
-                  !EmailConfig.port ||
-                  !EmailConfig.auth?.user ||
-                  !EmailConfig.auth?.pass
-            ) {
-                  Logger.error('Email service disabled: SMTP credentials missing');
-                  this.enabled = false;
+            if (!EmailConfig.auth?.user || !EmailConfig.auth?.pass) {
+                  Logger.error("❌ Email service disabled: missing SMTP credentials");
                   return;
             }
 
             this.transporter = nodemailer.createTransport({
-                  service: EmailConfig.service,
                   host: EmailConfig.host,
                   port: EmailConfig.port,
                   secure: EmailConfig.secure,
                   auth: EmailConfig.auth,
-                  tls: EmailConfig.tls,
-                  debug: EmailConfig.debug,
-                  logger: EmailConfig.logger,
-                  connectionTimeout: 10000,
-                  greetingTimeout: 5000,
-                  socketTimeout: 10000
+                  connectionTimeout: EmailConfig.connectionTimeout,
+                  greetingTimeout: EmailConfig.greetingTimeout,
+                  socketTimeout: EmailConfig.socketTimeout
             });
 
             this.enabled = true;
-            Logger.info('Email service initialized');
+            Logger.info("✅ Email service initialized");
       }
 
-
-      async sendMail({ to, subject, html, text }) {
-            if (!this.enabled || !this.transporter) {
-                  Logger.error('Email service not configured');
-                  throw new Error("Email service is not configured");
+      async sendMail(payload) {
+            if (!this.enabled) {
+                  throw new Error("Email service disabled");
             }
 
-            try {
-                  console.log(`\n🔵 SENDING EMAIL TO: ${to}`);
-                  console.log(`📧 Subject: ${subject}`);
-                  console.log(`📤 From: ${EmailConfig.from}`);
-                  
-                  Logger.info(`Attempting to send email to ${to}...`);
-                  Logger.info(`Email config: from=${EmailConfig.from}, host=${EmailConfig.host}, port=${EmailConfig.port}`);
-
-                  const result = await this.transporter.sendMail({
-                        from: EmailConfig.from,
-                        to,
-                        subject,
-                        html,
-                        text
-                  });
-
-                  console.log(`✅ EMAIL SENT SUCCESSFULLY!`);
-                  console.log(`📬 MessageId: ${result.messageId}`);
-                  console.log(`✔️  Accepted: ${JSON.stringify(result.accepted)}`);
-                  console.log(`❌ Rejected: ${JSON.stringify(result.rejected)}\n`);
-
-                  Logger.info(`Email sent successfully to ${to}`, {
-                        messageId: result.messageId,
-                        response: result.response,
-                        accepted: result.accepted,
-                        rejected: result.rejected,
-                        pending: result.pending
-                  });
-                  return result;
-            } catch (error) {
-                  console.error(`\n❌ EMAIL FAILED TO: ${to}`);
-                  console.error(`Error: ${error.message}\n`);
-                  
-                  Logger.error(`Failed to send email to ${to}:`, {
-                        message: error.message,
-                        code: error.code,
-                        command: error.command,
-                        response: error.response,
-                        responseCode: error.responseCode
-                  });
-                  throw new Error(`Email delivery failed: ${error.message}`);
-            }
+            return this.transporter.sendMail({
+                  from: EmailConfig.from,
+                  ...payload
+            });
       }
 
       async testConnection() {
-            if (!this.enabled || !this.transporter) {
-                  Logger.error('Email service not enabled for testing');
-                  return false;
-            }
-
             try {
                   await this.transporter.verify();
-                  Logger.info('Email service connection verified successfully');
+                  Logger.info("✅ SMTP verified");
                   return true;
-            } catch (error) {
-                  Logger.error('Email service connection failed:', {
-                        message: error.message,
-                        code: error.code,
-                        response: error.response
-                  });
+            } catch (err) {
+                  Logger.error("❌ SMTP verify failed", err.message);
                   return false;
             }
       }
 }
 
-const emailService = new EmailService();
-export default emailService;
+export default new EmailService();

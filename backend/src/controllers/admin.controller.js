@@ -51,10 +51,14 @@ class AdminController {
             const { purpose, newEmail } = req.body;
             const adminId = req.admin.id;
             Logger.info('OTP generation request', { adminId, purpose, newEmail });
-
-            const result = await adminService.generateOTPForEmailUpdate({ adminId, purpose, newEmail });
+            const result = await adminService.generateOTPForEmailUpdate({
+                  adminId,
+                  purpose,
+                  newEmail
+            });
             sendSuccess(res, result.message);
       });
+
 
       verifyOTPAndUpdateEmail = asyncHandler(async (req, res) => {
             const { otp } = req.body;
