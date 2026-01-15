@@ -1,55 +1,90 @@
-// backend/src/utilities/email/email.service.js
-import nodemailer from "nodemailer";
-import { EmailConfig } from "./email.config.js";
 import Logger from "../../config/logger/logger.config.js";
 
 class EmailService {
       constructor() {
-            this.transporter = null;
-            this.enabled = false;
-            this.initialize();
+            this.enabled = Boolean(
+                  process.env.GMAIL_CLIENT_ID &&
+                  process.env.GMAIL_CLIENT_SECRET &&
+                  process.env.GMAIL_REFRESH_TOKEN &&
+                  process.env.GMAIL_SENDER
+            );
+
+            if (this.enabled) {
+                  Logger.info("✅ Gmail API email service enabled");
+            } else {
+                  Logger.warn("⚠️ Gmail API email service disabled (missing env vars)");
+            }
       }
 
-      initialize() {
-            if (!EmailConfig.auth?.user || !EmailConfig.auth?.pass) {
-                  Logger.error("❌ Email service disabled: missing SMTP credentials");
-                  return;
-            }
-
-            this.transporter = nodemailer.createTransport({
-                  host: EmailConfig.host,
-                  port: EmailConfig.port,
-                  secure: EmailConfig.secure,
-                  auth: EmailConfig.auth,
-                  connectionTimeout: EmailConfig.connectionTimeout,
-                  greetingTimeout: EmailConfig.greetingTimeout,
-                  socketTimeout: EmailConfig.socketTimeout
+      async getAccessToken() {
+            const res = await fetch("https://oauth2.googleapis.com/token", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                  body: new URLSearchParams({
+                        client_id: process.env.GMAIL_CLIENT_ID,
+                        client_secret: process.env.GMAIL_CLIENT_SECRET,
+                        refresh_token: process.env.GMAIL_REFRESH_TOKEN,
+                        grant_type: "refresh_token",
+                  }),
             });
 
-            this.enabled = true;
-            Logger.info("✅ Email service initialized");
+            const data = await res.json();
+            if (!data.access_token) {
+                  throw new Error(`Failed to refresh access token: ${JSON.stringify(data)}`);
+            }
+
+            return data.access_token;
       }
 
-      async sendMail(payload) {
+      createRawEmail({ to, subject, html, text }) {
+            const content = html || text || "";
+
+            const email = [
+                  `From: "Portfolio Admin" <${process.env.GMAIL_SENDER}>`,
+                  `To: ${to}`,
+                  `Subject: ${subject}`,
+                  "MIME-Version: 1.0",
+                  html
+                        ? "Content-Type: text/html; charset=utf-8"
+                        : "Content-Type: text/plain; charset=utf-8",
+                  "",
+                  content,
+            ].join("\n");
+
+            return Buffer.from(email)
+                  .toString("base64")
+                  .replace(/\+/g, "-")
+                  .replace(/\//g, "_")
+                  .replace(/=+$/, "");
+      }
+
+      async sendMail({ to, subject, html, text }) {
             if (!this.enabled) {
                   throw new Error("Email service disabled");
             }
 
-            return this.transporter.sendMail({
-                  from: EmailConfig.from,
-                  ...payload
-            });
-      }
+            const accessToken = await this.getAccessToken();
+            const raw = this.createRawEmail({ to, subject, html, text });
 
-      async testConnection() {
-            try {
-                  await this.transporter.verify();
-                  Logger.info("✅ SMTP verified");
-                  return true;
-            } catch (err) {
-                  Logger.error("❌ SMTP verify failed", err.message);
-                  return false;
+            const res = await fetch(
+                  "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+                  {
+                        method: "POST",
+                        headers: {
+                              Authorization: `Bearer ${accessToken}`,
+                              "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ raw }),
+                  }
+            );
+
+            if (!res.ok) {
+                  const err = await res.text();
+                  throw new Error(`Gmail API send failed: ${err}`);
             }
+
+            Logger.info("📧 Email sent via Gmail API", { to, subject });
+            return true;
       }
 }
 
