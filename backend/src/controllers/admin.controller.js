@@ -69,9 +69,7 @@ class AdminController {
             const admin = await adminService.verifyOTPAndUpdatePassword(adminId, otp, newPassword);
             sendSuccess(res, "Password updated successfully", admin);
       });
-}
-// console.log("initializeAdmin length:", this.initializeAdmin.length);
-console.log(typeof adminService.login);
+};
 
 export default new AdminController();
 

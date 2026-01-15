@@ -10,25 +10,32 @@ class EmailService {
       }
 
       initialize() {
-            if (!EmailConfig.host || !EmailConfig.port) {
-                  Logger.warn('Email service disabled: SMTP not configured');
+            if (
+                  !EmailConfig.host ||
+                  !EmailConfig.port ||
+                  !EmailConfig.auth?.user ||
+                  !EmailConfig.auth?.pass
+            ) {
+                  Logger.error('Email service disabled: SMTP credentials missing');
                   this.enabled = false;
                   return;
             }
 
             this.transporter = nodemailer.createTransport({
+                  service: EmailConfig.service,
                   host: EmailConfig.host,
                   port: EmailConfig.port,
                   secure: EmailConfig.secure,
                   auth: EmailConfig.auth,
-                  connectionTimeout: 15000,
-                  greetingTimeout: 15000,
-                  socketTimeout: 15000
+                  tls: EmailConfig.tls,
+                  debug: EmailConfig.debug,
+                  logger: EmailConfig.logger
             });
 
             this.enabled = true;
-            Logger.info('Email service initialized successfully');
+            Logger.info('Email service initialized');
       }
+
 
       async sendMail({ to, subject, html, text }) {
             if (!this.enabled || !this.transporter) {
@@ -37,9 +44,14 @@ class EmailService {
             }
 
             try {
-                  Logger.info(`Sending email to ${to}...`);
+                  console.log(`\n🔵 SENDING EMAIL TO: ${to}`);
+                  console.log(`📧 Subject: ${subject}`);
+                  console.log(`📤 From: ${EmailConfig.from}`);
                   
-                  const sendPromise = this.transporter.sendMail({
+                  Logger.info(`Attempting to send email to ${to}...`);
+                  Logger.info(`Email config: from=${EmailConfig.from}, host=${EmailConfig.host}, port=${EmailConfig.port}`);
+
+                  const result = await this.transporter.sendMail({
                         from: EmailConfig.from,
                         to,
                         subject,
@@ -47,18 +59,29 @@ class EmailService {
                         text
                   });
 
-                  const timeoutPromise = new Promise((_, reject) => 
-                        setTimeout(() => reject(new Error('Email sending timeout after 45s')), 45000)
-                  );
+                  console.log(`✅ EMAIL SENT SUCCESSFULLY!`);
+                  console.log(`📬 MessageId: ${result.messageId}`);
+                  console.log(`✔️  Accepted: ${JSON.stringify(result.accepted)}`);
+                  console.log(`❌ Rejected: ${JSON.stringify(result.rejected)}\n`);
 
-                  const result = await Promise.race([sendPromise, timeoutPromise]);
-                  Logger.info(`Email sent successfully to ${to}: ${result.messageId}`);
+                  Logger.info(`Email sent successfully to ${to}`, {
+                        messageId: result.messageId,
+                        response: result.response,
+                        accepted: result.accepted,
+                        rejected: result.rejected,
+                        pending: result.pending
+                  });
                   return result;
             } catch (error) {
-                  Logger.error(`Failed to send email to ${to}:`, { 
+                  console.error(`\n❌ EMAIL FAILED TO: ${to}`);
+                  console.error(`Error: ${error.message}\n`);
+                  
+                  Logger.error(`Failed to send email to ${to}:`, {
                         message: error.message,
                         code: error.code,
-                        command: error.command 
+                        command: error.command,
+                        response: error.response,
+                        responseCode: error.responseCode
                   });
                   throw new Error(`Email delivery failed: ${error.message}`);
             }
@@ -66,15 +89,20 @@ class EmailService {
 
       async testConnection() {
             if (!this.enabled || !this.transporter) {
+                  Logger.error('Email service not enabled for testing');
                   return false;
             }
 
             try {
                   await this.transporter.verify();
-                  Logger.info('Email service connection verified');
+                  Logger.info('Email service connection verified successfully');
                   return true;
             } catch (error) {
-                  Logger.error('Email service connection failed:', error);
+                  Logger.error('Email service connection failed:', {
+                        message: error.message,
+                        code: error.code,
+                        response: error.response
+                  });
                   return false;
             }
       }

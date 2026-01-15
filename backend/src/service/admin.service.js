@@ -7,7 +7,6 @@ import templateService from "../utilities/email/template.service.js";
 import Logger from "../config/logger/logger.config.js";
 
 class AdminService {
-
       async initializeAdmin(adminData) {
             const existingAdmin = await adminRepository.findByEmail(adminData.email);
             if (existingAdmin) {
@@ -47,7 +46,7 @@ class AdminService {
       }
 
       async generateOTPForEmailUpdate({ adminId, purpose, newEmail }) {
-            Logger.info("Generate OTP request", { adminId, purpose });
+            Logger.info("Generate OTP request", { adminId, purpose, newEmail });
 
             if (purpose === "email_update" && !newEmail) {
                   throw ApiError.badRequest("New email is required");
@@ -59,45 +58,74 @@ class AdminService {
             const otp = generateOTP();
             const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
+            Logger.info("OTP generated", { adminId, purpose, otp, otpExpiry });
+
             const updateData = { otp, otpExpiry };
             if (purpose === "email_update") updateData.newEmail = newEmail;
 
             await adminRepository.updateById(adminId, updateData);
 
             const emailTo = purpose === "email_update" ? newEmail : admin.email;
-            const subject =
-                  purpose === "email_update"
-                        ? "Email Update OTP"
-                        : "Password Update OTP";
+            const subject = purpose === "email_update" ? "Email Update OTP" : "Password Update OTP";
+
+            Logger.info("Preparing email template", { emailTo, subject });
 
             const html = await templateService.render("otp-email", {
-                  title: "OTP Verification",
-                  message: "Use the OTP below to continue.",
-                  otp,
-                  expiryMinutes: "10",
-                  senderName: "Portfolio Admin",
+                  otp: otp,
+                  purpose: subject,
+                  expiryMinutes: "10"
             });
 
-            // 🔥 NON-BLOCKING EMAIL
-            emailService.sendMail({
-                  to: emailTo,
-                  subject,
-                  html,
-                  text: `Your OTP is ${otp}`,
-            }).catch(err => {
-                  Logger.error("OTP email failed (background)", err);
-            });
+            if (!emailService.enabled) {
+                  Logger.error("Email service is not available");
+                  throw ApiError.internal("Email service is not available");
+            }
 
-            return {
-                  success: true,
-                  message:
-                        purpose === "email_update"
-                              ? "OTP sent to new email"
-                              : "OTP sent to your email",
-            };
+            try {
+                  Logger.info("Sending OTP email", { to: emailTo, subject, otp });
+
+                  const emailResult = await emailService.sendMail({
+                        to: emailTo,
+                        subject: subject,
+                        html: html,
+                        text: `Your OTP is ${otp}. It will expire in 10 minutes.`
+                  });
+
+                  Logger.info("OTP email sent successfully", {
+                        to: emailTo,
+                        messageId: emailResult.messageId,
+                        response: emailResult.response,
+                        accepted: emailResult.accepted,
+                        rejected: emailResult.rejected
+                  });
+
+                  if (emailResult.rejected && emailResult.rejected.length > 0) {
+                        Logger.warn("Some recipients were rejected", { rejected: emailResult.rejected });
+                        throw ApiError.internal(`Email rejected by server: ${emailResult.rejected.join(", ")}`);
+                  }
+
+                  return {
+                        success: true,
+                        message: purpose === "email_update" ? "OTP sent to new email" : "OTP sent to your email",
+                        emailSent: true,
+                        emailTo: emailTo
+                  };
+
+            } catch (emailError) {
+                  Logger.error("Failed to send OTP email", {
+                        error: emailError.message,
+                        stack: emailError.stack,
+                        to: emailTo,
+                        otp: otp
+                  });
+
+                  throw ApiError.internal(`Failed to send OTP email: ${emailError.message}`);
+            }
       }
 
       async verifyOTPAndUpdateEmail(adminId, otp) {
+            Logger.info("Verifying OTP for email update", { adminId, otp });
+
             const admin = await adminRepository.findById(adminId);
             if (!admin) throw ApiError.notFound("Admin not found");
 
@@ -106,12 +134,16 @@ class AdminService {
             }
 
             if (admin.otp !== otp) {
+                  Logger.warn("Invalid OTP provided", { adminId, providedOTP: otp, actualOTP: admin.otp });
                   throw ApiError.badRequest("Invalid OTP");
             }
 
             if (admin.otpExpiry < new Date()) {
+                  Logger.warn("OTP expired", { adminId, expiry: admin.otpExpiry });
                   throw ApiError.badRequest("OTP expired");
             }
+
+            Logger.info("OTP verified, updating email", { adminId, newEmail: admin.newEmail });
 
             return adminRepository.updateById(adminId, {
                   email: admin.newEmail,
@@ -120,6 +152,8 @@ class AdminService {
       }
 
       async verifyOTPAndUpdatePassword(adminId, otp, newPassword) {
+            Logger.info("Verifying OTP for password update", { adminId, otp });
+
             const admin = await adminRepository.findById(adminId);
             if (!admin) throw ApiError.notFound("Admin not found");
 
@@ -128,12 +162,16 @@ class AdminService {
             }
 
             if (admin.otp !== otp) {
+                  Logger.warn("Invalid OTP provided", { adminId, providedOTP: otp, actualOTP: admin.otp });
                   throw ApiError.badRequest("Invalid OTP");
             }
 
             if (admin.otpExpiry < new Date()) {
+                  Logger.warn("OTP expired", { adminId, expiry: admin.otpExpiry });
                   throw ApiError.badRequest("OTP expired");
             }
+
+            Logger.info("OTP verified, updating password", { adminId });
 
             return adminRepository.updateById(adminId, {
                   password: newPassword,

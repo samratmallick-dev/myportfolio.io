@@ -2,8 +2,19 @@ import "dotenv/config";
 import App from "./app.js";
 import connectDb from "./config/db/config.db.js";
 import Logger from "./config/logger/logger.config.js";
+import emailService from "./utilities/email/email.service.js";
 
 const PORT = process.env.PORT || 5000;
+
+emailService.initialize();
+
+emailService.testConnection().then(success => {
+      if (success) {
+            Logger.info('Email service is ready');
+      } else {
+            Logger.warn('Email service test failed - check your credentials');
+      }
+});
 
 connectDb().then(
       () => {
@@ -19,16 +30,9 @@ connectDb().then(
                   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
                   Logger.info(`Server is running on port: http://localhost:${PORT}`);
             });
-
-            App.listen(process.env.CLIENT_URL, () => {
-                  console.log(`🚀 Server is running on ${process.env.CLIENT_URL}`);
-                  console.log(`📚 API Documentation ${process.env.CLIENT_URL}/api`);
-                  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-                  Logger.info(`Server is running on ${process.env.CLIENT_URL}`);
-            });
       }
 ).catch((error) => {
-      console.error('❌ MongoDB connection Failed:', error.message);
+      console.error('MongoDB connection Failed:', error.message);
       Logger.error('MongoDB connection Failed', error);
       process.exit(1);
 });

@@ -21,12 +21,10 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
             "http://127.0.0.1:3001",
       ];
 
-// Add production URLs if CLIENT_URL is set
 if (process.env.CLIENT_URL) {
       allowedOrigins.push(process.env.CLIENT_URL);
 }
 
-// Log allowed origins on startup
 Logger.info('CORS Configuration', {
       allowedOrigins,
       environment: process.env.NODE_ENV || 'development'
@@ -35,21 +33,15 @@ Logger.info('CORS Configuration', {
 app.use(
       cors({
             origin: function (origin, callback) {
-                  // Allow requests with no origin (like mobile apps, curl, postman)
                   if (!origin) {
                         Logger.info('CORS request with no origin header - allowed');
                         return callback(null, true);
                   }
-
-                  // Check if origin is in allowed list
                   const isAllowed = allowedOrigins.some((allowed) => {
-                        // Exact match
                         if (origin === allowed) return true;
 
-                        // Wildcard support
                         if (allowed === "*") return true;
 
-                        // Subdomain matching
                         try {
                               const originHost = new URL(origin).hostname;
                               const allowedHost = new URL(allowed).hostname;
@@ -65,7 +57,6 @@ app.use(
                         return callback(null, true);
                   }
 
-                  // In development, be more lenient
                   if (process.env.NODE_ENV === 'development' || !process.env.NODE_ENV) {
                         Logger.warn('CORS request allowed (development mode)', { origin });
                         return callback(null, true);
@@ -82,7 +73,6 @@ app.use(
                   "Cache-Control",
                   "Expires",
                   "Pragma",
-                  "X-Requested-With"
             ],
       })
 );
@@ -90,7 +80,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Request logging middleware
 app.use((req, res, next) => {
       Logger.info('Incoming request', {
             method: req.method,
