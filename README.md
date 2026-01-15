@@ -24,7 +24,7 @@ Modern MERN-based platform powering Samrat Mallick’s public-facing portfolio a
    - Example public fetch: GET `/projects/get-all-projects` → project controller → service → repo → Mongo → JSON response.
    - Example admin update: POST `/hero/add-and-update-hero-content` (auth, upload) → hero controller/service → Cloudinary upload → Mongo update.
 5. **Cloudinary**: Media buffers uploaded, returning `public_id` + `secure_url` stored in Mongo.
-6. **Email/OTP**: Nodemailer SMTP for contact acknowledgments and admin OTP flows.
+6. **Email/OTP**: Gmail API for contact acknowledgments and admin OTP flows.
 7. **Response format**: Standardized success/error envelope with timestamps.
 
 ### Public-side calls
@@ -144,7 +144,7 @@ Routes → Controllers → Services → Repositories → Models → Database
 **Backend**
 - Node.js 18+, Express 5, MongoDB + Mongoose 9
 - JWT auth, bcryptjs, cookie-parser, Multer, Cloudinary
-- Nodemailer (SMTP), express-validator, Winston logging, CORS
+- Gmail API (OAuth2), express-validator, Winston logging, CORS
 
 ---
 
@@ -209,7 +209,7 @@ Fullstack_Portfolio/
 - Node.js v18+
 - MongoDB Atlas database
 - Cloudinary account (API key/secret)
-- SMTP account (e.g., Gmail App Password) for email/OTP
+- Gmail API account (OAuth2 credentials) for email/OTP
 
 ### Backend
 ```bash
@@ -256,10 +256,10 @@ MONGO_NAME=myportfolio
 CLOUD_NAME=<your_cloud_name>
 CLOUD_API_KEY=<your_api_key>
 CLOUD_API_SECRET=<your_api_secret>
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USER=<your_email>
-EMAIL_PASS=<app_password>
+GMAIL_CLIENT_ID=<your_gmail_client_id>
+GMAIL_CLIENT_SECRET=<your_gmail_client_secret>
+GMAIL_REFRESH_TOKEN=<your_gmail_refresh_token>
+GMAIL_SENDER=<your_gmail_address>
 JWT_SECRET=<your_jwt_secret>
 NODE_ENV=development
 ```
@@ -276,6 +276,7 @@ VITE_APP_NAME=Samrat Mallick Portfolio
 - Layered backend: routes → controllers → services → repositories → models.
 - Validation and error handling centralized in middleware.
 - Media pipeline: Multer buffer → Cloudinary upload → stored URL + public_id.
+- Email service: Gmail API with OAuth2 for sending emails and OTPs.
 - Authentication: JWT in httpOnly cookie; guard protected routes server-side and client-side.
 
 ---
