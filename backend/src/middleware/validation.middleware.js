@@ -57,11 +57,6 @@ const validateContactMessage = [
       body("message").notEmpty().withMessage("Message is required").isLength({ max: 2000 }).withMessage("Message must not exceed 2000 characters"),
 ];
 
-const validateReplyMessage = [
-      param("messageId").isMongoId().withMessage("Invalid message ID format"),
-      body("replyMessage").notEmpty().withMessage("Reply message is required").isLength({ max: 2000 }).withMessage("Reply message must not exceed 2000 characters"),
-];
-
 const validateOTP = [
       otpRule(),
 ];
@@ -119,7 +114,6 @@ export {
       validateEducation,
       validateService,
       validateContactMessage,
-      validateReplyMessage,
       validateContactDetails,
       validateOTP,
       validateEmailUpdate,

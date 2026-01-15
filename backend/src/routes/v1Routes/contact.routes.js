@@ -16,6 +16,5 @@ router.delete("/delete-message/:messageId", authenticate, contactController.dele
 router.put("/mark-as-read/:messageId", authenticate, contactController.markMessageAsRead);
 router.get("/get-unread-count", authenticate, contactController.getUnreadMessagesCount);
 router.get("/get-all-messages-admin", authenticate, contactController.getAllMessagesAdmin);
-router.post("/reply-to-message/:messageId", authenticate, contactController.replyToMessage);
 
 export default router;

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const api = axios.create({
       baseURL: API_BASE_URL,
@@ -440,7 +440,6 @@ export const contactEndpoints = {
       markAsRead: '/api/v1/contact/mark-as-read/:messageId',
       getUnreadCount: '/api/v1/contact/get-unread-count',
       getAllMessagesAdmin: '/api/v1/contact/get-all-messages-admin',
-      replyToMessage: '/api/v1/contact/reply-to-message/:messageId',
 };
 
 // Contact API functions
@@ -541,15 +540,6 @@ export const fetchUnreadCount = async () => {
 export const fetchAllMessagesAdmin = async () => {
       try {
             const response = await api.get(contactEndpoints.getAllMessagesAdmin);
-            return response.data;
-      } catch (error) {
-            throw error.response?.data || error;
-      }
-};
-
-export const replyToMessage = async (messageId, replyData) => {
-      try {
-            const response = await api.post(contactEndpoints.replyToMessage.replace(':messageId', messageId), replyData);
             return response.data;
       } catch (error) {
             throw error.response?.data || error;
