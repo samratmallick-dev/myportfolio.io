@@ -79,6 +79,21 @@ const messageSchema = new mongoose.Schema({
             enum: ["unread", "read", "replied"],
             default: "unread",
       },
+      replyMessage: {
+            type: String,
+            trim: true,
+      },
+      repliedAt: {
+            type: Date,
+      },
+      repliedBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Admin",
+      },
+      isReplied: {
+            type: Boolean,
+            default: false,
+      },
       isActive: {
             type: Boolean,
             default: true,

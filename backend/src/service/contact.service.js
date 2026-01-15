@@ -228,6 +228,68 @@ class ContactService {
             const messages = await contactRepository.findAllMessages();
             return messages;
       }
+
+      async replyToMessage(messageId, replyData, adminId) {
+            const message = await contactRepository.findMessageById(messageId);
+
+            if (!message) {
+                  throw ApiError.notFound("Message not found");
+            }
+
+            if (message.isReplied) {
+                  throw ApiError.badRequest("Message has already been replied to");
+            }
+
+            const updatedMessage = await contactRepository.replyToMessage(messageId, {
+                  replyMessage: replyData.replyMessage,
+                  adminId: adminId
+            });
+
+            this.sendReplyEmailAsync(message, replyData.replyMessage).catch(error => {
+                  Logger.error("Background reply email sending failed", {
+                        error: error.message,
+                        stack: error.stack,
+                        userEmail: message.email,
+                        userName: message.name
+                  });
+            });
+
+            return updatedMessage;
+      }
+
+      async sendReplyEmailAsync(message, replyMessage) {
+            try {
+                  Logger.info("Starting reply email sending", {
+                        userEmail: message.email,
+                        userName: message.name
+                  });
+
+                  const html = await templateService.render('contact-reply', {
+                        name: message.name,
+                        originalMessage: message.message,
+                        replyMessage: replyMessage,
+                        date: new Date().toLocaleDateString(),
+                        senderName: 'Portfolio Team'
+                  });
+                  
+                  await emailService.sendMail({
+                        to: message.email,
+                        subject: "Reply to Your Contact Message",
+                        html: html,
+                        text: `Dear ${message.name},\n\nThank you for contacting us. Here is our reply to your message:\n\nYour message:\n${message.message}\n\nOur reply:\n${replyMessage}\n\nBest regards,\nThe Team`
+                  });
+
+                  Logger.info(`Reply email sent successfully to ${message.email}`);
+
+            } catch (error) {
+                  Logger.error("Critical error in reply email sending", {
+                        error: error.message,
+                        stack: error.stack,
+                        userEmail: message.email,
+                        userName: message.name
+                  });
+            }
+      }
 }
 
 export default new ContactService();

@@ -76,6 +76,31 @@ class ContactController {
 
             sendSuccess(res, "All messages retrieved successfully", messages);
       });
+
+      replyToMessage = asyncHandler(async (req, res) => {
+            const { messageId } = req.params;
+            const { replyMessage } = req.body;
+            const adminId = req.admin.id;
+
+            // Basic validation
+            if (!replyMessage || replyMessage.trim().length === 0) {
+                  return res.status(400).json({
+                        success: false,
+                        message: "Reply message is required"
+                  });
+            }
+
+            if (replyMessage.length > 2000) {
+                  return res.status(400).json({
+                        success: false,
+                        message: "Reply message must not exceed 2000 characters"
+                  });
+            }
+
+            const message = await contactService.replyToMessage(messageId, { replyMessage: replyMessage.trim() }, adminId);
+
+            sendSuccess(res, "Reply sent successfully", message);
+      });
 }
 
 export default new ContactController();

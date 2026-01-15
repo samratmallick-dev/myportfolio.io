@@ -8,7 +8,8 @@ import {
       fetchMessageById,
       deleteMessage,
       markMessageAsRead,
-      fetchUnreadCount
+      fetchUnreadCount,
+      replyToMessage
 } from "../config/api.js";
 
 // Async thunks
@@ -137,6 +138,19 @@ export const getUnreadCount = createAsyncThunk(
             } catch (error) {
                   console.error('Get unread count error:', error);
                   return rejectWithValue(error.message || "Failed to fetch unread count");
+            }
+      }
+);
+
+export const replyToMessageThunk = createAsyncThunk(
+      "contact/replyToMessage",
+      async ({ messageId, replyData }, { rejectWithValue }) => {
+            try {
+                  const response = await replyToMessage(messageId, replyData);
+                  return response.data;
+            } catch (error) {
+                  console.error('Reply to message error:', error);
+                  return rejectWithValue(error.message || "Failed to send reply");
             }
       }
 );
@@ -286,6 +300,28 @@ const contactSlice = createSlice({
                         state.unreadCount = action.payload;
                   })
                   .addCase(getUnreadCount.rejected, (state, action) => {
+                        state.error = action.payload;
+                  })
+                  // Reply to message
+                  .addCase(replyToMessageThunk.pending, (state) => {
+                        state.loading = true;
+                        state.error = null;
+                  })
+                  .addCase(replyToMessageThunk.fulfilled, (state, action) => {
+                        state.loading = false;
+                        const messageIndex = state.messages.findIndex(msg => msg._id === action.payload._id);
+                        if (messageIndex !== -1) {
+                              state.messages[messageIndex] = action.payload;
+                        }
+                        if (state.currentMessage && state.currentMessage._id === action.payload._id) {
+                              state.currentMessage = action.payload;
+                        }
+                        if (action.payload.status === 'replied') {
+                              state.unreadCount = Math.max(0, state.unreadCount - 1);
+                        }
+                  })
+                  .addCase(replyToMessageThunk.rejected, (state, action) => {
+                        state.loading = false;
                         state.error = action.payload;
                   });
       },
