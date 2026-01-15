@@ -30,7 +30,7 @@ const AdminViewContactDetails = () => {
 
       useEffect(() => {
             if (contactDetails) {
-                  console.log('Contact Details:', contactDetails); // Debug log
+                  // console.log('Contact Details:', contactDetails); // Debug log
                   setFormData({
                         contactImage: contactDetails.contactImage?.url || '',
                         name: contactDetails.name || '',
