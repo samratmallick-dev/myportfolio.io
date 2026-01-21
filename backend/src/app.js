@@ -22,7 +22,8 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
       ];
 
 if (process.env.CLIENT_URL) {
-      allowedOrigins.push(process.env.CLIENT_URL);
+      const clientUrls = process.env.CLIENT_URL.split(",").map((url) => url.trim()).filter(Boolean);
+      allowedOrigins.push(...clientUrls);
 }
 
 Logger.info('CORS Configuration', {
