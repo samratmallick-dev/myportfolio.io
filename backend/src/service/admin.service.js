@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 import adminRepository from "../repository/admin.repository.js";
 import ApiError from "../utilities/error/apiError.js";
 import { generateOTP } from "../utilities/email/generateOTP.js";
@@ -12,6 +13,9 @@ class AdminService {
             if (existingAdmin) {
                   throw ApiError.badRequest("Admin already exists");
             }
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(adminData.password, salt);
+            adminData.password = hashedPassword;
             return adminRepository.create(adminData);
       }
 
@@ -150,8 +154,11 @@ class AdminService {
 
             Logger.info("OTP verified, updating password", { adminId });
 
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(newPassword, salt);
+
             return adminRepository.updateById(adminId, {
-                  password: newPassword,
+                  password: hashedPassword,
                   $unset: { otp: 1, otpExpiry: 1 },
             });
       }

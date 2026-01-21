@@ -18,9 +18,9 @@ class AdminController {
 
             const options = {
                   httpOnly: true,
-                  secure: isProduction,           // ❌ false on localhost
+                  secure: isProduction,
                   sameSite: isProduction ? "none" : "lax",
-                  maxAge: 7 * 24 * 60 * 60 * 1000,
+                  maxAge: 12 * 60 * 60 * 1000
             };
 
             res.cookie("token", token, options);
@@ -34,7 +34,7 @@ class AdminController {
                   httpOnly: true,
                   secure: isProduction,
                   sameSite: isProduction ? "none" : "lax",
-                  maxAge: 7 * 24 * 60 * 60 * 1000,
+                  maxAge: 12 * 60 * 60 * 1000
             };
 
             res.clearCookie("token", options);
