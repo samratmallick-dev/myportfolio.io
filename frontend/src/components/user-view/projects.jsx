@@ -1,19 +1,13 @@
-import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React from 'react';
+import { useSelector } from 'react-redux';
 import ProjectCard from './project-card';
 import { Button } from '../ui/button';
 import { useNavigate } from 'react-router-dom';
-import { getFeaturedProjects } from '@/store/project.slice';
 import ProjectsSkeleton from '../loaders/ProjectsSkeleton';
 
 const MyProjects = () => {
       const navigate = useNavigate();
-      const dispatch = useDispatch();
-      const { featuredProjects, isLoading } = useSelector((state) => state.project);
-
-      useEffect(() => {
-            dispatch(getFeaturedProjects());
-      }, [dispatch]);
+      const { featuredProjects, isLoading } = useSelector((state) => state.public);
 
       const goToProjectListingPage = () => {
             window.scrollTo(0, 0);

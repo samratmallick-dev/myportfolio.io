@@ -2,6 +2,7 @@ import heroRepository from "../repository/hero.repository.js";
 import ApiError from "../utilities/error/apiError.js";
 import { uploadToCloudinary } from "../utilities/cloudinary/upload.js";
 import Logger from "../config/logger/logger.config.js";
+import { clearCache } from "../middleware/cache.middleware.js";
 
 class HeroService {
       async addUpdateHeroContent(heroData, profileImage) {
@@ -29,6 +30,8 @@ class HeroService {
                   heroContent = await heroRepository.create(heroData);
             }
 
+            clearCache('/public');
+            clearCache('/hero');
             Logger.info('Hero content operation completed successfully');
             return heroContent;
       }
@@ -74,6 +77,8 @@ class HeroService {
             }
 
             const updatedHero = await heroRepository.updateById(id, heroData);
+            clearCache('/public');
+            clearCache('/hero');
             return updatedHero;
       }
 
@@ -85,6 +90,8 @@ class HeroService {
             }
 
             await heroRepository.deleteById(id);
+            clearCache('/public');
+            clearCache('/hero');
             return { message: "Hero content deleted successfully" };
       }
 

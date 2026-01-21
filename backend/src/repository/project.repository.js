@@ -7,15 +7,20 @@ class ProjectRepository extends BaseRepository {
       }
 
       async findAll(filter = {}) {
-            return await this.model.find(filter).sort({ createdAt: 1 });
+            return await this.model.find(filter).sort({ createdAt: 1 }).lean();
       }
 
       async findActive(filter = {}) {
-            return await this.model.find({ ...filter, isActive: true }).sort({ createdAt: 1 });
+            return await this.model.find({ ...filter, isActive: true }).sort({ createdAt: 1 }).lean();
       }
 
       async findFeatured() {
-            return await this.model.find({ isActive: true, isFeatured: true }).sort({ createdAt: 1 });
+            return await this.model
+                  .find({ isActive: true, isFeatured: true })
+                  .select('-__v')
+                  .sort({ createdAt: 1 })
+                  .limit(6)
+                  .lean();
       }
 }
 

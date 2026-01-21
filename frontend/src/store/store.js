@@ -7,6 +7,7 @@ import skillsSlice from './skills.slice.js';
 import contactSlice from './contact.slice.js';
 import projectSlice from './project.slice.js';
 import serviceSlice from './services.slice.js';
+import publicSlice from './public.slice.js';
 
 export const store = configureStore({
       reducer: {
@@ -18,5 +19,6 @@ export const store = configureStore({
             project: projectSlice,
             services: serviceSlice,
             contact: contactSlice,
+            public: publicSlice,
       },
 });

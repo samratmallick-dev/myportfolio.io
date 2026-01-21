@@ -1,17 +1,11 @@
-import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React from 'react';
+import { useSelector } from 'react-redux';
 import SkillCard from './skill-card';
 import * as Icons from 'lucide-react';
 import SkillsSkeleton from '../loaders/SkillsSkeleton';
-import { getAllCategories } from '@/store/skills.slice';
 
 const MySkills = () => {
-      const dispatch = useDispatch();
-      const { categories, isLoading } = useSelector((state) => state.skills);
-
-      useEffect(() => {
-            dispatch(getAllCategories());
-      }, [dispatch]);
+      const { skills, isLoading } = useSelector((state) => state.public);
 
       return (
             <section id="skills" className="py-20 border-b border-gray-700">
@@ -21,8 +15,8 @@ const MySkills = () => {
                               {isLoading ? (
                                     <SkillsSkeleton />
                               ) : (
-                                    categories && categories.length > 0 ? (
-                                          categories.filter(skillCategory => skillCategory.skills && skillCategory.skills.length > 0).map((skillCategory, index) => (
+                                    skills && skills.length > 0 ? (
+                                          skills.filter(skillCategory => skillCategory.skills && skillCategory.skills.length > 0).map((skillCategory, index) => (
                                                 <div key={skillCategory._id || index} className="animate-slide-up" style={{ animationDelay: `${(index + 3) * 0.2}s` }}>
                                                       <SkillCard
                                                             title={skillCategory.category}

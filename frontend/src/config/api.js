@@ -9,7 +9,24 @@ const api = axios.create({
       },
       withCredentials: true,
       timeout: 30000,
+      maxRedirects: 5,
+      maxContentLength: 50 * 1024 * 1024,
 });
+
+// Public unified endpoint
+export const publicEndpoints = {
+      initialData: '/api/v1/public/initial-data',
+};
+
+// Fetch all public data in one call
+export const fetchPublicInitialData = async () => {
+      try {
+            const response = await api.get(publicEndpoints.initialData);
+            return response.data;
+      } catch (error) {
+            throw error.response?.data || error;
+      }
+};
 
 // Admin authentication endpoints
 export const adminAuthEndpoints = {

@@ -1,17 +1,11 @@
-import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React from 'react';
+import { useSelector } from 'react-redux';
 import ServiceCard from './service-card';
 import * as Icons from 'lucide-react';
 import ServicesSkeleton from '../loaders/ServicesSkeleton';
-import { getAllServices } from '@/store/services.slice';
 
 const MyServices = () => {
-      const dispatch = useDispatch();
-      const { servicesData, isLoading } = useSelector((state) => state.services);
-
-      useEffect(() => {
-            dispatch(getAllServices());
-      }, [dispatch]);
+      const { services, isLoading } = useSelector((state) => state.public);
 
       return (
             <section id="services" className="py-20">
@@ -20,8 +14,8 @@ const MyServices = () => {
                         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
                               {isLoading ? (
                                     <ServicesSkeleton />
-                              ) : servicesData && servicesData.length > 0 ? (
-                                    servicesData.map((service, index) => {
+                              ) : services && services.length > 0 ? (
+                                    services.map((service, index) => {
                                           const IconComp = service?.icon ? Icons[service.icon] : null;
                                           const iconEl = IconComp ? <IconComp className="w-8 h-8 text-primary" /> : null;
                                           return (
