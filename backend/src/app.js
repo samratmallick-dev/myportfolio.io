@@ -34,29 +34,17 @@ Logger.info('CORS Configuration', {
 app.use(
       cors({
             origin: function (origin, callback) {
+                  Logger.info('CORS check', { origin, allowedOrigins });
+                  
                   if (!origin) {
                         return callback(null, true);
                   }
-                  const isAllowed = allowedOrigins.some((allowed) => {
-                        if (origin === allowed) return true;
-
-                        if (allowed === "*") return true;
-
-                        try {
-                              const originHost = new URL(origin).hostname;
-                              const allowedHost = new URL(allowed).hostname;
-                              return originHost === allowedHost || originHost.endsWith(`.${allowedHost}`);
-                        } catch (error) {
-                              Logger.warn('Error parsing origin URL', { origin, allowed, error: error.message });
-                              return false;
-                        }
-                  });
-
-                  if (isAllowed) {
+                  
+                  if (allowedOrigins.includes(origin)) {
                         return callback(null, true);
                   }
 
-                  Logger.warn('CORS request blocked', { origin, allowedOrigins, environment: process.env.NODE_ENV });
+                  Logger.warn('CORS request blocked', { origin, allowedOrigins });
                   return callback(new Error("Not allowed by CORS"));
             },
             credentials: true,

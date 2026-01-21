@@ -1,8 +1,19 @@
 {
-  "rewrites": [
-    {
-      "source": "/((?!.*\\.).*)",
-      "destination": "/index.html"
-    }
-  ]
+      "rewrites": [
+            {
+                  "source": "/((?!api|_next|.*\\.).*)",
+                  "destination": "/index.html"
+            }
+      ],
+      "headers": [
+            {
+                  "source": "/site.webmanifest",
+                  "headers": [
+                        {
+                              "key": "Content-Type",
+                              "value": "application/manifest+json"
+                        }
+                  ]
+            }
+      ]
 }
