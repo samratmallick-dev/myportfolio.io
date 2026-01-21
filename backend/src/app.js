@@ -34,7 +34,6 @@ app.use(
       cors({
             origin: function (origin, callback) {
                   if (!origin) {
-                        Logger.info('CORS request with no origin header - allowed');
                         return callback(null, true);
                   }
                   const isAllowed = allowedOrigins.some((allowed) => {
@@ -53,16 +52,10 @@ app.use(
                   });
 
                   if (isAllowed) {
-                        Logger.info('CORS request allowed', { origin });
                         return callback(null, true);
                   }
 
-                  if (process.env.NODE_ENV === 'development' || !process.env.NODE_ENV) {
-                        Logger.warn('CORS request allowed (development mode)', { origin });
-                        return callback(null, true);
-                  }
-
-                  Logger.warn('CORS request blocked', { origin, allowedOrigins });
+                  Logger.warn('CORS request blocked', { origin, allowedOrigins, environment: process.env.NODE_ENV });
                   return callback(new Error("Not allowed by CORS"));
             },
             credentials: true,
@@ -85,12 +78,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.use((req, res, next) => {
-      Logger.info('Incoming request', {
-            method: req.method,
-            path: req.path,
-            origin: req.headers.origin,
-            ip: req.ip,
-      });
+      if (req.path !== '/health' && req.path !== '/') {
+            Logger.info('Incoming request', {
+                  method: req.method,
+                  path: req.path,
+                  origin: req.headers.origin,
+            });
+      }
       next();
 });
 
