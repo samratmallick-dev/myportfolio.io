@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,11 +7,20 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { Mail, Phone, Clock, Trash2, Eye } from 'lucide-react';
 import { getAllMessages, deleteMessageById, markAsRead, getUnreadCount } from '@/store/contact.slice';
+import { useAdminSocket } from '@/hooks/useSocket';
 
 const AdminMessages = () => {
       const dispatch = useDispatch();
       const { messages, loading, unreadCount } = useSelector((state) => state.contact);
       const [processingId, setProcessingId] = useState(null);
+
+      const handleNewMessage = useCallback((message) => {
+            toast.success(`New message from ${message.name}`);
+            dispatch(getAllMessages());
+            dispatch(getUnreadCount());
+      }, [dispatch]);
+
+      useAdminSocket('newMessage', handleNewMessage);
 
       useEffect(() => {
             dispatch(getAllMessages());

@@ -4,13 +4,12 @@ import ApiError from "../utilities/error/apiError.js";
 import { uploadToCloudinary } from "../utilities/cloudinary/upload.js";
 import emailService from "../utilities/email/email.service.js";
 import templateService from "../utilities/email/template.service.js";
+import { getIO } from "../config/socket/socket.config.js";
 
 class ContactService {
-      // Contact Details Methods
       async addUpdateContactDetails(contactData, image) {
             let contactDetails = await contactRepository.findActiveContactDetails();
 
-            // Parse socialLinks if it's a string
             if (contactData.socialLinks && typeof contactData.socialLinks === 'string') {
                   try {
                         contactData.socialLinks = JSON.parse(contactData.socialLinks);
@@ -65,20 +64,23 @@ class ContactService {
             return updatedContact;
       }
 
-      // Message Methods
       async sendMessage(messageData) {
-            // Save message to database first
             const message = await contactRepository.createMessage(messageData);
 
-            // Check total message count and delete oldest messages if exceeds 20
             const totalMessages = await contactRepository.countMessages();
             if (totalMessages > 20) {
                   const allMessages = await contactRepository.findAllMessages();
                   const messagesToDelete = allMessages.slice(20);
-
                   for (const msg of messagesToDelete) {
                         await contactRepository.deleteMessageById(msg._id);
                   }
+            }
+
+            try {
+                  const io = getIO();
+                  io.to("admin").emit("newMessage", message);
+            } catch (error) {
+                  Logger.error("Socket emit failed", error);
             }
 
             this.sendEmailNotificationsAsync(messageData).catch(error => {
@@ -93,7 +95,6 @@ class ContactService {
             return message;
       }
 
-      // Separate async method for email sending (runs in background)
       async sendEmailNotificationsAsync(messageData) {
             try {
                   Logger.info("Starting background email notifications", {
@@ -104,7 +105,6 @@ class ContactService {
                   const contactDetails = await contactRepository.findActiveContactDetails();
 
                   const emailPromises = [
-                        // Send acknowledgment to user
                         (async () => {
                               const html = await templateService.render('contact-acknowledgment', {
                                     name: messageData.name,
@@ -125,7 +125,6 @@ class ContactService {
                               return { type: 'user', success: true };
                         }),
 
-                        // Send notification to admin
                         contactDetails && contactDetails.email ?
                               (async () => {
                                     const html = await templateService.render('contact-notification', {
@@ -175,58 +174,45 @@ class ContactService {
                         userEmail: messageData.email,
                         userName: messageData.name
                   });
-
+                  throw error;
             }
       }
 
       async getAllMessages() {
-            const messages = await contactRepository.findActiveMessages();
-            return messages;
+            return await contactRepository.findActiveMessages();
       }
 
       async getMessageById(messageId) {
             const message = await contactRepository.findMessageById(messageId);
-
             if (!message) {
                   throw ApiError.notFound("Message not found");
             }
-
-            if (!message.isActive) {
-                  throw ApiError.badRequest("Message is not active");
-            }
-
             return message;
       }
 
       async deleteMessage(messageId) {
             const message = await contactRepository.findMessageById(messageId);
-
             if (!message) {
                   throw ApiError.notFound("Message not found");
             }
-
             await contactRepository.deleteMessageById(messageId);
-            return { message: "Message deleted successfully" };
+            return { id: messageId };
       }
 
       async markMessageAsRead(messageId) {
-            const message = await contactRepository.markMessageAsRead(messageId);
-
+            const message = await contactRepository.findMessageById(messageId);
             if (!message) {
                   throw ApiError.notFound("Message not found");
             }
-
-            return message;
+            return await contactRepository.markMessageAsRead(messageId);
       }
 
       async getUnreadMessagesCount() {
-            const count = await contactRepository.countUnreadMessages();
-            return { count };
+            return await contactRepository.countUnreadMessages();
       }
 
       async getAllMessagesAdmin() {
-            const messages = await contactRepository.findAllMessages();
-            return messages;
+            return await contactRepository.findAllMessages();
       }
 }
 

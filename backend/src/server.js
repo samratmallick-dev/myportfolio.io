@@ -1,35 +1,26 @@
 import "dotenv/config";
+import { createServer } from "http";
 import App from "./app.js";
 import connectDb from "./config/db/config.db.js";
 import Logger from "./config/logger/logger.config.js";
-import emailService from "./utilities/email/email.service.js";
+import { initializeSocket } from "./config/socket/socket.config.js";
 
 const PORT = process.env.PORT || 5000;
-
-// setImmediate(async () => {
-//       try {
-//             const ok = await emailService.testConnection();
-//             if (ok) {
-//                   Logger.info("📧 Email service is ready");
-//             } else {
-//                   Logger.warn("⚠️ Email service test failed (emails may not send)");
-//             }
-//       } catch (err) {
-//             Logger.error("❌ Email service test error", err.message);
-//       }
-// });
+const httpServer = createServer(App);
+initializeSocket(httpServer);
 
 connectDb().then(
       () => {
-            App.on("error", (error) => {
+            httpServer.on("error", (error) => {
                   console.error('Express server error:', error);
                   Logger.error('Express server error', error);
                   throw new Error('Express server error');
             });
 
-            App.listen(PORT, () => {
+            httpServer.listen(PORT, () => {
                   console.log(`🚀 Server is running on port: http://localhost:${PORT}`);
                   console.log(`📚 API Documentation: http://localhost:${PORT}/api`);
+                  console.log(`🔌 Socket.IO initialized`);
                   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
                   Logger.info(`Server is running on port: http://localhost:${PORT}`);
             });

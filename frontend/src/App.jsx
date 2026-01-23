@@ -19,9 +19,10 @@ import AdminSettings from './pages/admin-view/settings';
 import AdminViewContactDetails from './pages/admin-view/contactdetails';
 import AdminMessages from './pages/admin-view/messages';
 import CheckAuth from './components/common/CheckAuth';
+import { useSocketConnection } from './hooks/useSocket';
 
 const App = () => {
-
+      useSocketConnection();
       useDisableContextMenuAndCopy();
 
       return (
