@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 export function useDisableContextMenuAndCopy() {
       useEffect(() => {
             const showToast = (msg, desc) => {
-                  toast(msg, { description: desc });
+                  toast.warning(msg, { description: desc }, { position: "bottom-right" });
             };
 
             const handleContextMenu = (e) => {
