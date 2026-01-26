@@ -4,17 +4,20 @@ import { toast } from 'sonner';
 export function useDisableContextMenuAndCopy() {
       useEffect(() => {
             const showToast = (msg, desc) => {
-                  toast.warning(msg, { description: desc }, { position: "bottom-right" });
+                  toast.warning(msg, {
+                        description: desc,
+                        position: "bottom-right",
+                  });
             };
 
             const handleContextMenu = (e) => {
                   e.preventDefault();
-                  showToast("⚠️ Protected Content", "Right-click is disabled.");
+                  showToast("Protected Content", "Right-click is disabled.");
             };
 
             const handleClipboard = (e) => {
                   e.preventDefault();
-                  showToast("⚠️ Action Blocked", "Copy / Paste is disabled.");
+                  showToast("Action Blocked", "Copy / Paste is disabled.");
             };
 
             const handleSelect = (e) => {
@@ -34,7 +37,7 @@ export function useDisableContextMenuAndCopy() {
                         ['c', 'v', 'x', 'a', 'u', 's'].includes(key)
                   ) {
                         e.preventDefault();
-                        showToast("⚠️ Shortcut Blocked", "This shortcut is disabled.");
+                        showToast("Shortcut Blocked", "This shortcut is disabled.");
                   }
 
                   if (e.ctrlKey && e.shiftKey && key === 'v') {
