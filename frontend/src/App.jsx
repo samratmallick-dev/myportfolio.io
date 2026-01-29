@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Routes, Navigate } from 'react-router-dom';
+import { Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import MyPortfolio from './pages/client-view/portfolio';
 import MyPortfoliopageLayout from './components/user-view/layout';
 import MyAllProjectList from './pages/client-view/project-listing';
@@ -22,8 +22,13 @@ import CheckAuth from './components/common/CheckAuth';
 import { useSocketConnection } from './hooks/useSocket';
 
 const App = () => {
+      const location = useLocation();
+      const isAdminRoute = location.pathname.startsWith('/admin');
+      
       useSocketConnection();
-      useDisableContextMenuAndCopy();
+      useDisableContextMenuAndCopy(!isAdminRoute);
+
+      
 
       return (
             <div className="flex flex-col overflow-hidden bg-background min-h-screen">

@@ -1,8 +1,10 @@
 import { useEffect } from 'react';
 import { toast } from 'sonner';
 
-export function useDisableContextMenuAndCopy() {
+export function useDisableContextMenuAndCopy(enabled = true) {
       useEffect(() => {
+            if (!enabled) return;
+            
             const showToast = (msg, desc) => {
                   toast.warning(msg, {
                         description: desc,
@@ -74,5 +76,5 @@ export function useDisableContextMenuAndCopy() {
                   document.removeEventListener('selectstart', handleSelect);
                   document.removeEventListener('dragstart', handleDrag);
             };
-      }, []);
+      }, [enabled]);
 }
