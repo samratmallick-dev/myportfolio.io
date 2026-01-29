@@ -105,7 +105,7 @@ const AdminMessages = () => {
                                                       </div>
                                                 </div>
 
-                                                <div className="flex items-center gap-4 mb-3 text-sm text-muted-foreground">
+                                                <div className="flex items-center gap-4 mb-3 text-sm text-muted-foreground flex-col lg:flex-row">
                                                       <a
                                                             href={`mailto:${m.email}`}
                                                             className="flex items-center gap-1 hover:text-primary transition-colors"
