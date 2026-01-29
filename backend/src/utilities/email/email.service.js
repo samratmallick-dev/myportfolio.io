@@ -17,23 +17,29 @@ class EmailService {
       }
 
       async getAccessToken() {
-            const res = await fetch("https://oauth2.googleapis.com/token", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                  body: new URLSearchParams({
-                        client_id: process.env.GMAIL_CLIENT_ID,
-                        client_secret: process.env.GMAIL_CLIENT_SECRET,
-                        refresh_token: process.env.GMAIL_REFRESH_TOKEN,
-                        grant_type: "refresh_token",
-                  }),
-            });
+            try {
+                  const res = await fetch("https://oauth2.googleapis.com/token", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                        body: new URLSearchParams({
+                              client_id: process.env.GMAIL_CLIENT_ID,
+                              client_secret: process.env.GMAIL_CLIENT_SECRET,
+                              refresh_token: process.env.GMAIL_REFRESH_TOKEN,
+                              grant_type: "refresh_token",
+                        }),
+                  });
 
-            const data = await res.json();
-            if (!data.access_token) {
-                  throw new Error(`Failed to refresh access token: ${JSON.stringify(data)}`);
+                  const data = await res.json();
+                  if (!data.access_token) {
+                        Logger.error("Failed to refresh access token", data);
+                        throw new Error(`Failed to refresh access token: ${JSON.stringify(data)}`);
+                  }
+
+                  return data.access_token;
+            } catch (error) {
+                  Logger.error("Access token fetch error", { error: error.message });
+                  throw error;
             }
-
-            return data.access_token;
       }
 
       createRawEmail({ to, subject, html, text }) {
@@ -63,28 +69,34 @@ class EmailService {
                   throw new Error("Email service disabled");
             }
 
-            const accessToken = await this.getAccessToken();
-            const raw = this.createRawEmail({ to, subject, html, text });
+            try {
+                  const accessToken = await this.getAccessToken();
+                  const raw = this.createRawEmail({ to, subject, html, text });
 
-            const res = await fetch(
-                  "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
-                  {
-                        method: "POST",
-                        headers: {
-                              Authorization: `Bearer ${accessToken}`,
-                              "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({ raw }),
+                  const res = await fetch(
+                        "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+                        {
+                              method: "POST",
+                              headers: {
+                                    Authorization: `Bearer ${accessToken}`,
+                                    "Content-Type": "application/json",
+                              },
+                              body: JSON.stringify({ raw }),
+                        }
+                  );
+
+                  if (!res.ok) {
+                        const err = await res.text();
+                        Logger.error("Gmail API send failed", { status: res.status, error: err });
+                        throw new Error(`Gmail API send failed (${res.status}): ${err}`);
                   }
-            );
 
-            if (!res.ok) {
-                  const err = await res.text();
-                  throw new Error(`Gmail API send failed: ${err}`);
+                  Logger.info("📧 Email sent via Gmail API", { to, subject });
+                  return true;
+            } catch (error) {
+                  Logger.error("Email send error", { to, subject, error: error.message });
+                  throw error;
             }
-
-            Logger.info("📧 Email sent via Gmail API", { to, subject });
-            return true;
       }
 }
 

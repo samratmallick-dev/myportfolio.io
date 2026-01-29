@@ -91,7 +91,8 @@ class AdminService {
                         // ❗ LOG ONLY — NEVER THROW
                         Logger.error("❌ OTP email failed (ignored)", {
                               emailTo,
-                              error: err.message
+                              error: err.message,
+                              stack: err.stack
                         });
                   }
             });

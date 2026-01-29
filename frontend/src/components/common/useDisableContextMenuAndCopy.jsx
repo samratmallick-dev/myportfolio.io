@@ -30,6 +30,10 @@ export function useDisableContextMenuAndCopy() {
 
             // Disable keyboard shortcuts
             const handleKeyDown = (e) => {
+                  if (!e) {
+                        console.error('No event object provided');
+                        return;
+                  }
                   const key = e.key.toLowerCase();
 
                   if (
