@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import getAllowedOrigins from "./config/cors/cors.config.js";
 import cookieParser from "cookie-parser";
 import { errorHandler } from "./middleware/error.middleware.js";
 import apiRoutes from "./routes/api.routes.js";
@@ -7,61 +8,35 @@ import Logger from "./config/logger/logger.config.js";
 
 const app = express();
 
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-      ? process.env.ALLOWED_ORIGINS.split(",").map((origin) => origin.trim()).filter(Boolean)
-      : [
-            "http://localhost:5173",
-            "http://localhost:5174",
-            "http://localhost:3000",
-            "http://localhost:3001",
-            "http://localhost:4173",
-            "http://127.0.0.1:5173",
-            "http://127.0.0.1:5174",
-            "http://127.0.0.1:3000",
-            "http://127.0.0.1:3001",
-      ];
+const allowedOrigins = getAllowedOrigins();
 
-if (process.env.CLIENT_URL) {
-      const clientUrls = process.env.CLIENT_URL.split(",").map((url) => url.trim()).filter(Boolean);
-      allowedOrigins.push(...clientUrls);
-}
+const corsOptions = {
+      origin: (origin, callback) => {
+            if (!origin) return callback(null, true);
 
-Logger.info('CORS Configuration', {
-      allowedOrigins,
-      environment: process.env.NODE_ENV || 'development'
-});
+            if (allowedOrigins.includes(origin)) {
+                  return callback(null, true);
+            }
 
-app.use(
-      cors({
-            origin: function (origin, callback) {
-                  Logger.info('CORS check', { origin, allowedOrigins });
-                  
-                  if (!origin) {
-                        return callback(null, true);
-                  }
-                  
-                  if (allowedOrigins.includes(origin)) {
-                        return callback(null, true);
-                  }
+            Logger.warn("CORS request blocked", { origin, allowedOrigins });
+            return callback(new Error(`CORS blocked: ${origin}`));
+      },
+      credentials: true,
+      methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+      allowedHeaders: [
+            "Content-Type",
+            "Authorization",
+            "Cache-Control",
+            "Expires",
+            "Pragma",
+            "X-Requested-With",
+      ],
+      exposedHeaders: ["X-Cache"],
+};
 
-                  Logger.warn('CORS request blocked', { origin, allowedOrigins });
-                  return callback(new Error("Not allowed by CORS"));
-            },
-            credentials: true,
-            methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-            allowedHeaders: [
-                  "Content-Type",
-                  "Authorization",
-                  "Cache-Control",
-                  "Expires",
-                  "Pragma",
-                  "X-Requested-With",
-            ],
-            exposedHeaders: ["X-Cache"],
-            preflightContinue: false,
-            optionsSuccessStatus: 204,
-      })
-);
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
