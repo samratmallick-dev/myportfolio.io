@@ -9,6 +9,7 @@ import {
       fetchFeaturedProjects,
       setFeaturedProject,
 } from "@/config/api";
+import { getPublicInitialData } from "./public.slice";
 
 const initialState = {
       projectsData: [],
@@ -64,6 +65,7 @@ export const updateProjectData = createAsyncThunk(
                   const response = await updateProjectById(id, projectData);
                   dispatch(getAllProjectsAdmin());
                   dispatch(getFeaturedProjects());
+                  dispatch(getPublicInitialData());
                   return response.data;
             } catch (error) {
                   return rejectWithValue(error.response?.data || error.message);
