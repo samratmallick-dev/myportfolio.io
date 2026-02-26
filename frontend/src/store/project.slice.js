@@ -63,6 +63,7 @@ export const updateProjectData = createAsyncThunk(
             try {
                   const response = await updateProjectById(id, projectData);
                   dispatch(getAllProjectsAdmin());
+                  dispatch(getFeaturedProjects());
                   return response.data;
             } catch (error) {
                   return rejectWithValue(error.response?.data || error.message);

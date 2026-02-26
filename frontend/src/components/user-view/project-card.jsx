@@ -23,7 +23,7 @@ const ProjectCard = ({
                                     {title}
                               </CardTitle>
                               {status && (
-                                    <Badge variant="outline" className="bg-accent/10 text-accent border-accent/30">
+                                    <Badge variant="outline" className={status === 'Completed' ? 'bg-green-500/10 text-green-500 border-green-500/30' : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30'}>
                                           {status}
                                     </Badge>
                               )}

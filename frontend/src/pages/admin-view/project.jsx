@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { useDispatch, useSelector } from 'react-redux';
 import { adminProjectFormIndex } from '@/config/allFormIndex';
@@ -160,7 +161,9 @@ const AdminViewProject = () => {
                                                             <li key={item._id} className="p-4 border rounded-md space-y-2">
                                                                   <div className="flex items-center justify-between gap-4">
                                                                         <div className="font-bold">{item.title}</div>
-                                                                        <div className="text-sm text-muted-foreground">{item.status}</div>
+                                                                        <Badge variant="outline" className={item.status === 'Completed' ? 'bg-green-500/10 text-green-500 border-green-500/30' : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30'}>
+                                                                              {item.status}
+                                                                        </Badge>
                                                                   </div>
                                                                   <p className="text-sm text-muted-foreground">{item.description}</p>
                                                                   {item.technologies && technologiesArray(item.technologies).length > 0 && (
