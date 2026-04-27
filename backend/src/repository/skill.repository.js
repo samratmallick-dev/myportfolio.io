@@ -55,6 +55,6 @@ class SkillRepository {
                   { new: true }
             );
       }
-};ii
+};
 
 export default new SkillRepository();
