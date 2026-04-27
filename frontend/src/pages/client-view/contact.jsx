@@ -9,7 +9,9 @@ import profileImage from '@/assets/profileimage.png';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
-import { getContactDetails, sendMessage } from '@/store/contact.slice';
+import { sendMessage } from '@/store/contact.slice';
+import { getPublicInitialData, updatePublicData } from '@/store/public.slice';
+import { useSocket } from '@/hooks/useSocket';
 
 const initialFormData = {
       name: '',
@@ -20,10 +22,18 @@ const initialFormData = {
 
 const MyContact = () => {
       const dispatch = useDispatch();
-      const { contactDetails, loading } = useSelector((state) => state.contact);
+      const { contact: contactDetails, isLoading: loading, isInitialized } = useSelector((state) => state.public);
+      const { messageSubmitting } = useSelector((state) => state.contact);
       const [formData, setFormData] = useState(initialFormData);
 
-      // Icon mapping for social links
+      useEffect(() => {
+            if (!isInitialized) dispatch(getPublicInitialData());
+      }, [dispatch, isInitialized]);
+
+      useSocket("portfolioUpdated", ({ type, data }) => {
+            if (type === "contact") dispatch(updatePublicData({ type, data }));
+      });
+
       const getIconComponent = (iconName) => {
             const icons = {
                   Facebook,
@@ -38,10 +48,6 @@ const MyContact = () => {
             };
             return icons[iconName] || Globe;
       };
-
-      useEffect(() => {
-            dispatch(getContactDetails());
-      }, [dispatch]);
 
       const handleChange = (name, value) => {
             setFormData(prev => ({
@@ -162,7 +168,7 @@ const MyContact = () => {
                                                       buttonText="Send Message"
                                                       values={formData}
                                                       onChange={handleChange}
-                                                      isLoading={loading}
+                                                      isLoading={messageSubmitting}
                                                 />
                                           </CardContent>
                                     </Card>

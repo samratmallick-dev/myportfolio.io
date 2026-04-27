@@ -63,7 +63,6 @@ app.get("/", (req, res) => {
       });
 });
 
-// Health check endpoint
 app.get("/health", (req, res) => {
       res.json({
             status: "healthy",
@@ -72,7 +71,8 @@ app.get("/health", (req, res) => {
       });
 });
 
-// 404 handler
+app.get("/events", (req, res) => res.status(204).end());
+
 app.use((req, res) => {
       Logger.warn('Route not found', {
             path: req.originalUrl,

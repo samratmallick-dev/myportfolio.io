@@ -1,20 +1,44 @@
-import { io } from "socket.io-client";
+const SSE_URL =
+      (import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1") + "/events";
 
-const SOCKET_URL = import.meta.env.VITE_API_BASE_URL?.replace("/api/v1", "") || "http://localhost:8000";
+let eventSource = null;
+const listeners = new Map();
 
-export const socket = io(SOCKET_URL, {
-      autoConnect: false,
-      withCredentials: true,
-});
+export const connectSSE = () => {
+      if (eventSource) return;
 
-export const connectSocket = () => {
-      if (!socket.connected) {
-            socket.connect();
-      }
+      eventSource = new EventSource(SSE_URL, { withCredentials: true });
+
+      eventSource.onmessage = (e) => {
+            try {
+                  const payload = JSON.parse(e.data);
+                  if (payload.type === "connected") return;
+                  const eventName = payload.type === "newMessage" ? "newMessage" : "portfolioUpdated";
+                  const cbs = listeners.get(eventName);
+                  if (cbs) cbs.forEach((cb) => cb(payload));
+            } catch {
+                  // ignore malformed messages
+            }
+      };
+
+      eventSource.onerror = () => {
+            eventSource?.close();
+            eventSource = null;
+            // auto-reconnect after 3s
+            setTimeout(connectSSE, 3000);
+      };
 };
 
-export const disconnectSocket = () => {
-      if (socket.connected) {
-            socket.disconnect();
-      }
+export const disconnectSSE = () => {
+      eventSource?.close();
+      eventSource = null;
+};
+
+export const onSSEEvent = (event, cb) => {
+      if (!listeners.has(event)) listeners.set(event, new Set());
+      listeners.get(event).add(cb);
+};
+
+export const offSSEEvent = (event, cb) => {
+      listeners.get(event)?.delete(cb);
 };

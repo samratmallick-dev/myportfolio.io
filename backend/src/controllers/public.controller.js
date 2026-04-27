@@ -9,7 +9,6 @@ import serviceService from "../service/service.service.js";
 import contactService from "../service/contact.service.js";
 
 class PublicController {
-      // Unified endpoint for initial page load
       getPublicData = asyncHandler(async (req, res) => {
             const [hero, about, education, skills, featuredProjects, services, contact] = await Promise.all([
                   heroService.getHeroContent(),
@@ -31,8 +30,7 @@ class PublicController {
                   contact
             };
 
-            // Set cache headers
-            res.set('Cache-Control', 'public, max-age=300, s-maxage=600');
+            res.set('Cache-Control', 'no-store');
             sendSuccess(res, "Public data retrieved successfully", data);
       });
 }

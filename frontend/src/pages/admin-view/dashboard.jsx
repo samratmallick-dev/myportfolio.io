@@ -27,8 +27,8 @@ const AdminViewDashboard = () => {
       const { aboutData, isLoading: aboutLoading } = useSelector((s) => s.about);
       const { messages, contactDetails, loading: contactLoading } = useSelector((s) => s.contact);
 
-      const handleNewMessage = useCallback((message) => {
-            toast.success(`New message from ${message.name}`);
+      const handleNewMessage = useCallback(({ data: message }) => {
+            toast.success(`New message from ${message?.name || 'someone'}`);
             dispatch(getAllMessages());
       }, [dispatch]);
 

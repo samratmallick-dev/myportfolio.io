@@ -1,12 +1,15 @@
 import projectService from "../service/project.service.js";
 import { sendSuccess, sendCreated } from "../utilities/response/apiResponse.js";
 import { asyncHandler } from "../utilities/error/asyncHandler.js";
+import { broadcastUpdate } from "../utilities/sse/sse.js";
 
 class ProjectController {
       createProject = asyncHandler(async (req, res) => {
             const projectData = req.body;
-
             const project = await projectService.createProject(projectData);
+            const featured = await projectService.getFeaturedProjects();
+            const all = await projectService.getAllProjects();
+            broadcastUpdate("projects", { featured, all });
             sendCreated(res, "Project created successfully", project);
       });
 
@@ -24,14 +27,19 @@ class ProjectController {
       updateProject = asyncHandler(async (req, res) => {
             const { id } = req.params;
             const projectData = req.body;
-
             const project = await projectService.updateProject(id, projectData);
+            const featured = await projectService.getFeaturedProjects();
+            const all = await projectService.getAllProjects();
+            broadcastUpdate("projects", { featured, all });
             sendSuccess(res, "Project updated successfully", project);
       });
 
       deleteProject = asyncHandler(async (req, res) => {
             const { id } = req.params;
             const result = await projectService.deleteProject(id);
+            const featured = await projectService.getFeaturedProjects();
+            const all = await projectService.getAllProjects();
+            broadcastUpdate("projects", { featured, all });
             sendSuccess(res, "Project deleted successfully", result);
       });
 
@@ -48,8 +56,10 @@ class ProjectController {
       setFeaturedProject = asyncHandler(async (req, res) => {
             const { id } = req.params;
             const { isFeatured } = req.body;
-
             const project = await projectService.setFeaturedProject(id, isFeatured);
+            const featured = await projectService.getFeaturedProjects();
+            const all = await projectService.getAllProjects();
+            broadcastUpdate("projects", { featured, all });
             sendSuccess(res, "Project featured status updated successfully", project);
       });
 }

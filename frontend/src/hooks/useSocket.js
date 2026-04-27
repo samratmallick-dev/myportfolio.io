@@ -1,49 +1,32 @@
-import { useEffect } from "react";
-import { socket, connectSocket, disconnectSocket } from "../config/socket";
+import { useEffect, useRef } from "react";
+import { connectSSE, disconnectSSE, onSSEEvent, offSSEEvent } from "../config/socket";
 
 export const useSocket = (eventName, callback) => {
-      useEffect(() => {
-            connectSocket();
+      const callbackRef = useRef(callback);
+      callbackRef.current = callback;
 
-            if (eventName && callback) {
-                  socket.on(eventName, callback);
-            }
+      useEffect(() => {
+            connectSSE();
+
+            if (!eventName) return;
+
+            const handler = (payload) => callbackRef.current(payload);
+            onSSEEvent(eventName, handler);
 
             return () => {
-                  if (eventName && callback) {
-                        socket.off(eventName, callback);
-                  }
+                  offSSEEvent(eventName, handler);
             };
-      }, [eventName, callback]);
-
-      return socket;
+      }, [eventName]);
 };
 
 export const useSocketConnection = () => {
       useEffect(() => {
-            connectSocket();
-
-            return () => {
-                  disconnectSocket();
-            };
+            connectSSE();
+            // never disconnect on unmount — SSE is a shared singleton
       }, []);
 };
 
+// kept for backward compat — admin uses SSE same as public
 export const useAdminSocket = (eventName, callback) => {
-      useEffect(() => {
-            connectSocket();
-            socket.emit("joinAdmin");
-
-            if (eventName && callback) {
-                  socket.on(eventName, callback);
-            }
-
-            return () => {
-                  if (eventName && callback) {
-                        socket.off(eventName, callback);
-                  }
-            };
-      }, [eventName, callback]);
-
-      return socket;
+      useSocket(eventName, callback);
 };

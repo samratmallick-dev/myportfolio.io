@@ -9,7 +9,6 @@ import {
       fetchFeaturedProjects,
       setFeaturedProject,
 } from "@/config/api";
-import { getPublicInitialData } from "./public.slice";
 
 const initialState = {
       projectsData: [],
@@ -20,13 +19,12 @@ const initialState = {
       success: false,
 };
 
-// Async thunks
 export const getAllProjects = createAsyncThunk(
       "project/fetchAllProjects",
       async (_, { rejectWithValue }) => {
             try {
                   const response = await fetchAllProjects();
-                  return response.data;
+                  return response.data ?? response;
             } catch (error) {
                   return rejectWithValue(error.response?.data || error.message);
             }
@@ -64,8 +62,6 @@ export const updateProjectData = createAsyncThunk(
             try {
                   const response = await updateProjectById(id, projectData);
                   dispatch(getAllProjectsAdmin());
-                  dispatch(getFeaturedProjects());
-                  dispatch(getPublicInitialData());
                   return response.data;
             } catch (error) {
                   return rejectWithValue(error.response?.data || error.message);
@@ -79,7 +75,6 @@ export const deleteProjectData = createAsyncThunk(
             try {
                   const response = await deleteProjectById(id);
                   dispatch(getAllProjectsAdmin());
-                  dispatch(getFeaturedProjects());
                   return { id, message: response.message };
             } catch (error) {
                   return rejectWithValue(error.response?.data || error.message);
@@ -92,7 +87,7 @@ export const getAllProjectsAdmin = createAsyncThunk(
       async (_, { rejectWithValue }) => {
             try {
                   const response = await fetchAllProjectsAdmin();
-                  return response.data;
+                  return response.data ?? response;
             } catch (error) {
                   return rejectWithValue(error.response?.data || error.message);
             }
@@ -104,7 +99,7 @@ export const getFeaturedProjects = createAsyncThunk(
       async (_, { rejectWithValue }) => {
             try {
                   const response = await fetchFeaturedProjects();
-                  return response.data;
+                  return response.data ?? response;
             } catch (error) {
                   return rejectWithValue(error.response?.data || error.message);
             }
@@ -154,9 +149,11 @@ const projectSlice = createSlice({
                   state.error = null;
                   state.success = false;
             },
+            setProjects: (state, action) => {
+                  state.projectsData = action.payload;
+            },
       },
       extraReducers: (builder) => {
-            // Fetch all projects
             builder
                   .addCase(getAllProjects.pending, (state) => {
                         state.isLoading = true;
@@ -172,7 +169,6 @@ const projectSlice = createSlice({
                         state.error = action.payload;
                   });
 
-            // Fetch project by ID
             builder
                   .addCase(getProjectById.pending, (state) => {
                         state.isLoading = true;
@@ -188,7 +184,6 @@ const projectSlice = createSlice({
                         state.error = action.payload;
                   });
 
-            // Create project
             builder
                   .addCase(createProjectData.pending, (state) => {
                         state.isLoading = true;
@@ -206,7 +201,6 @@ const projectSlice = createSlice({
                         state.success = false;
                   });
 
-            // Update project
             builder
                   .addCase(updateProjectData.pending, (state) => {
                         state.isLoading = true;
@@ -224,7 +218,6 @@ const projectSlice = createSlice({
                         state.success = false;
                   });
 
-            // Delete project
             builder
                   .addCase(deleteProjectData.pending, (state) => {
                         state.isLoading = true;
@@ -242,7 +235,6 @@ const projectSlice = createSlice({
                         state.success = false;
                   });
 
-            // Fetch all projects admin
             builder
                   .addCase(getAllProjectsAdmin.pending, (state) => {
                         state.isLoading = true;
@@ -258,7 +250,6 @@ const projectSlice = createSlice({
                         state.error = action.payload;
                   });
 
-            // Fetch featured projects
             builder
                   .addCase(getFeaturedProjects.pending, (state) => {
                         state.isLoading = true;
@@ -274,7 +265,6 @@ const projectSlice = createSlice({
                         state.error = action.payload;
                   });
 
-            // Update featured projects
             builder
                   .addCase(updateFeaturedProjects.pending, (state) => {
                         state.isLoading = true;
@@ -294,5 +284,5 @@ const projectSlice = createSlice({
       },
 });
 
-export const { clearError, clearSuccess, resetProjectState } = projectSlice.actions;
+export const { clearError, clearSuccess, resetProjectState, setProjects } = projectSlice.actions;
 export default projectSlice.reducer;

@@ -7,18 +7,21 @@ import MyEducation from "@/components/user-view/education";
 import MyServices from "@/components/user-view/service";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
-import { getPublicInitialData } from "@/store/public.slice";
+import { getPublicInitialData, updatePublicData } from "@/store/public.slice";
 import HeroSkeleton from "@/components/loaders/HeroSkeleton";
+import { useSocket } from "@/hooks/useSocket";
 
 const MyPortfolio = () => {
       const dispatch = useDispatch();
       const { hero, isLoading, isInitialized } = useSelector((state) => state.public);
 
       useEffect(() => {
-            if (!isInitialized) {
-                  dispatch(getPublicInitialData());
-            }
-      }, [dispatch, isInitialized]);
+            dispatch(getPublicInitialData());
+      }, [dispatch]);
+
+      useSocket("portfolioUpdated", ({ type, data }) => {
+            dispatch(updatePublicData({ type, data }));
+      });
 
       if (isLoading || !hero) {
             return (

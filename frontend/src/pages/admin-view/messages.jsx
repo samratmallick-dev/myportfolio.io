@@ -14,8 +14,8 @@ const AdminMessages = () => {
       const { messages, loading, unreadCount } = useSelector((state) => state.contact);
       const [processingId, setProcessingId] = useState(null);
 
-      const handleNewMessage = useCallback((message) => {
-            toast.success(`New message from ${message.name}`);
+      const handleNewMessage = useCallback(({ data: message }) => {
+            toast.success(`New message from ${message?.name || 'someone'}`);
             dispatch(getAllMessages());
             dispatch(getUnreadCount());
       }, [dispatch]);

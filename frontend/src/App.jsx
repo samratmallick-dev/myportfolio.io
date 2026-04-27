@@ -19,16 +19,12 @@ import AdminSettings from './pages/admin-view/settings';
 import AdminViewContactDetails from './pages/admin-view/contactdetails';
 import AdminMessages from './pages/admin-view/messages';
 import CheckAuth from './components/common/CheckAuth';
-import { useSocketConnection } from './hooks/useSocket';
 
 const App = () => {
       const location = useLocation();
       const isAdminRoute = location.pathname.startsWith('/admin');
-      
-      useSocketConnection();
-      useDisableContextMenuAndCopy(!isAdminRoute);
 
-      
+      // useDisableContextMenuAndCopy(!isAdminRoute);
 
       return (
             <div className="flex flex-col overflow-hidden bg-background min-h-screen">
@@ -55,7 +51,6 @@ const App = () => {
                         </Route>
 
                         <Route path="/" element={<Navigate to="/portfolio/home" replace />} />
-                        <Route path="/portfolio" element={<Navigate to="/portfolio/home" replace />} />
                         <Route path="/portfolio" element={<MyPortfoliopageLayout />}>
                               <Route index element={<Navigate to="home" replace />} />
                               <Route path="home" element={<MyPortfolio />} />

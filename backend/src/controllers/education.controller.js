@@ -1,12 +1,14 @@
 import educationService from "../service/education.service.js";
 import { sendSuccess, sendCreated } from "../utilities/response/apiResponse.js";
 import { asyncHandler } from "../utilities/error/asyncHandler.js";
+import { broadcastUpdate } from "../utilities/sse/sse.js";
 
 class EducationController {
       createEducation = asyncHandler(async (req, res) => {
             const educationData = req.body;
-
             const education = await educationService.createEducation(educationData);
+            const allEducation = await educationService.getAllEducation();
+            broadcastUpdate("education", allEducation);
             sendCreated(res, "Education created successfully", education);
       });
 
@@ -24,14 +26,17 @@ class EducationController {
       updateEducation = asyncHandler(async (req, res) => {
             const { id } = req.params;
             const educationData = req.body;
-
             const education = await educationService.updateEducation(id, educationData);
+            const allEducation = await educationService.getAllEducation();
+            broadcastUpdate("education", allEducation);
             sendSuccess(res, "Education updated successfully", education);
       });
 
       deleteEducation = asyncHandler(async (req, res) => {
             const { id } = req.params;
             const result = await educationService.deleteEducation(id);
+            const allEducation = await educationService.getAllEducation();
+            broadcastUpdate("education", allEducation);
             sendSuccess(res, "Education deleted successfully", result);
       });
 

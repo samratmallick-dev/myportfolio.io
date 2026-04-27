@@ -1,20 +1,19 @@
 import contactService from "../service/contact.service.js";
 import { sendSuccess, sendCreated } from "../utilities/response/apiResponse.js";
 import { asyncHandler } from "../utilities/error/asyncHandler.js";
+import { broadcastUpdate } from "../utilities/sse/sse.js";
 
 class ContactController {
       addUpdateContactDetails = asyncHandler(async (req, res) => {
             const contactData = req.body;
             const image = req.file;
-
             const contact = await contactService.addUpdateContactDetails(contactData, image);
-
+            broadcastUpdate("contact", contact);
             sendSuccess(res, "Contact details updated successfully", contact);
       });
 
       getContactDetails = asyncHandler(async (req, res) => {
             const contact = await contactService.getContactDetails();
-
             sendSuccess(res, "Contact details retrieved successfully", contact);
       });
 
@@ -22,17 +21,15 @@ class ContactController {
             const { id } = req.params;
             const contactData = req.body;
             const image = req.file;
-
             const contact = await contactService.updateContactDetails(id, contactData, image);
-
+            broadcastUpdate("contact", contact);
             sendSuccess(res, "Contact details updated successfully", contact);
       });
 
       sendMessage = asyncHandler(async (req, res) => {
             const messageData = req.body;
-
             const message = await contactService.sendMessage(messageData);
-
+            broadcastUpdate("newMessage", message);
             sendCreated(res, "Message sent successfully. You will receive a confirmation email shortly.", message);
       });
 

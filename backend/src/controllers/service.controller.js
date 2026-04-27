@@ -1,12 +1,14 @@
 import serviceService from "../service/service.service.js";
 import { sendSuccess, sendCreated } from "../utilities/response/apiResponse.js";
 import { asyncHandler } from "../utilities/error/asyncHandler.js";
+import { broadcastUpdate } from "../utilities/sse/sse.js";
 
 class ServiceController {
       createService = asyncHandler(async (req, res) => {
             const serviceData = req.body;
-
             const service = await serviceService.createService(serviceData);
+            const allServices = await serviceService.getAllServices();
+            broadcastUpdate("services", allServices);
             sendCreated(res, "Service created successfully", service);
       });
 
@@ -24,14 +26,17 @@ class ServiceController {
       updateService = asyncHandler(async (req, res) => {
             const { id } = req.params;
             const serviceData = req.body;
-
             const service = await serviceService.updateService(id, serviceData);
+            const allServices = await serviceService.getAllServices();
+            broadcastUpdate("services", allServices);
             sendSuccess(res, "Service updated successfully", service);
       });
 
       deleteService = asyncHandler(async (req, res) => {
             const { id } = req.params;
             const result = await serviceService.deleteService(id);
+            const allServices = await serviceService.getAllServices();
+            broadcastUpdate("services", allServices);
             sendSuccess(res, "Service deleted successfully", result);
       });
 
