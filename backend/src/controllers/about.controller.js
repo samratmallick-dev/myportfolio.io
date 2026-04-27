@@ -1,7 +1,7 @@
 import aboutService from "../service/about.service.js";
 import { sendSuccess } from "../utilities/response/apiResponse.js";
 import { asyncHandler } from "../utilities/error/asyncHandler.js";
-import { broadcastUpdate } from "../utilities/sse/sse.js";
+import { broadcastPortfolioUpdate } from "../config/socket/socket.config.js";
 
 class AboutController {
       addUpdateAboutContent = asyncHandler(async (req, res) => {
@@ -9,7 +9,7 @@ class AboutController {
             const aboutImage = req.file;
 
             const about = await aboutService.addUpdateAboutContent(aboutData, aboutImage);
-            broadcastUpdate("about", about);
+            broadcastPortfolioUpdate("about", about);
             sendSuccess(res, "About content updated successfully", about);
       });
 
@@ -32,7 +32,7 @@ class AboutController {
             const aboutImage = req.file;
 
             const about = await aboutService.updateAboutContent(id, aboutData, aboutImage);
-            broadcastUpdate("about", about);
+            broadcastPortfolioUpdate("about", about);
             sendSuccess(res, "About content updated successfully", about);
       });
 
@@ -40,7 +40,7 @@ class AboutController {
             const { id } = req.params;
 
             const result = await aboutService.deleteAboutContent(id);
-            broadcastUpdate("about", null);
+            broadcastPortfolioUpdate("about", null);
             sendSuccess(res, "About content deleted successfully", result);
       });
 
@@ -49,8 +49,6 @@ class AboutController {
 
             sendSuccess(res, "All about content retrieved successfully", abouts);
       });
-}
+};
 
 export default new AboutController();
-
-

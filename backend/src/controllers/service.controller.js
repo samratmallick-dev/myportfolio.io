@@ -1,14 +1,14 @@
 import serviceService from "../service/service.service.js";
 import { sendSuccess, sendCreated } from "../utilities/response/apiResponse.js";
 import { asyncHandler } from "../utilities/error/asyncHandler.js";
-import { broadcastUpdate } from "../utilities/sse/sse.js";
+import { broadcastPortfolioUpdate } from "../config/socket/socket.config.js";
 
 class ServiceController {
       createService = asyncHandler(async (req, res) => {
             const serviceData = req.body;
             const service = await serviceService.createService(serviceData);
             const allServices = await serviceService.getAllServices();
-            broadcastUpdate("services", allServices);
+            broadcastPortfolioUpdate("services", allServices);
             sendCreated(res, "Service created successfully", service);
       });
 
@@ -28,7 +28,7 @@ class ServiceController {
             const serviceData = req.body;
             const service = await serviceService.updateService(id, serviceData);
             const allServices = await serviceService.getAllServices();
-            broadcastUpdate("services", allServices);
+            broadcastPortfolioUpdate("services", allServices);
             sendSuccess(res, "Service updated successfully", service);
       });
 
@@ -36,7 +36,7 @@ class ServiceController {
             const { id } = req.params;
             const result = await serviceService.deleteService(id);
             const allServices = await serviceService.getAllServices();
-            broadcastUpdate("services", allServices);
+            broadcastPortfolioUpdate("services", allServices);
             sendSuccess(res, "Service deleted successfully", result);
       });
 
@@ -44,7 +44,7 @@ class ServiceController {
             const services = await serviceService.getAllServicesAdmin();
             sendSuccess(res, "All services retrieved successfully", services);
       });
-}
+};
 
 export default new ServiceController();
 

@@ -1,7 +1,7 @@
 import heroService from "../service/hero.service.js";
 import { sendSuccess } from "../utilities/response/apiResponse.js";
 import { asyncHandler } from "../utilities/error/asyncHandler.js";
-import { broadcastUpdate } from "../utilities/sse/sse.js";
+import { broadcastPortfolioUpdate } from "../config/socket/socket.config.js";
 
 class HeroController {
       addUpdateHeroContent = asyncHandler(async (req, res) => {
@@ -9,7 +9,7 @@ class HeroController {
             const profileImage = req.file;
 
             const hero = await heroService.addUpdateHeroContent(heroData, profileImage);
-            broadcastUpdate("hero", hero);
+            broadcastPortfolioUpdate("hero", hero);
             sendSuccess(res, "Hero content updated successfully", hero);
       });
 
@@ -29,14 +29,14 @@ class HeroController {
             const heroData = req.body;
             const profileImage = req.file;
             const hero = await heroService.updateHeroContent(id, heroData, profileImage);
-            broadcastUpdate("hero", hero);
+            broadcastPortfolioUpdate("hero", hero);
             sendSuccess(res, "Hero content updated successfully", hero);
       });
 
       deleteHeroContent = asyncHandler(async (req, res) => {
             const { id } = req.params;
             const result = await heroService.deleteHeroContent(id);
-            broadcastUpdate("hero", null);
+            broadcastPortfolioUpdate("hero", null);
             sendSuccess(res, "Hero content deleted successfully", result);
       });
 
@@ -44,7 +44,7 @@ class HeroController {
             const heroes = await heroService.getAllHeroContent();
             sendSuccess(res, "All hero content retrieved successfully", heroes);
       });
-}
+};
 
 export default new HeroController();
 

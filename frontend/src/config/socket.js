@@ -1,44 +1,88 @@
-const SSE_URL =
-      (import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1") + "/events";
+import { io } from "socket.io-client";
 
-let eventSource = null;
-const listeners = new Map();
+const SOCKET_URL =
+      import.meta.env.VITE_SOCKET_URL ||
+      import.meta.env.VITE_API_BASE_URL ||
+      import.meta.env.VITE_API_BASE_URL_LOCAL ||
+      "http://localhost:8000";
 
-export const connectSSE = () => {
-      if (eventSource) return;
+let socket = null;
+let isConnecting = false;
 
-      eventSource = new EventSource(SSE_URL, { withCredentials: true });
+export const getSocket = () => {
+      if (socket?.connected || isConnecting) return socket;
 
-      eventSource.onmessage = (e) => {
-            try {
-                  const payload = JSON.parse(e.data);
-                  if (payload.type === "connected") return;
-                  const eventName = payload.type === "newMessage" ? "newMessage" : "portfolioUpdated";
-                  const cbs = listeners.get(eventName);
-                  if (cbs) cbs.forEach((cb) => cb(payload));
-            } catch {
-                  // ignore malformed messages
-            }
-      };
+      isConnecting = true;
 
-      eventSource.onerror = () => {
-            eventSource?.close();
-            eventSource = null;
-            // auto-reconnect after 3s
-            setTimeout(connectSSE, 3000);
-      };
+      socket = io(SOCKET_URL, {
+            transports: ["websocket", "polling"],
+            withCredentials: true,
+            reconnection: true,
+            reconnectionAttempts: Infinity,
+            reconnectionDelay: 1000,
+            reconnectionDelayMax: 5000,
+            timeout: 20000,
+            autoConnect: true,
+      });
+
+      socket.on("connect", () => {
+            isConnecting = false;
+            console.log("✅ Socket.IO connected:", socket.id);
+      });
+
+      socket.on("disconnect", (reason) => {
+            console.log("❌ Socket.IO disconnected:", reason);
+      });
+
+      socket.on("connect_error", (err) => {
+            isConnecting = false;
+            console.warn("🚨 Socket.IO connection error:", err.message);
+      });
+
+      socket.on("reconnect_attempt", (attempt) => {
+            console.log(`🔄 Socket.IO reconnection attempt #${attempt}`);
+      });
+
+      socket.on("reconnect", (attempt) => {
+            console.log(`✅ Socket.IO reconnected after ${attempt} attempts`);
+      });
+
+      socket.on("reconnect_failed", () => {
+            console.error("❌ Socket.IO reconnection failed permanently");
+      });
+
+      return socket;
 };
 
-export const disconnectSSE = () => {
-      eventSource?.close();
-      eventSource = null;
+export const connectSocket = () => {
+      const s = getSocket();
+      if (!s.connected) s.connect();
+      return s;
 };
 
-export const onSSEEvent = (event, cb) => {
-      if (!listeners.has(event)) listeners.set(event, new Set());
-      listeners.get(event).add(cb);
+export const disconnectSocket = () => {
+      if (socket) {
+            socket.disconnect();
+            socket = null;
+            isConnecting = false;
+      }
 };
 
-export const offSSEEvent = (event, cb) => {
-      listeners.get(event)?.delete(cb);
+export const onSocketEvent = (event, callback) => {
+      const s = getSocket();
+      s.on(event, callback);
+      return () => s.off(event, callback);
+};
+
+export const offSocketEvent = (event, callback) => {
+      if (socket) socket.off(event, callback);
+};
+
+export const emitSocketEvent = (event, data) => {
+      const s = getSocket();
+      if (s.connected) {
+            s.emit(event, data);
+      } else {
+            console.warn(`Socket not connected — cannot emit "${event}"`);
+      }
 };

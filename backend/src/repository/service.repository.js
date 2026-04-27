@@ -13,6 +13,6 @@ class ServiceRepository extends BaseRepository {
       async findActive(filter = {}) {
             return await this.model.find({ ...filter, isActive: true }).sort({ createdAt: 1 });
       }
-}
+};
 
 export default new ServiceRepository();

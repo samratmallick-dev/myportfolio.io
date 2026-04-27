@@ -41,7 +41,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.use((req, res, next) => {
-      if (req.path !== '/health' && req.path !== '/') {
+      if (req.path !== '/health' && req.path !== '/' && req.path !== '/events') {
             Logger.info('Incoming request', {
                   method: req.method,
                   path: req.path,
@@ -71,7 +71,7 @@ app.get("/health", (req, res) => {
       });
 });
 
-// app.get("/events", (req, res) => res.status(204).end());
+app.get("/events", (req, res) => res.status(204).end());
 
 app.use((req, res) => {
       Logger.warn('Route not found', {

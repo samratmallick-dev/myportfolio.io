@@ -33,6 +33,6 @@ class PublicController {
             res.set('Cache-Control', 'no-store');
             sendSuccess(res, "Public data retrieved successfully", data);
       });
-}
+};
 
 export default new PublicController();

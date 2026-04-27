@@ -1,14 +1,14 @@
 import contactService from "../service/contact.service.js";
 import { sendSuccess, sendCreated } from "../utilities/response/apiResponse.js";
 import { asyncHandler } from "../utilities/error/asyncHandler.js";
-import { broadcastUpdate } from "../utilities/sse/sse.js";
+import { broadcastPortfolioUpdate } from "../config/socket/socket.config.js";
 
 class ContactController {
       addUpdateContactDetails = asyncHandler(async (req, res) => {
             const contactData = req.body;
             const image = req.file;
             const contact = await contactService.addUpdateContactDetails(contactData, image);
-            broadcastUpdate("contact", contact);
+            broadcastPortfolioUpdate("contact", contact);
             sendSuccess(res, "Contact details updated successfully", contact);
       });
 
@@ -22,14 +22,14 @@ class ContactController {
             const contactData = req.body;
             const image = req.file;
             const contact = await contactService.updateContactDetails(id, contactData, image);
-            broadcastUpdate("contact", contact);
+            broadcastPortfolioUpdate("contact", contact);
             sendSuccess(res, "Contact details updated successfully", contact);
       });
 
       sendMessage = asyncHandler(async (req, res) => {
             const messageData = req.body;
             const message = await contactService.sendMessage(messageData);
-            broadcastUpdate("newMessage", message);
+            broadcastPortfolioUpdate("newMessage", message);
             sendCreated(res, "Message sent successfully. You will receive a confirmation email shortly.", message);
       });
 
@@ -73,6 +73,6 @@ class ContactController {
 
             sendSuccess(res, "All messages retrieved successfully", messages);
       });
-}
+};
 
 export default new ContactController();

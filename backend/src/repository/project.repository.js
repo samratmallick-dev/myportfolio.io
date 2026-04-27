@@ -22,6 +22,6 @@ class ProjectRepository extends BaseRepository {
                   .limit(6)
                   .lean();
       }
-}
+};
 
 export default new ProjectRepository();

@@ -8,19 +8,10 @@ import servicesRoutes from "./services.routes.js";
 import contactRoutes from "./contact.routes.js";
 import skillRoutes from "./skill.routes.js";
 import publicRoutes from "./public.routes.js";
-import { addSSEClient, removeSSEClient } from "../../utilities/sse/sse.js";
 
 const router = Router();
 
-router.get("/events", (req, res) => {
-      res.setHeader("Content-Type", "text/event-stream");
-      res.setHeader("Cache-Control", "no-cache");
-      res.setHeader("Connection", "keep-alive");
-      res.flushHeaders();
-      res.write("data: {\"type\":\"connected\"}\n\n");
-      addSSEClient(res);
-      req.on("close", () => removeSSEClient(res));
-});
+router.get("/events", (req, res) => res.status(204).end());
 
 router.use("/public", publicRoutes);
 router.use("/admin", adminRoutes);

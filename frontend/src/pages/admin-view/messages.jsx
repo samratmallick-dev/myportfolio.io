@@ -14,7 +14,8 @@ const AdminMessages = () => {
       const { messages, loading, unreadCount } = useSelector((state) => state.contact);
       const [processingId, setProcessingId] = useState(null);
 
-      const handleNewMessage = useCallback(({ data: message }) => {
+      const handleNewMessage = useCallback((payload) => {
+            const message = payload?.data || payload;
             toast.success(`New message from ${message?.name || 'someone'}`);
             dispatch(getAllMessages());
             dispatch(getUnreadCount());
@@ -44,13 +45,12 @@ const AdminMessages = () => {
       };
 
       const handleMarkAsRead = async (id) => {
-            if (processingId) return; // Prevent multiple simultaneous operations
+            if (processingId) return;
 
             setProcessingId(id);
             try {
                   await dispatch(markAsRead(id)).unwrap();
                   toast.success('Message marked as read');
-                  // Unread count is updated automatically in the reducer
             } catch (err) {
                   console.error('Mark as read error:', err);
                   toast.error(err || 'Failed to mark as read');

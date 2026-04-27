@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useCallback } from 'react';
+import { Fragment, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardAction } from '@/components/ui/card';
@@ -6,8 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import * as Icons from 'lucide-react';
 import { toast } from 'sonner';
-import { useAdminSocket } from '@/hooks/useSocket';
-
 import { getHeroData } from '@/store/hero.slice';
 import { getAboutData } from '@/store/about.slice';
 import { getAllEducationData } from '@/store/education.slice';
@@ -27,14 +25,7 @@ const AdminViewDashboard = () => {
       const { aboutData, isLoading: aboutLoading } = useSelector((s) => s.about);
       const { messages, contactDetails, loading: contactLoading } = useSelector((s) => s.contact);
 
-      const handleNewMessage = useCallback(({ data: message }) => {
-            toast.success(`New message from ${message?.name || 'someone'}`);
-            dispatch(getAllMessages());
-      }, [dispatch]);
-
-      useAdminSocket('newMessage', handleNewMessage);
-
-      useEffect(() => {
+useEffect(() => {
             dispatch(getHeroData());
             dispatch(getAboutData());
             dispatch(getAllEducationData());
