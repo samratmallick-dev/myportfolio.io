@@ -18,11 +18,38 @@ export const publicEndpoints = {
       initialData: '/api/v1/public/initial-data',
 };
 
-// Fetch all public data in one call
+// Fetch all public data in parallel calls
 export const fetchPublicInitialData = async () => {
       try {
-            const response = await api.get(publicEndpoints.initialData);
-            return response.data;
+            const [
+                  hero,
+                  about,
+                  education,
+                  skills,
+                  featuredProjects,
+                  services,
+                  contact
+            ] = await Promise.all([
+                  fetchHeroData(),
+                  fetchAboutData(),
+                  fetchAllEducation(),
+                  fetchAllSkillCategories(),
+                  fetchFeaturedProjects(),
+                  fetchAllServices(),
+                  fetchContactDetails()
+            ]);
+
+            return {
+                  data: {
+                        hero: hero?.data ?? hero,
+                        about: about?.data ?? about,
+                        education: education?.data ?? education,
+                        skills: skills?.data ?? skills,
+                        featuredProjects: featuredProjects?.data ?? featuredProjects,
+                        services: services?.data ?? services,
+                        contact: contact?.data ?? contact
+                  }
+            };
       } catch (error) {
             throw error.response?.data || error;
       }

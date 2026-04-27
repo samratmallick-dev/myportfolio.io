@@ -114,14 +114,16 @@ export const updateFeaturedProjects = createAsyncThunk(
                   const currentFeatured = state.project.featuredProjects.map(p => p._id);
                   const allProjects = state.project.projectsData;
 
+                  const promises = [];
                   for (const project of allProjects) {
                         const shouldBeFeatured = projectIds.includes(project._id);
                         const isFeatured = currentFeatured.includes(project._id);
 
                         if (shouldBeFeatured !== isFeatured) {
-                              await setFeaturedProject(project._id, shouldBeFeatured);
+                              promises.push(setFeaturedProject(project._id, shouldBeFeatured));
                         }
                   }
+                  await Promise.all(promises);
 
                   dispatch(getFeaturedProjects());
                   return projectIds;
