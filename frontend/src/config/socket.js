@@ -1,10 +1,6 @@
 import { io } from "socket.io-client";
 
-const SOCKET_URL =
-      import.meta.env.VITE_SOCKET_URL ||
-      import.meta.env.VITE_API_BASE_URL ||
-      import.meta.env.VITE_API_BASE_URL_LOCAL ||
-      "http://localhost:8000";
+const SOCKET_URL = import.meta.env.VITE_API_BASE_URL ? import.meta.env.VITE_API_BASE_URL : (import.meta.env.VITE_API_BASE_URL_LOCAL || "http://localhost:8000");
 
 let socket = null;
 let isConnecting = false;
