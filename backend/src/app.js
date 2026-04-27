@@ -71,7 +71,7 @@ app.get("/health", (req, res) => {
       });
 });
 
-app.get("/events", (req, res) => res.status(204).end());
+// app.get("/events", (req, res) => res.status(204).end());
 
 app.use((req, res) => {
       Logger.warn('Route not found', {
