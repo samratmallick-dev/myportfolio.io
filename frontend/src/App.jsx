@@ -24,7 +24,7 @@ const App = () => {
       const location = useLocation();
       const isAdminRoute = location.pathname.startsWith('/admin');
 
-      // useDisableContextMenuAndCopy(!isAdminRoute);
+      useDisableContextMenuAndCopy(!isAdminRoute);
 
       return (
             <div className="flex flex-col overflow-hidden bg-background min-h-screen">
