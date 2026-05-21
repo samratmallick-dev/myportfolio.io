@@ -37,7 +37,7 @@ const MyPortfolio = () => {
       }
 
       return (
-            <div className="min-h-screen bg-background relative mt-20">
+            <div className="min-h-screen bg-background relative mt-16">
                   <Hero heroImage={heroImage} data={hero} />
                   <AboutMe />
                   <MyEducation />

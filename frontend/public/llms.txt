@@ -1,0 +1,25 @@
+# Samrat Mallick - Full Stack Web Developer
+
+## Overview
+Welcome to the portfolio of Samrat Mallick. I am a passionate Full Stack Developer with expertise in building dynamic and responsive web applications using modern technologies like React, Node.js, Express, and MongoDB (MERN stack). I love turning ideas into reality using code and creating innovative web solutions.
+
+## Skills
+- Frontend Development: ReactJS, Tailwind CSS, HTML5, JavaScript, TypeScript
+- Backend Development: NodeJS, ExpressJS, RESTful APIs
+- Database: MongoDB, Mongoose
+- Tools: Git, VS Code, Postman, Vercel, Render
+
+## Services
+- Full Stack Web Development
+- Frontend Development (React)
+- Backend Development (Node.js/Express)
+- API Integration & Development
+- Database Management (MongoDB)
+
+## Contact Information
+- Website: https://myportfolio-io-dusky.vercel.app/
+- LinkedIn: https://www.linkedin.com/in/samrat-mallick01
+- GitHub: https://github.com/samratmallick-dev
+
+## Trust Pages
+- Contact: https://myportfolio-io-dusky.vercel.app/portfolio/contact

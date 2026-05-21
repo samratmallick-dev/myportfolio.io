@@ -15,9 +15,11 @@ const AboutMe = () => {
                         <div className='md:basis-[35%] basis-full mx-auto flex items-center justify-center'>
                               <img
                                     src={about?.aboutImage?.url}
-                                    alt="About Me"
+                                    alt="Portrait of Samrat Mallick - About Me"
+                                    width="384"
+                                    height="384"
                                     loading="lazy"
-                                    className="md:w-96 md:h-96 w-56 h-56 object-center  rounded-full shadow-lg border-4 border-primary/10"
+                                    className="md:w-96 md:h-96 w-56 h-56 object-center rounded-full shadow-lg border-4 border-primary/10"
                               />
                         </div>
                         <div className="md:basis-[60%] basis-full mx-auto text-center">
