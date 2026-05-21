@@ -13,42 +13,15 @@ const api = axios.create({
       maxContentLength: 50 * 1024 * 1024,
 });
 
-// Public unified endpoint
 export const publicEndpoints = {
       initialData: '/api/v1/public/initial-data',
 };
 
-// Fetch all public data in parallel calls
 export const fetchPublicInitialData = async () => {
       try {
-            const [
-                  hero,
-                  about,
-                  education,
-                  skills,
-                  featuredProjects,
-                  services,
-                  contact
-            ] = await Promise.all([
-                  fetchHeroData(),
-                  fetchAboutData(),
-                  fetchAllEducation(),
-                  fetchAllSkillCategories(),
-                  fetchFeaturedProjects(),
-                  fetchAllServices(),
-                  fetchContactDetails()
-            ]);
-
+            const response = await api.get(publicEndpoints.initialData);
             return {
-                  data: {
-                        hero: hero?.data ?? hero,
-                        about: about?.data ?? about,
-                        education: education?.data ?? education,
-                        skills: skills?.data ?? skills,
-                        featuredProjects: featuredProjects?.data ?? featuredProjects,
-                        services: services?.data ?? services,
-                        contact: contact?.data ?? contact
-                  }
+                  data: response.data?.data ?? response.data
             };
       } catch (error) {
             throw error.response?.data || error;

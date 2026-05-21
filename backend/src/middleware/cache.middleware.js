@@ -9,6 +9,8 @@ export const cacheMiddleware = (duration = 300) => {
             const key = req.originalUrl || req.url;
             const cachedResponse = cache.get(key);
 
+            res.set('Cache-Control', `public, max-age=${duration}, stale-while-revalidate=60`);
+
             if (cachedResponse && Date.now() < cachedResponse.expiry) {
                   res.set('X-Cache', 'HIT');
                   return res.json(cachedResponse.data);
@@ -16,7 +18,7 @@ export const cacheMiddleware = (duration = 300) => {
 
             res.set('X-Cache', 'MISS');
             const originalJson = res.json.bind(res);
-            
+
             res.json = (data) => {
                   cache.set(key, {
                         data,

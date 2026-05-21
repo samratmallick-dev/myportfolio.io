@@ -10,7 +10,7 @@ import contactService from "../service/contact.service.js";
 
 class PublicController {
       getPublicData = asyncHandler(async (req, res) => {
-            const [hero, about, education, skills, featuredProjects, services, contact] = await Promise.all([
+            const [hero, about, education, skills, featuredProjects, services, contact] = await Promise.allSettled([
                   heroService.getHeroContent(),
                   aboutService.getAboutContent(),
                   educationService.getAllEducation(),
@@ -20,17 +20,19 @@ class PublicController {
                   contactService.getContactDetails()
             ]);
 
+            if (hero.status === "rejected") throw hero.reason;
+            if (about.status === "rejected") throw about.reason;
+
             const data = {
-                  hero,
-                  about,
-                  education,
-                  skills,
-                  featuredProjects,
-                  services,
-                  contact
+                  hero: hero.value,
+                  about: about.value,
+                  education: education.status === "fulfilled" ? education.value : [],
+                  skills: skills.status === "fulfilled" ? skills.value : [],
+                  featuredProjects: featuredProjects.status === "fulfilled" ? featuredProjects.value : [],
+                  services: services.status === "fulfilled" ? services.value : [],
+                  contact: contact.status === "fulfilled" ? contact.value : null,
             };
 
-            res.set('Cache-Control', 'no-store');
             sendSuccess(res, "Public data retrieved successfully", data);
       });
 };
