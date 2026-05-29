@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import AnimatedText from './animated-text';
 import { Button } from '../ui/button';
-import { Download, Github, Linkedin, Facebook } from 'lucide-react';
+import { Download, Github, Linkedin, Facebook, Instagram } from 'lucide-react';
 import ContactMeBtn from './contact-btn';
 
 const Hero = ({
@@ -18,7 +18,8 @@ const Hero = ({
       const socialLinks = [
             { icon: <Github />, href: "https://github.com/samratmallick-dev" },
             { icon: <Linkedin />, href: "https://www.linkedin.com/in/samrat-mallick01" },
-            { icon: <Facebook />, href: "https://www.facebook.com/samratmallick.dev" }
+            { icon: <Facebook />, href: "https://www.facebook.com/samratmallick.dev" },
+            { icon: <Instagram />, href: "https://www.instagram.com/samratmallick.dev" },
       ]
 
       return (
