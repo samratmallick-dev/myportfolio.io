@@ -89,7 +89,7 @@ const MyContact = () => {
                                                             { label: 'Name', value: contactDetails.name || '-', link: '#' },
                                                             { label: 'Email', value: contactDetails.email || '-', link: contactDetails.email ? `mailto:${contactDetails.email}` : '#' },
                                                             { label: 'Mobile', value: contactDetails.mobile || '-', link: contactDetails.mobile ? `tel:${contactDetails.mobile}` : '#' },
-                                                            { label: 'Address', value: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(contactDetails.address)}` || '-', link: '#' },
+                                                            { label: 'Address', value: contactDetails.address || '-', link: contactDetails.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(contactDetails.address)}` : undefined },
                                                       ].map((item, index) => (
                                                             <ContactDetail key={index} label={item.label} value={
                                                                   <Link to={item.link} target="_blank" rel="noopener noreferrer">{item.value}</Link>
