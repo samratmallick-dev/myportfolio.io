@@ -16,8 +16,10 @@ const MyPortfolio = () => {
       const { hero, isLoading, isInitialized } = useSelector((state) => state.public);
 
       useEffect(() => {
-            dispatch(getPublicInitialData());
-      }, [dispatch]);
+            if (!isInitialized) {
+                  dispatch(getPublicInitialData());
+            }
+      }, [dispatch, isInitialized]);
 
       useSocket("portfolioUpdated", ({ type, data }) => {
             dispatch(updatePublicData({ type, data }));

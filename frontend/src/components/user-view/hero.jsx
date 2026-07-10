@@ -1,26 +1,37 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AnimatedText from './animated-text';
 import { Button } from '../ui/button';
 import { Download, Github, Linkedin, Facebook, Instagram } from 'lucide-react';
 import ContactMeBtn from './contact-btn';
+import OptimizedImage from '../common/OptimizedImage';
+
+const SOCIAL_LINKS = [
+      { key: "github", href: "https://github.com/samratmallick-dev" },
+      { key: "linkedin", href: "https://www.linkedin.com/in/samrat-mallick01" },
+      { key: "facebook", href: "https://www.facebook.com/samratmallick.dev" },
+      { key: "instagram", href: "https://www.instagram.com/samratmallick.dev" },
+];
+
+const getSocialIcon = (key) => {
+      switch (key) {
+            case "github": return <Github />;
+            case "linkedin": return <Linkedin />;
+            case "facebook": return <Facebook />;
+            case "instagram": return <Instagram />;
+            default: return null;
+      }
+};
 
 const Hero = ({
       heroImage,
       data
 }) => {
       const navigate = useNavigate();
-      const handleContactClick = () => {
+      const handleContactClick = useCallback(() => {
             window.scrollTo(0, 0);
             navigate('/portfolio/contact');
-      };
-
-      const socialLinks = [
-            { icon: <Github />, href: "https://github.com/samratmallick-dev" },
-            { icon: <Linkedin />, href: "https://www.linkedin.com/in/samrat-mallick01" },
-            { icon: <Facebook />, href: "https://www.facebook.com/samratmallick.dev" },
-            { icon: <Instagram />, href: "https://www.instagram.com/samratmallick.dev" },
-      ]
+      }, [navigate]);
 
       return (
             <section className="relative min-h-screen flex items-center justify-center overflow-hidden py-4">
@@ -36,12 +47,12 @@ const Hero = ({
 
                   <div className="container mx-auto px-4 z-10 text-center">
                         <div className="animate-fade-in">
-                              <img
+                              <OptimizedImage
                                     src={data?.profileImage?.url}
                                     alt={data?.name || "Profile"}
                                     width="240"
                                     height="240"
-                                    fetchPriority="high"
+                                    fetchpriority="high"
                                     className="w-60 h-60 md:object-contain object-cover object-center rounded-full mx-auto mb-8 lg:mt-0 mt-6 border-4 border-primary/20 animate-float"
                               />
                               <h1 className="text-5xl md:text-7xl font-bold mb-6 text-gradient">
@@ -68,15 +79,15 @@ const Hero = ({
                                     <ContactMeBtn handleNavigateToContact={handleContactClick} />
                               </div>
                               <div className="flex justify-center gap-4 mt-8">
-                                    {socialLinks?.map((link, index) => (
+                                    {SOCIAL_LINKS.map((link) => (
                                           <a
-                                                key={index}
+                                                key={link.key}
                                                 href={link.href}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="p-2 bg-primary/10 rounded-full hover:bg-primary/20 transition-colors"
                                           >
-                                                {link.icon}
+                                                {getSocialIcon(link.key)}
                                           </a>
                                     ))}
                               </div>
@@ -86,4 +97,4 @@ const Hero = ({
       );
 }
 
-export default Hero;
+export default React.memo(Hero);

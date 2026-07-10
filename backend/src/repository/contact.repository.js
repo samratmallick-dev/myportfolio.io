@@ -13,11 +13,11 @@ class ContactRepository extends BaseRepository {
       }
 
       async findContactDetails(filter = {}) {
-            return await this.model.findOne(filter);
+            return await this.model.findOne(filter).lean();
       }
 
       async findActiveContactDetails() {
-            return await this.model.findOne({ isActive: true });
+            return await this.model.findOne({ isActive: true }).lean();
       }
 
       async updateContactDetails(id, updateData) {
@@ -34,15 +34,15 @@ class ContactRepository extends BaseRepository {
       }
 
       async findMessageById(id) {
-            return await this.MessageModel.findById(id);
+            return await this.MessageModel.findById(id).lean();
       }
 
       async findAllMessages(filter = {}) {
-            return await this.MessageModel.find(filter).sort({ createdAt: -1 });
+            return await this.MessageModel.find(filter).sort({ createdAt: -1 }).lean();
       }
 
       async findActiveMessages(filter = {}) {
-            return await this.MessageModel.find({ ...filter, isActive: true }).sort({ createdAt: -1 });
+            return await this.MessageModel.find({ ...filter, isActive: true }).sort({ createdAt: -1 }).lean();
       }
 
       async updateMessageById(id, updateData) {

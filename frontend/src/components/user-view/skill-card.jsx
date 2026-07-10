@@ -23,4 +23,4 @@ const SkillCard = ({ title, skills }) => {
       );
 };
 
-export default SkillCard;
+export default React.memo(SkillCard);

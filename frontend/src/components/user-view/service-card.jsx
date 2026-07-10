@@ -1,3 +1,4 @@
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const ServiceCard = ({ title, description, icon, features }) => {
@@ -24,4 +25,4 @@ const ServiceCard = ({ title, description, icon, features }) => {
       );
 };
 
-export default ServiceCard;
+export default React.memo(ServiceCard);

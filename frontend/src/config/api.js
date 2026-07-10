@@ -2,6 +2,16 @@ import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.DEV ? (import.meta.env.VITE_API_BASE_URL_LOCAL || "http://localhost:8000") : import.meta.env.VITE_API_BASE_URL;
 
+// Lightweight in-memory request cache and concurrent request deduplication
+const apiCache = new Map();
+const pendingRequests = new Map();
+
+const getCacheKey = (config) => {
+      const url = config.url || "";
+      const params = config.params ? JSON.stringify(config.params) : "";
+      return `${config.method}:${url}?${params}`;
+};
+
 const api = axios.create({
       baseURL: API_BASE_URL,
       headers: {
@@ -12,6 +22,66 @@ const api = axios.create({
       maxRedirects: 5,
       maxContentLength: 50 * 1024 * 1024,
 });
+
+// Cache invalidation export so pages can manually clear if needed
+export const clearClientCache = () => {
+      apiCache.clear();
+      pendingRequests.clear();
+};
+
+// Retrieve default axios adapter
+const defaultAdapter = axios.defaults.adapter;
+
+api.defaults.adapter = async (config) => {
+      const method = config.method?.toLowerCase();
+
+      // Clear cache on mutating operations
+      if (['post', 'put', 'delete', 'patch'].includes(method)) {
+            apiCache.clear();
+            return defaultAdapter(config);
+      }
+
+      if (method !== 'get' || config.cache === false) {
+            return defaultAdapter(config);
+      }
+
+      const key = getCacheKey(config);
+      const cached = apiCache.get(key);
+      const now = Date.now();
+      const ttl = config.ttl || 5 * 60 * 1000; // 5 minutes TTL
+
+      if (cached && (now - cached.timestamp < ttl)) {
+            return {
+                  data: cached.data,
+                  status: 200,
+                  statusText: 'OK',
+                  headers: { 'x-client-cache': 'HIT' },
+                  config,
+            };
+      }
+
+      if (pendingRequests.has(key)) {
+            const response = await pendingRequests.get(key);
+            return {
+                  ...response,
+                  config,
+            };
+      }
+
+      const requestPromise = defaultAdapter(config);
+      pendingRequests.set(key, requestPromise);
+
+      try {
+            const response = await requestPromise;
+            apiCache.set(key, {
+                  data: response.data,
+                  timestamp: Date.now(),
+            });
+            return response;
+      } finally {
+            pendingRequests.delete(key);
+      }
+};
 
 export const publicEndpoints = {
       initialData: '/api/v1/public/initial-data',

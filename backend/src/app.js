@@ -6,8 +6,28 @@ import { errorHandler } from "./middleware/error.middleware.js";
 import apiRoutes from "./routes/api.routes.js";
 import Logger from "./config/logger/logger.config.js";
 import { clearCache } from "./middleware/cache.middleware.js";
+import compression from "compression";
 
 const app = express();
+
+app.use(compression({
+      threshold: 1024,
+      filter: (req, res) => {
+            if (req.headers['x-no-compression']) {
+                  return false;
+            }
+            const contentType = res.getHeader('Content-Type');
+            if (contentType && (
+                  contentType.startsWith('image/') ||
+                  contentType.startsWith('video/') ||
+                  contentType.includes('zip') ||
+                  contentType.includes('pdf')
+            )) {
+                  return false;
+            }
+            return compression.filter(req, res);
+      }
+}));
 
 const allowedOrigins = getAllowedOrigins();
 
@@ -42,13 +62,23 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.use((req, res, next) => {
-      if (req.path !== '/health' && req.path !== '/' && req.path !== '/events') {
-            Logger.info('Incoming request', {
-                  method: req.method,
-                  path: req.path,
-                  origin: req.headers.origin,
-            });
-      }
+      const startTime = process.hrtime();
+
+      res.on('finish', () => {
+            const duration = process.hrtime(startTime);
+            const durationMs = (duration[0] * 1000) + (duration[1] / 1e6);
+            const threshold = parseInt(process.env.SLOW_REQUEST_THRESHOLD_MS || "500", 10);
+
+            if (durationMs > threshold) {
+                  Logger.warn("Slow API Request detected", {
+                        method: req.method,
+                        path: req.originalUrl || req.path,
+                        durationMs: parseFloat(durationMs.toFixed(2)),
+                        status: res.statusCode,
+                        threshold,
+                  });
+            }
+      });
       next();
 });
 app.use((req, res, next) => {

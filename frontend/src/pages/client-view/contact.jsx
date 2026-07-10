@@ -5,7 +5,7 @@ import ContactDetail from '@/components/user-view/contact-details';
 import { contactFormIndex } from '@/config/allFormIndex';
 import { Facebook, Github, Instagram, Linkedin, Twitter, Youtube, Globe, Mail, Phone } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import profileImage from '@/assets/profileimage.png';
+import profileImage from '@/assets/profileimage.jpg';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
@@ -22,7 +22,7 @@ const initialFormData = {
 
 const MyContact = () => {
       const dispatch = useDispatch();
-      const { contact: contactDetails, isLoading: loading, isInitialized } = useSelector((state) => state.public);
+      const { contact: contactDetails, isInitialized } = useSelector((state) => state.public);
       const { messageSubmitting } = useSelector((state) => state.contact);
       const [formData, setFormData] = useState(initialFormData);
 

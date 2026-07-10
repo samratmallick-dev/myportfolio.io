@@ -113,4 +113,4 @@ const ProjectCard = ({
       );
 };
 
-export default ProjectCard;
+export default React.memo(ProjectCard);

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import AboutSkeleton from '../loaders/AboutSkeleton';
+import OptimizedImage from '../common/OptimizedImage';
 
 const AboutMe = () => {
       const { about, isLoading } = useSelector((state) => state.public);
@@ -13,7 +14,7 @@ const AboutMe = () => {
             <section id="about" className="py-20 border-b border-gray-700 ">
                   <div className="container mx-auto px-4 flex gap-10 lg:flex-row flex-col items-center">
                         <div className='md:basis-[35%] basis-full mx-auto flex items-center justify-center'>
-                              <img
+                              <OptimizedImage
                                     src={about?.aboutImage?.url}
                                     alt="Portrait of Samrat Mallick - About Me"
                                     width="384"
@@ -33,4 +34,4 @@ const AboutMe = () => {
       );
 }
 
-export default AboutMe;
+export default React.memo(AboutMe);

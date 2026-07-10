@@ -87,5 +87,8 @@ const messageSchema = new mongoose.Schema({
       timestamps: true,
 });
 
+messageSchema.index({ status: 1, isActive: 1 });
+messageSchema.index({ isActive: 1, createdAt: -1 });
+
 export const ContactDetails = mongoose.model("ContactDetails", contactDetailsSchema);
 export const Message = mongoose.model("Message", messageSchema);
