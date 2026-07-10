@@ -32,7 +32,6 @@ const defaultAdapter = axios.getAdapter(axios.defaults.adapter);
 api.defaults.adapter = async (config) => {
       const method = config.method?.toLowerCase();
 
-      // Clear cache on mutating operations
       if (['post', 'put', 'delete', 'patch'].includes(method)) {
             apiCache.clear();
             return defaultAdapter(config);
