@@ -16,7 +16,8 @@ const connectDb = async () => {
     const minPoolSize = parseInt(process.env.MONGO_MIN_POOL_SIZE || "2", 10);
     
     const [base, query] = url.split("?");
-    const mongoUri = query ? `${base}/${name}?${query}` : `${base}/${name}`;
+    const cleanBase = base.endsWith("/") ? base.slice(0, -1) : base;
+    const mongoUri = query ? `${cleanBase}/${name}?${query}` : `${cleanBase}/${name}`;
     const connection = await mongoose.connect(mongoUri, {
       maxPoolSize,
       minPoolSize,

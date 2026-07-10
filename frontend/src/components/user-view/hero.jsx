@@ -52,7 +52,7 @@ const Hero = ({
                                     alt={data?.name || "Profile"}
                                     width="240"
                                     height="240"
-                                    fetchpriority="high"
+                                    fetchPriority="high"
                                     className="w-60 h-60 md:object-contain object-cover object-center rounded-full mx-auto mb-8 lg:mt-0 mt-6 border-4 border-primary/20 animate-float"
                               />
                               <h1 className="text-5xl md:text-7xl font-bold mb-6 text-gradient">
