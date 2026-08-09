@@ -12,11 +12,14 @@ import compression from "compression";
 
 const app = express();
 
-// Security Middleware
+app.set("trust proxy", 1);
+
 app.use(helmet());
 const limiter = rateLimit({
-      windowMs: 15 * 60 * 1000, // 15 minutes
-      max: 100, // limit each IP to 100 requests per windowMs
+      windowMs: 15 * 60 * 1000,
+      max: 100,
+      standardHeaders: true,
+      legacyHeaders: false,
       message: { success: false, message: "Too many requests from this IP, please try again later." }
 });
 app.use("/api", limiter);
@@ -141,7 +144,6 @@ app.use((req, res) => {
       });
 });
 
-// Global error handler
 app.use((err, req, res, next) => {
       errorHandler(err, req, res, next);
 });
