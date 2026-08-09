@@ -6,7 +6,8 @@ import { broadcastPortfolioUpdate } from "../config/socket/socket.config.js";
 class ProjectController {
       createProject = asyncHandler(async (req, res) => {
             const projectData = req.body;
-            const project = await projectService.createProject(projectData);
+            const imageFile = req.file || null;
+            const project = await projectService.createProject(projectData, imageFile);
             const featured = await projectService.getFeaturedProjects();
             const all = await projectService.getAllProjects();
             broadcastPortfolioUpdate("projects", { featured, all });
@@ -24,10 +25,17 @@ class ProjectController {
             sendSuccess(res, "Project retrieved successfully", project);
       });
 
+      getProjectBySlug = asyncHandler(async (req, res) => {
+            const { slug } = req.params;
+            const project = await projectService.getProjectBySlug(slug);
+            sendSuccess(res, "Project retrieved successfully", project);
+      });
+
       updateProject = asyncHandler(async (req, res) => {
             const { id } = req.params;
             const projectData = req.body;
-            const project = await projectService.updateProject(id, projectData);
+            const imageFile = req.file || null;
+            const project = await projectService.updateProject(id, projectData, imageFile);
             const featured = await projectService.getFeaturedProjects();
             const all = await projectService.getAllProjects();
             broadcastPortfolioUpdate("projects", { featured, all });

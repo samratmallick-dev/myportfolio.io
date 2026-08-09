@@ -1,115 +1,91 @@
 import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Github } from "lucide-react";
+import { ExternalLink, Github, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-
-const statusStyles = {
-      Completed: "bg-green-500/10 text-green-500 border-green-500/30",
-      "In Progress": "bg-yellow-500/10 text-yellow-500 border-yellow-500/30",
-      Planned: "bg-blue-500/10 text-blue-500 border-blue-500/30",
-};
 
 const ProjectCard = ({
       title,
-      description,
-      technologies,
+      image,
       githubUrl,
       liveUrl,
-      status,
+      slug,
 }) => {
-      const techArray = Array.isArray(technologies)
-            ? technologies.filter((t) => {
-                  if (typeof t !== "string") return false;
-                  const trimmed = t.trim();
-                  return (
-                        trimmed !== "" &&
-                        !trimmed.startsWith("http") &&
-                        !trimmed.startsWith("www.") &&
-                        !trimmed.includes("github.com")
-                  );
-            })
-            : [];
+      const hasLive =
+            typeof liveUrl === "string" &&
+            liveUrl.trim() !== "" &&
+            liveUrl.trim() !== "#";
 
       const hasGithub =
             typeof githubUrl === "string" &&
             githubUrl.trim() !== "" &&
             githubUrl.trim() !== "#";
 
-      const hasLive =
-            typeof liveUrl === "string" &&
-            liveUrl.trim() !== "" &&
-            liveUrl.trim() !== "#";
+      const imageUrl = image?.url || null;
 
       return (
-            <Card className="hover-lift tech-glow group flex flex-col h-full">
-                  <CardContent className="flex flex-col flex-1 p-6">
-
-                        <div className="flex justify-between items-start flex-wrap gap-2 mb-3">
-                              <h3 className="text-xl font-semibold group-hover:text-gradient transition-all duration-300 leading-snug">
-                                    {title}
-                              </h3>
-                              {status && (
-                                    <Badge
-                                          variant="outline"
-                                          className={statusStyles[status] ?? statusStyles["In Progress"]}
-                                    >
-                                          {status}
-                                    </Badge>
-                              )}
-                        </div>
-
-                        <p className="text-muted-foreground leading-relaxed line-clamp-4 flex-1 mb-4">
-                              {description}
-                        </p>
-
-                        {techArray.length > 0 && (
-                              <div className="flex flex-wrap gap-2 mb-4">
-                                    {techArray.map((tech, index) => (
-                                          <Badge
-                                                key={index}
-                                                variant="secondary"
-                                                className="bg-primary/10 text-primary border-primary/20"
-                                          >
-                                                {tech}
-                                          </Badge>
-                                    ))}
+            <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] hover:border-primary/40 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10">
+                  {/* Project Image */}
+                  <div className="relative w-full h-52 overflow-hidden bg-gradient-to-br from-primary/10 to-purple-900/10 flex-shrink-0">
+                        {imageUrl ? (
+                              <img
+                                    src={imageUrl}
+                                    alt={title}
+                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                              />
+                        ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                    <span className="text-5xl font-bold text-white/10 select-none">
+                                          {title?.charAt(0)?.toUpperCase() || "P"}
+                                    </span>
                               </div>
                         )}
+                        {/* Gradient overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                  </div>
 
-                        {(hasGithub || hasLive) && (
-                              <div className="border-t border-white/10 mb-4" />
-                        )}
+                  {/* Content */}
+                  <div className="flex flex-col flex-1 p-5 gap-4">
+                        <h3 className="text-lg font-semibold text-white leading-snug group-hover:text-primary transition-colors duration-300">
+                              {title}
+                        </h3>
 
-                        <div className="flex flex-wrap gap-2 mt-auto">
-                              {hasGithub && (
+                        <div className="flex flex-wrap items-center gap-2 mt-auto">
+                              {slug && (
+                                    <Link to={`/projects/${slug}`} className="flex-1">
+                                          <Button
+                                                size="sm"
+                                                className="w-full bg-primary/20 text-white border border-primary/40 hover:bg-primary hover:border-primary transition-all duration-300 group/btn"
+                                          >
+                                                View Details
+                                                <ArrowRight className="w-3.5 h-3.5 ml-1.5 group-hover/btn:translate-x-0.5 transition-transform" />
+                                          </Button>
+                                    </Link>
+                              )}
+                              {hasLive ? (
+                                    <Link to={liveUrl} target="_blank" rel="noopener noreferrer">
+                                          <Button
+                                                size="sm"
+                                                className="hero-gradient text-white font-medium hover:opacity-90 border-none transition-all duration-300"
+                                          >
+                                                <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
+                                                Live
+                                          </Button>
+                                    </Link>
+                              ) : hasGithub ? (
                                     <Link to={githubUrl} target="_blank" rel="noopener noreferrer">
                                           <Button
                                                 variant="outline"
                                                 size="sm"
-                                                className="hover:bg-primary text-muted-foreground hover:text-white transition-colors duration-300 ease-out"
+                                                className="border-white/20 text-gray-300 hover:bg-white/10 hover:text-white transition-all duration-300"
                                           >
-                                                <Github className="w-4 h-4 mr-2" />
+                                                <Github className="w-3.5 h-3.5 mr-1.5" />
                                                 Code
                                           </Button>
                                     </Link>
-                              )}
-                              {hasLive && (
-                                    <Link to={liveUrl} target="_blank" rel="noopener noreferrer">
-                                          <Button
-                                                size="sm"
-                                                className="hero-gradient text-muted hover:opacity-90 accent-glow"
-                                          >
-                                                <ExternalLink className="w-4 h-4 mr-2" />
-                                                Live Demo
-                                          </Button>
-                                    </Link>
-                              )}
+                              ) : null}
                         </div>
-
-                  </CardContent>
-            </Card>
+                  </div>
+            </div>
       );
 };
 

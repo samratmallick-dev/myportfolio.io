@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { useDispatch, useSelector } from 'react-redux';
 import { adminProjectFormIndex } from '@/config/allFormIndex';
 import { Input } from '@/components/ui/input';
+import { ImagePlus, X } from 'lucide-react';
 import {
       createProjectData,
       updateProjectData,
@@ -22,10 +23,20 @@ import {
 
 const initialFormData = {
       title: '',
+      slug: '',
+      shortDescription: '',
       description: '',
+      category: '',
+      year: '',
       technologies: '',
+      features: '',
+      architecture: '',
+      process: '',
+      challenges: '',
+      results: '',
       githubUrl: '',
       liveUrl: '',
+      order: 0,
       status: 'Completed',
 };
 
@@ -37,6 +48,9 @@ const AdminViewProject = () => {
       const [editMode, setEditMode] = useState(false);
       const [editId, setEditId] = useState(null);
       const [selectedFeatured, setSelectedFeatured] = useState([]);
+      // Image upload state
+      const [imageFile, setImageFile] = useState(null);
+      const [imagePreview, setImagePreview] = useState(null);
 
       useEffect(() => {
             dispatch(getAllProjectsAdmin());
@@ -65,27 +79,60 @@ const AdminViewProject = () => {
             setFormData((prev) => ({ ...prev, [name]: value }));
       };
 
+      const handleImageChange = (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            setImageFile(file);
+            setImagePreview(URL.createObjectURL(file));
+      };
+
+      const clearImage = () => {
+            setImageFile(null);
+            setImagePreview(null);
+      };
+
       const resetForm = () => {
             setFormData(initialFormData);
             setEditMode(false);
             setEditId(null);
+            clearImage();
+      };
+
+      const parseCommaSeparated = (str) => {
+            if (!str) return [];
+            return str.split(',').map(s => s.trim()).filter(Boolean);
       };
 
       const handleSubmit = async (e) => {
             e.preventDefault();
-            const payload = {
-                  title: formData.title,
-                  description: formData.description,
-                  technologies: formData.technologies,
-                  githubUrl: formData.githubUrl,
-                  liveUrl: formData.liveUrl,
-                  status: formData.status,
-            };
+
+            // Build multipart FormData
+            const fd = new FormData();
+            fd.append('title', formData.title);
+            if (formData.slug) fd.append('slug', formData.slug);
+            fd.append('shortDescription', formData.shortDescription || '');
+            fd.append('description', formData.description);
+            fd.append('category', formData.category || '');
+            if (formData.year) fd.append('year', formData.year);
+            fd.append('technologies', formData.technologies || '');
+            // Arrays: send as JSON strings so backend can parse
+            fd.append('features', JSON.stringify(parseCommaSeparated(formData.features)));
+            fd.append('architecture', JSON.stringify(parseCommaSeparated(formData.architecture)));
+            fd.append('process', JSON.stringify(parseCommaSeparated(formData.process)));
+            fd.append('challenges', JSON.stringify(parseCommaSeparated(formData.challenges)));
+            fd.append('results', JSON.stringify(parseCommaSeparated(formData.results)));
+            fd.append('githubUrl', formData.githubUrl || '');
+            fd.append('liveUrl', formData.liveUrl || '');
+            fd.append('order', formData.order ? Number(formData.order) : 0);
+            fd.append('status', formData.status || 'Completed');
+            if (imageFile) {
+                  fd.append('image', imageFile);
+            }
 
             if (editMode) {
-                  dispatch(updateProjectData({ id: editId, projectData: payload }));
+                  dispatch(updateProjectData({ id: editId, projectData: fd }));
             } else {
-                  dispatch(createProjectData(payload));
+                  dispatch(createProjectData(fd));
             }
       };
 
@@ -94,12 +141,29 @@ const AdminViewProject = () => {
             setEditId(item._id);
             setFormData({
                   title: item.title || '',
+                  slug: item.slug || '',
+                  shortDescription: item.shortDescription || '',
                   description: item.description || '',
+                  category: item.category || '',
+                  year: item.year || '',
                   technologies: Array.isArray(item.technologies) ? item.technologies.join(', ') : (item.technologies || ''),
+                  features: Array.isArray(item.features) ? item.features.join(', ') : '',
+                  architecture: Array.isArray(item.architecture) ? item.architecture.join(', ') : '',
+                  process: Array.isArray(item.process) ? item.process.join(', ') : '',
+                  challenges: Array.isArray(item.challenges) ? item.challenges.join(', ') : '',
+                  results: Array.isArray(item.results) ? item.results.join(', ') : '',
                   githubUrl: item.githubUrl || '',
                   liveUrl: item.liveUrl || '',
+                  order: item.order || 0,
                   status: item.status || 'Completed',
             });
+            // Show existing image as preview
+            if (item.image?.url) {
+                  setImagePreview(item.image.url);
+            } else {
+                  setImagePreview(null);
+            }
+            setImageFile(null);
       };
 
       const handleDelete = async (id) => {
@@ -160,7 +224,16 @@ const AdminViewProject = () => {
                                                       {projectsData.map((item) => (
                                                             <li key={item._id} className="p-4 border rounded-md space-y-2">
                                                                   <div className="flex items-center justify-between gap-4">
-                                                                        <div className="font-bold">{item.title}</div>
+                                                                        <div className="flex items-center gap-3">
+                                                                              {item.image?.url && (
+                                                                                    <img
+                                                                                          src={item.image.url}
+                                                                                          alt={item.title}
+                                                                                          className="w-10 h-10 rounded object-cover border border-white/10 flex-shrink-0"
+                                                                                    />
+                                                                              )}
+                                                                              <div className="font-bold">{item.title}</div>
+                                                                        </div>
                                                                         <Badge variant="outline" className={item.status === 'Completed' ? 'bg-green-500/10 text-green-500 border-green-500/30' : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30'}>
                                                                               {item.status}
                                                                         </Badge>
@@ -219,6 +292,43 @@ const AdminViewProject = () => {
                                           <CardTitle>{editMode ? 'Update Project' : 'Add Project'}</CardTitle>
                                     </CardHeader>
                                     <CardContent>
+                                          {/* Image Upload Section */}
+                                          <div className="mb-6">
+                                                <Label className="block mb-2 font-medium">Project Image</Label>
+                                                {imagePreview ? (
+                                                      <div className="relative w-full h-48 rounded-lg overflow-hidden border border-white/10 group">
+                                                            <img
+                                                                  src={imagePreview}
+                                                                  alt="Project preview"
+                                                                  className="w-full h-full object-cover"
+                                                            />
+                                                            <button
+                                                                  type="button"
+                                                                  onClick={clearImage}
+                                                                  className="absolute top-2 right-2 p-1 rounded-full bg-black/60 hover:bg-red-500/80 transition-colors"
+                                                            >
+                                                                  <X className="w-4 h-4 text-white" />
+                                                            </button>
+                                                      </div>
+                                                ) : (
+                                                      <label
+                                                            htmlFor="project-image-upload"
+                                                            className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-white/20 rounded-lg cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors"
+                                                      >
+                                                            <ImagePlus className="w-8 h-8 text-muted-foreground mb-2" />
+                                                            <p className="text-sm text-muted-foreground">Click to upload project image</p>
+                                                            <p className="text-xs text-muted-foreground/60 mt-1">PNG, JPG, WebP up to 10MB</p>
+                                                      </label>
+                                                )}
+                                                <input
+                                                      id="project-image-upload"
+                                                      type="file"
+                                                      accept="image/*"
+                                                      className="hidden"
+                                                      onChange={handleImageChange}
+                                                />
+                                          </div>
+
                                           <CommonForm
                                                 formControls={adminProjectFormIndex}
                                                 buttonText={editMode ? 'Update Project' : 'Add Project'}

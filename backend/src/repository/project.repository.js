@@ -22,6 +22,14 @@ class ProjectRepository extends BaseRepository {
                   .limit(6)
                   .lean();
       }
+
+      async findBySlug(slug) {
+            return await this.model.findOne({ slug, isActive: true }).lean();
+      }
+
+      async findAnyBySlug(slug) {
+            return await this.model.findOne({ slug }).lean();
+      }
 };
 
 export default new ProjectRepository();

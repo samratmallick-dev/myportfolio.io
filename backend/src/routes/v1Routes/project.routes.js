@@ -2,16 +2,19 @@ import { Router } from "express";
 import projectController from "../../controllers/project.controller.js";
 import { authenticate } from "../../middleware/auth.middleware.js";
 import { validateProject, handleValidationErrors } from "../../middleware/validation.middleware.js";
+import { upload } from "../../middleware/upload.middleware.js";
 
 const router = Router();
 
-router.post("/create-project", authenticate, validateProject, handleValidationErrors, projectController.createProject);
+router.post("/create-project", authenticate, upload.single("image"), validateProject, handleValidationErrors, projectController.createProject);
 router.get("/get-all-projects", projectController.getAllProjects);
+router.get("/", projectController.getAllProjects); // Standard REST mapping
 router.get("/get-project/:id", projectController.getProjectById);
-router.put("/update-project/:id", authenticate, validateProject, handleValidationErrors, projectController.updateProject);
+router.put("/update-project/:id", authenticate, upload.single("image"), validateProject, handleValidationErrors, projectController.updateProject);
 router.delete("/delete-project/:id", authenticate, projectController.deleteProject);
 router.get("/get-all-projects-admin", authenticate, projectController.getAllProjectsAdmin);
 router.get("/get-featured-projects", projectController.getFeaturedProjects);
 router.patch("/set-featured-project/:id", authenticate, projectController.setFeaturedProject);
+router.get("/:slug", projectController.getProjectBySlug); // Put at bottom to avoid shadowing standard routes
 
-export default router;
+export default router;

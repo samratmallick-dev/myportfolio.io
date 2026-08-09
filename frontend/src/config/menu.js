@@ -7,7 +7,7 @@ export const navigationMenu = [
       {
             name: 'projects',
             label: 'Projects',
-            path: '/portfolio/projects',
+            path: '/projects',
       },
 ];
 export const footerNavigationMenu = [
@@ -19,7 +19,8 @@ export const footerNavigationMenu = [
       {
             name: 'projects',
             label: 'Projects',
-            path: '/portfolio/projects',
+            path: '/projects',
+            id: 'projects'
       },
       {
             name: 'contact',

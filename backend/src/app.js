@@ -1,5 +1,7 @@
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import getAllowedOrigins from "./config/cors/cors.config.js";
 import cookieParser from "cookie-parser";
 import { errorHandler } from "./middleware/error.middleware.js";
@@ -9,6 +11,15 @@ import { clearCache } from "./middleware/cache.middleware.js";
 import compression from "compression";
 
 const app = express();
+
+// Security Middleware
+app.use(helmet());
+const limiter = rateLimit({
+      windowMs: 15 * 60 * 1000, // 15 minutes
+      max: 100, // limit each IP to 100 requests per windowMs
+      message: { success: false, message: "Too many requests from this IP, please try again later." }
+});
+app.use("/api", limiter);
 
 app.use(compression({
       threshold: 1024,

@@ -10,6 +10,7 @@ import PageLoader from './components/common/PageLoader';
 // Lazy-loaded client views
 const MyPortfolio = lazy(() => import('./pages/client-view/portfolio'));
 const MyAllProjectList = lazy(() => import('./pages/client-view/project-listing'));
+const ProjectDetails = lazy(() => import('./pages/client-view/project-details'));
 const MyContact = lazy(() => import('./pages/client-view/contact'));
 const Login = lazy(() => import('./pages/auth/login'));
 
@@ -29,7 +30,7 @@ const App = () => {
       const location = useLocation();
       const isAdminRoute = location.pathname.startsWith('/admin');
 
-      useDisableContextMenuAndCopy(!isAdminRoute);
+      // useDisableContextMenuAndCopy(!isAdminRoute);
 
       return (
             <div className="flex flex-col overflow-hidden bg-background min-h-screen">
@@ -57,10 +58,15 @@ const App = () => {
                               </Route>
 
                               <Route path="/" element={<Navigate to="/portfolio/home" replace />} />
+                              
+                              <Route path="/projects" element={<MyPortfoliopageLayout />}>
+                                    <Route index element={<MyAllProjectList />} />
+                                    <Route path=":slug" element={<ProjectDetails />} />
+                              </Route>
+
                               <Route path="/portfolio" element={<MyPortfoliopageLayout />}>
                                     <Route index element={<Navigate to="home" replace />} />
                                     <Route path="home" element={<MyPortfolio />} />
-                                    <Route path="projects" element={<MyAllProjectList />} />
                                     <Route path="contact" element={<MyContact />} />
                                     <Route path="*" element={<Navigate to="/portfolio/home" replace />} />
                               </Route>

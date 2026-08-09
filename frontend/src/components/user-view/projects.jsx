@@ -11,7 +11,7 @@ const MyProjects = () => {
 
       const goToProjectListingPage = () => {
             window.scrollTo(0, 0);
-            navigate("/portfolio/projects");
+            navigate("/projects");
       };
 
       return (

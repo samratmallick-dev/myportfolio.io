@@ -95,14 +95,31 @@ const validateSkill = [
 
 const validateProject = [
       body("title").notEmpty().withMessage("Title is required"),
+      body("slug").optional().isString().trim(),
+      body("shortDescription").optional().isString().trim(),
       body("description").notEmpty().withMessage("Description is required"),
+      body("category").optional().isString().trim(),
+      body("year").optional(),
+      // image is handled by multer, not body
       body("technologies").custom((value) => {
             if (!value) return false;
             if (typeof value === 'string' && value.trim()) return true;
             if (Array.isArray(value) && value.length > 0) return true;
             return false;
       }).withMessage("Technologies is required"),
+      // These fields can arrive as JSON-stringified arrays (FormData) or native arrays (JSON body)
+      body("features").optional(),
+      body("problem").optional().isString(),
+      body("solution").optional().isString(),
+      body("objective").optional().isString(),
+      body("architecture").optional(),
+      body("process").optional(),
+      body("challenges").optional(),
+      body("results").optional(),
+      body("githubUrl").optional().isString().trim(),
+      body("liveUrl").optional().isString().trim(),
       body("status").optional().isIn(["Completed", "In Progress", "On Hold"]).withMessage("Invalid status"),
+      body("order").optional(),
 ];
 
 export {

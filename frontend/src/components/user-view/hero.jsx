@@ -1,10 +1,13 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AnimatedText from './animated-text';
 import { Button } from '../ui/button';
 import { Download, Github, Linkedin, Facebook, Instagram } from 'lucide-react';
 import ContactMeBtn from './contact-btn';
 import OptimizedImage from '../common/OptimizedImage';
+
+// Lazy load the 3D component to improve initial load performance
+const Hero3D = lazy(() => import('./Hero3D'));
 
 const SOCIAL_LINKS = [
       { key: "github", href: "https://github.com/samratmallick-dev" },
@@ -43,6 +46,12 @@ const Hero = ({
                               backgroundPosition: "center"
                         }}
                   />
+                  
+                  {/* Lazy-loaded 3D Element */}
+                  <Suspense fallback={null}>
+                        <Hero3D />
+                  </Suspense>
+
                   <div className="absolute inset-0 hero-gradient opacity-5 z-0" />
 
                   <div className="container mx-auto px-4 z-10 text-center">

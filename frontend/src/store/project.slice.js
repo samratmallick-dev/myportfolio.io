@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import {
       fetchAllProjects,
       fetchProjectById,
+      fetchProjectBySlug,
       createProject,
       updateProjectById,
       deleteProjectById,
@@ -36,6 +37,18 @@ export const getProjectById = createAsyncThunk(
       async (id, { rejectWithValue }) => {
             try {
                   const response = await fetchProjectById(id);
+                  return response.data;
+            } catch (error) {
+                  return rejectWithValue(error.response?.data || error.message);
+            }
+      }
+);
+
+export const getProjectBySlugThunk = createAsyncThunk(
+      "project/fetchProjectBySlug",
+      async (slug, { rejectWithValue }) => {
+            try {
+                  const response = await fetchProjectBySlug(slug);
                   return response.data;
             } catch (error) {
                   return rejectWithValue(error.response?.data || error.message);
@@ -182,6 +195,21 @@ const projectSlice = createSlice({
                         state.error = null;
                   })
                   .addCase(getProjectById.rejected, (state, action) => {
+                        state.isLoading = false;
+                        state.error = action.payload;
+                  });
+
+            builder
+                  .addCase(getProjectBySlugThunk.pending, (state) => {
+                        state.isLoading = true;
+                        state.error = null;
+                  })
+                  .addCase(getProjectBySlugThunk.fulfilled, (state, action) => {
+                        state.isLoading = false;
+                        state.currentProject = action.payload;
+                        state.error = null;
+                  })
+                  .addCase(getProjectBySlugThunk.rejected, (state, action) => {
                         state.isLoading = false;
                         state.error = action.payload;
                   });

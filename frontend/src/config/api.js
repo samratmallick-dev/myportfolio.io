@@ -422,6 +422,7 @@ export const projectEndpoints = {
       createProject: '/api/v1/projects/create-project',
       getAllProjects: '/api/v1/projects/get-all-projects',
       getProjectById: '/api/v1/projects/get-project/:id',
+      getProjectBySlug: '/api/v1/projects/:slug',
       updateProjectById: '/api/v1/projects/update-project/:id',
       deleteProjectById: '/api/v1/projects/delete-project/:id',
       getAllProjectsAdmin: '/api/v1/projects/get-all-projects-admin',
@@ -440,13 +441,22 @@ export const fetchProjectById = async (id) => {
       return response.data;
 };
 
-export const createProject = async (projectData) => {
-      const response = await api.post(projectEndpoints.createProject, projectData);
+export const fetchProjectBySlug = async (slug) => {
+      const response = await api.get(projectEndpoints.getProjectBySlug.replace(':slug', slug));
       return response.data;
 };
 
-export const updateProjectById = async (id, projectData) => {
-      const response = await api.put(projectEndpoints.updateProjectById.replace(':id', id), projectData);
+export const createProject = async (formData) => {
+      const response = await api.post(projectEndpoints.createProject, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return response.data;
+};
+
+export const updateProjectById = async (id, formData) => {
+      const response = await api.put(projectEndpoints.updateProjectById.replace(':id', id), formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+      });
       return response.data;
 };
 
