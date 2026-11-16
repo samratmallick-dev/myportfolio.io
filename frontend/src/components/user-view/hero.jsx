@@ -105,13 +105,15 @@ const Hero = ({
   }, []);
 
   return (
+    // Full-screen height only from tablet up. On mobile the section
+    // hugs its content, so no empty space is added below the social icons.
     <section className="
-  relative
-  md:min-h-screen
-  flex items-center justify-center
-  overflow-hidden
-  py-10 sm:py-16
-">
+      relative
+      md:min-h-screen
+      flex items-center justify-center
+      overflow-hidden
+      py-10 sm:py-16
+    ">
 
       {/* Hero Background */}
       <div
@@ -160,9 +162,9 @@ const Hero = ({
         <div className="animate-fade-in">
 
           {/* Profile Image */}
-           <div className="
+          <div className="
             relative
-            w-48 sm:w-56 md:w-64 lg:w-72
+            w-48 sm:w-56 md:w-60
             max-w-full
             mx-auto
             mb-6 sm:mb-8
@@ -174,16 +176,18 @@ const Hero = ({
             ring-4 ring-primary/10
             shadow-2xl
             animate-float
+            [&>*]:block [&>*]:h-full [&>*]:w-full
+            [&_img]:h-full [&_img]:w-full
+            [&_img]:object-cover [&_img]:object-top
           ">
             <OptimizedImage
               src={data?.profileImage?.url}
               alt={`${data?.name || 'Samrat Mallick'} - Full Stack Developer`}
-              width="288"
-              height="288"
-              widths={[192, 224, 256, 288, 384, 576]}
+              width="240"
+              height="240"
+              widths={[192, 224, 240, 320, 480]}
               sizes="
-                (min-width: 1024px) 288px,
-                (min-width: 768px) 256px,
+                (min-width: 768px) 240px,
                 (min-width: 640px) 224px,
                 192px
               "
@@ -195,7 +199,6 @@ const Hero = ({
                 w-full h-full
                 rounded-full
                 object-cover
-                object-center
               "
             />
           </div>
