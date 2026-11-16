@@ -1,4 +1,3 @@
-
 import React, {
   useCallback,
   Suspense,
@@ -107,12 +106,12 @@ const Hero = ({
 
   return (
     <section className="
-      relative
-      min-h-screen
-      flex items-center justify-center
-      overflow-hidden
-      py-12 sm:py-16
-    ">
+  relative
+  md:min-h-screen
+  flex items-center justify-center
+  overflow-hidden
+  py-10 sm:py-16
+">
 
       {/* Hero Background */}
       <div
@@ -161,14 +160,13 @@ const Hero = ({
         <div className="animate-fade-in">
 
           {/* Profile Image */}
-          <div className="
+           <div className="
             relative
-            w-44 h-44
-            sm:w-52 sm:h-52
-            md:w-60 md:h-60
+            w-48 sm:w-56 md:w-64 lg:w-72
+            max-w-full
             mx-auto
-            mb-8
-            mt-6 lg:mt-0
+            mb-6 sm:mb-8
+            mt-2 lg:mt-0
             aspect-square
             rounded-full
             overflow-hidden
@@ -180,13 +178,14 @@ const Hero = ({
             <OptimizedImage
               src={data?.profileImage?.url}
               alt={`${data?.name || 'Samrat Mallick'} - Full Stack Developer`}
-              width="240"
-              height="240"
-              widths={[176, 208, 240, 320, 400]}
+              width="288"
+              height="288"
+              widths={[192, 224, 256, 288, 384, 576]}
               sizes="
-                (min-width: 768px) 240px,
-                (min-width: 640px) 208px,
-                176px
+                (min-width: 1024px) 288px,
+                (min-width: 768px) 256px,
+                (min-width: 640px) 224px,
+                192px
               "
               loading="eager"
               fetchPriority="high"
