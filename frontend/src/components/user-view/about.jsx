@@ -1,349 +1,161 @@
-import React, {
-  useCallback,
-  Suspense,
-  lazy,
-  useEffect,
-  useState
-} from 'react';
-
-import { useNavigate } from 'react-router-dom';
-
-import AnimatedText from './animated-text';
-import { Button } from '../ui/button';
-
-import {
-  Download,
-  Github,
-  Linkedin,
-  Facebook,
-  Instagram,
-  RefreshCw
-} from 'lucide-react';
-
-import ContactMeBtn from './contact-btn';
+import React from 'react';
+import AboutSkeleton from '../loaders/AboutSkeleton';
+import SectionError from '../loaders/SectionError';
 import OptimizedImage from '../common/OptimizedImage';
+import { useLazySection } from '@/hooks/useLazySection';
 
-import {
-  shouldRender3D,
-  whenIdle
-} from '@/utils/performance';
+const AboutMe = () => {
+  const {
+    ref,
+    data: about,
+    isLoading,
+    isError,
+    error,
+    retry
+  } = useLazySection('about');
 
-// Load the 3D scene only when the browser is idle.
-const Hero3D = lazy(() => import('./Hero3D'));
+  let content;
 
-// Social media configuration.
-const SOCIAL_LINKS = [
-  {
-    key: 'github',
-    href: 'https://github.com/samratmallick-dev',
-    label: 'GitHub'
-  },
-  {
-    key: 'linkedin',
-    href: 'https://www.linkedin.com/in/samrat-mallick01',
-    label: 'LinkedIn'
-  },
-  {
-    key: 'facebook',
-    href: 'https://www.facebook.com/samratmallick.dev',
-    label: 'Facebook'
-  },
-  {
-    key: 'instagram',
-    href: 'https://www.instagram.com/samratmallick.dev',
-    label: 'Instagram'
+  // Loading state
+  if (isLoading || (!about && !isError)) {
+    content = <AboutSkeleton />;
   }
-];
 
-// Resolve social media icons.
-const getSocialIcon = (key) => {
-  switch (key) {
-    case 'github':
-      return <Github />;
-
-    case 'linkedin':
-      return <Linkedin />;
-
-    case 'facebook':
-      return <Facebook />;
-
-    case 'instagram':
-      return <Instagram />;
-
-    default:
-      return null;
-  }
-};
-
-const Hero = ({
-  heroImage,
-  data,
-  error,
-  onRetry
-}) => {
-  const navigate = useNavigate();
-
-  const [enable3D, setEnable3D] = useState(false);
-
-  // Navigate to contact section.
-  const handleContactClick = useCallback(() => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
-
-    navigate('/portfolio/contact');
-  }, [navigate]);
-
-  // Defer 3D rendering until the main thread is idle.
-  useEffect(() => {
-    if (!shouldRender3D()) return;
-
-    return whenIdle(() => {
-      setEnable3D(true);
-    });
-  }, []);
-
-  return (
-    // Full-screen height only from tablet up. On mobile the section
-    // hugs its content, so no empty space is added below the social icons.
-    <section className="
-      relative
-      md:min-h-screen
-      flex items-center justify-center
-      overflow-hidden
-      py-10 sm:py-16
-    ">
-
-      {/* Hero Background */}
-      <div
-        aria-hidden="true"
-        className="
-          absolute inset-0
-          z-0
-          dark:opacity-90
-          opacity-[0.06]
-          pointer-events-none
-        "
-        style={{
-          backgroundImage: heroImage
-            ? `url("${heroImage}")`
-            : 'none',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
-        }}
+  // Error state
+  else if (isError) {
+    content = (
+      <SectionError
+        message={error || 'Unable to load the About section.'}
+        onRetry={retry}
       />
+    );
+  }
 
-      {/* Deferred 3D Background */}
-      {enable3D && (
-        <Suspense fallback={null}>
-          <Hero3D />
-        </Suspense>
-      )}
+  // Empty state
+  else if (!about) {
+    content = (
+      <div className="container mx-auto px-4 text-center text-muted-foreground">
+        About content is currently unavailable.
+      </div>
+    );
+  }
 
-      {/* Background Gradient */}
-      <div className="
-        absolute inset-0
-        hero-gradient
-        opacity-5
-        z-0
-        pointer-events-none
-      " />
-
-      {/* Hero Content */}
+  // Main content
+  else {
+    content = (
       <div className="
         container mx-auto
-        px-4 sm:px-6
-        relative z-10
-        text-center
+        w-full max-w-7xl
+        px-4 sm:px-6 lg:px-8
+        flex flex-col lg:flex-row
+        items-center
+        justify-center
+        gap-8 sm:gap-10 lg:gap-14
       ">
 
-        <div className="animate-fade-in">
+        {/* Profile Image */}
+<div className="
+  flex justify-center
+  w-full lg:w-auto
+  lg:flex-[0_0_35%]
+  shrink-0
+">
+  <div className="
+  relative shrink-0
+  w-56 sm:w-64 md:w-80 lg:w-96
+  max-w-full
+  aspect-square
+  overflow-hidden
+  rounded-full
+  border-[3px] border-primary/20
+  shadow-xl
+  [&>*]:h-full [&>*]:w-full
+  [&_img]:h-full [&_img]:w-full
+  [&_img]:object-cover [&_img]:object-bottom
+  [&_img]:origin-bottom [&_img]:scale-[1.15]
+  lg:[&_img]:scale-100
+">
+    <OptimizedImage
+      src={about?.aboutImage?.url}
+      alt="Portrait of Samrat Mallick - Full Stack Developer"
+      width={384}
+      height={384}
+      widths={[224, 256, 320, 384, 448]}
+      sizes="
+        (min-width: 1024px) 384px,
+        (min-width: 768px) 320px,
+        (min-width: 640px) 256px,
+        224px
+      "
+      loading="lazy"
+      decoding="async"
+      className="block h-full w-full rounded-full object-cover object-center"
+    />
+  </div>
+</div>
+        
+        {/* About Information */}
+        <div className="
+          w-full
+          min-w-0
+          lg:flex-1
+          flex flex-col
+          items-center lg:items-start
+          text-center lg:text-left
+        ">
 
-          {/* Profile Image */}
-          <div className="
-            relative
-            shrink-0
-            w-56 sm:w-64 md:w-80 lg:w-96
-            max-w-full
-            mx-auto
-            mb-6 sm:mb-8
-            mt-2 lg:mt-0
-            aspect-square
-            rounded-full
-            overflow-hidden
-            border-[3px] border-primary/20
-            shadow-xl
-            animate-float
-            [&>*]:block [&>*]:h-full [&>*]:w-full
-            [&_img]:h-full [&_img]:w-full
-            [&_img]:object-cover [&_img]:object-top
-          ">
-            <OptimizedImage
-              src={data?.profileImage?.url}
-              alt={`${data?.name || 'Samrat Mallick'} - Full Stack Developer`}
-              width="384"
-              height="384"
-              widths={[224, 256, 320, 384, 448]}
-              sizes="
-                (min-width: 1024px) 384px,
-                (min-width: 768px) 320px,
-                (min-width: 640px) 256px,
-                224px
-              "
-              loading="eager"
-              fetchPriority="high"
-              decoding="async"
-              className="
-                block
-                w-full h-full
-                rounded-full
-                object-cover
-              "
-            />
-          </div>
-
-          {/* Name */}
-          <h1 className="
-            text-4xl
-            sm:text-5xl
-            md:text-6xl
-            lg:text-7xl
+          {/* Section Heading */}
+          <h2 className="
+            text-3xl
+            sm:text-4xl
+            md:text-5xl
             font-bold
-            mb-5 sm:mb-6
+            mb-4 sm:mb-5
             text-gradient
-            break-words
+            animate-slide-up
           ">
-            {data?.name || 'Samrat Mallick'}
-          </h1>
+            About Me
+          </h2>
 
-          {/* Animated Professional Title */}
+          {/* About Description */}
           <div className="
-            text-xl
-            sm:text-2xl
-            md:text-3xl
-            mb-6
-            min-h-12
-          ">
-            <AnimatedText
-              texts={data?.title || []}
-              className="text-muted-foreground"
-            />
-          </div>
-
-          {/* Description */}
-          <p className="
-            text-base
-            sm:text-lg
-            md:text-xl
+            w-full max-w-3xl
+            text-base sm:text-lg md:text-xl
             text-muted-foreground
-            max-w-2xl
-            mx-auto
-            mb-8
-            leading-relaxed
-            px-2
+            leading-7 sm:leading-8
+            animate-slide-up
           ">
-            {data?.description ||
-              'I am a passionate Full Stack Developer with expertise in building dynamic and responsive web applications. I love turning ideas into reality using code.'}
-          </p>
-
-          {/* Action Buttons */}
-          <div className="
-            flex flex-col
-            sm:flex-row
-            gap-4
-            justify-center
-            items-center
-          ">
-
-            {/* Resume Download */}
-            {data?.resumeLink && (
-              <a
-                href={data.resumeLink}
-                download
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button
-                  size="lg"
-                  className="
-                    hero-gradient
-                    text-on-gradient
-                    hover:opacity-90
-                    accent-glow
-                  "
-                >
-                  <Download className="w-5 h-5 mr-2" />
-                  Download Resume
-                </Button>
-              </a>
-            )}
-
-            {/* Contact Button */}
-            <ContactMeBtn
-              handleNavigateToContact={handleContactClick}
-            />
-
+            <p className="
+              text-left
+              whitespace-pre-line
+              break-words
+              [overflow-wrap:anywhere]
+            ">
+              {about?.paragraphs}
+            </p>
           </div>
-
-          {/* Social Media Links */}
-          <div className="
-            flex
-            justify-center
-            items-center
-            gap-4
-            mt-8
-          ">
-            {SOCIAL_LINKS.map((link) => (
-              <a
-                key={link.key}
-                href={link.href}
-                aria-label={link.label}
-                title={link.label}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="
-                  w-11 h-11
-                  flex items-center justify-center
-                  bg-primary/10
-                  text-foreground
-                  rounded-full
-                  hover:bg-primary/20
-                  hover:scale-110
-                  transition-all duration-300
-                "
-              >
-                {getSocialIcon(link.key)}
-              </a>
-            ))}
-          </div>
-
-          {/* Retry Hero Data */}
-          {error && onRetry && (
-            <button
-              type="button"
-              onClick={onRetry}
-              className="
-                mt-6
-                inline-flex
-                items-center
-                gap-2
-                text-sm
-                text-muted-foreground
-                hover:text-foreground
-                transition-colors
-              "
-            >
-              <RefreshCw className="w-4 h-4" />
-              Showing default content. Reload hero
-            </button>
-          )}
 
         </div>
       </div>
+    );
+  }
+
+  return (
+    <section
+      ref={ref}
+      id="about"
+      className="
+        relative
+        w-full
+        py-10 sm:py-14 lg:py-20
+        border-b border-border
+        overflow-hidden
+        scroll-mt-20
+      "
+    >
+      {content}
     </section>
   );
 };
 
-export default React.memo(Hero);
+export default React.memo(AboutMe);
