@@ -1,4 +1,3 @@
-
 import React from 'react';
 import AboutSkeleton from '../loaders/AboutSkeleton';
 import SectionError from '../loaders/SectionError';
