@@ -61,18 +61,20 @@ const AboutMe = () => {
   shrink-0
 ">
   <div className="
-    relative shrink-0
-    w-56 sm:w-64 md:w-80 lg:w-96
-    max-w-full
-    aspect-square
-    overflow-hidden
-    rounded-full
-    border-[3px] border-primary/20
-    shadow-xl
-    [&>*]:h-full [&>*]:w-full
-    [&_img]:h-full [&_img]:w-full
-    [&_img]:object-cover [&_img]:object-center
-  ">
+  relative shrink-0
+  w-56 sm:w-64 md:w-80 lg:w-96
+  max-w-full
+  aspect-square
+  overflow-hidden
+  rounded-full
+  border-[3px] border-primary/20
+  shadow-xl
+  [&>*]:h-full [&>*]:w-full
+  [&_img]:h-full [&_img]:w-full
+  [&_img]:object-cover [&_img]:object-bottom
+  [&_img]:origin-bottom [&_img]:scale-[1.15]
+  lg:[&_img]:scale-100
+">
     <OptimizedImage
       src={about?.aboutImage?.url}
       alt="Portrait of Samrat Mallick - Full Stack Developer"
