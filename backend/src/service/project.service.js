@@ -62,6 +62,14 @@ class ProjectService {
             return projects;
       }
 
+      /**
+       * Public, paginated project listing.
+       * Only card fields are selected; page/limit are normalised by the repo.
+       */
+      async getPublicProjectsPage(query = {}) {
+            return await projectRepository.findPublicPage(query);
+      }
+
       async getProjectById(id) {
             const project = await projectRepository.findById(id);
 
@@ -147,6 +155,10 @@ class ProjectService {
       async getFeaturedProjects() {
             const projects = await projectRepository.findFeatured();
             return projects;
+      }
+
+      async getPublicFeaturedProjects() {
+            return await projectRepository.findFeaturedPublic();
       }
 
       async setFeaturedProject(id, isFeatured) {

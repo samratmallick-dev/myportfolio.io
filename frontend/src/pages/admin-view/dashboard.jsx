@@ -4,8 +4,7 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardAction } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import * as Icons from 'lucide-react';
-import { toast } from 'sonner';
+import { UserRound, Mail, Phone, MapPin, Star, CheckCircle2, AlertCircle } from 'lucide-react';
 import { getHeroData } from '@/store/hero.slice';
 import { getAboutData } from '@/store/about.slice';
 import { getAllEducationData } from '@/store/education.slice';
@@ -118,7 +117,7 @@ useEffect(() => {
                                                       {recentMessages.map((m) => (
                                                             <li key={m._id} className="p-4 rounded-md border">
                                                                   <div className="flex flex-wrap items-center justify-between gap-2">
-                                                                        <div className="font-semibold flex items-center gap-2"><Icons.UserRound className="h-4 w-4" /> {m.name}</div>
+                                                                        <div className="font-semibold flex items-center gap-2"><UserRound className="h-4 w-4" /> {m.name}</div>
                                                                         <div className="text-xs text-muted-foreground">{new Date(m.createdAt).toLocaleString()}</div>
                                                                   </div>
                                                                   <div className="text-sm text-muted-foreground truncate mt-1">{m.message}</div>
@@ -162,16 +161,16 @@ useEffect(() => {
                                                                   )}
                                                                   <div className="space-y-2">
                                                                         {c.name && (
-                                                                              <div className="font-semibold flex items-center gap-2 justify-center"><Icons.UserRound className="h-4 w-4" /> {c.name}</div>
+                                                                              <div className="font-semibold flex items-center gap-2 justify-center"><UserRound className="h-4 w-4" /> {c.name}</div>
                                                                         )}
                                                                         {c.email && (
-                                                                              <div className="text-sm text-muted-foreground flex items-center gap-2 justify-center"><Icons.Mail className="h-4 w-4" /> {c.email}</div>
+                                                                              <div className="text-sm text-muted-foreground flex items-center gap-2 justify-center"><Mail className="h-4 w-4" /> {c.email}</div>
                                                                         )}
                                                                         {c.mobile && (
-                                                                              <div className="text-sm text-muted-foreground flex items-center gap-2 justify-center"><Icons.Phone className="h-4 w-4" /> {c.mobile}</div>
+                                                                              <div className="text-sm text-muted-foreground flex items-center gap-2 justify-center"><Phone className="h-4 w-4" /> {c.mobile}</div>
                                                                         )}
                                                                         {c.address && (
-                                                                              <div className="text-sm text-muted-foreground flex items-center gap-2 justify-center"><Icons.MapPin className="h-4 w-4" /> {c.address}</div>
+                                                                              <div className="text-sm text-muted-foreground flex items-center gap-2 justify-center"><MapPin className="h-4 w-4" /> {c.address}</div>
                                                                         )}
                                                                   </div>
                                                             </div>
@@ -204,7 +203,7 @@ useEffect(() => {
                                                       {featuredProjects.map((p) => (
                                                             <li key={p._id} className="p-3 rounded-md border flex items-center justify-between gap-3">
                                                                   <div className="flex items-center gap-2">
-                                                                        <Icons.Star className="h-4 w-4 text-yellow-500" />
+                                                                        <Star className="h-4 w-4 text-warning" />
                                                                         <div className="font-medium">{p.title}</div>
                                                                   </div>
                                                                   <div className="text-xs text-muted-foreground">{p.status}</div>
@@ -234,9 +233,9 @@ useEffect(() => {
                                           ) : (
                                                 <div className="flex items-center gap-2 text-sm">
                                                       {totals.heroConfigured ? (
-                                                            <span className="inline-flex items-center gap-2 text-green-600"><Icons.CheckCircle2 className="h-4 w-4" /> Configured</span>
+                                                            <span className="inline-flex items-center gap-2 text-success"><CheckCircle2 className="h-4 w-4" /> Configured</span>
                                                       ) : (
-                                                            <span className="inline-flex items-center gap-2 text-muted-foreground"><Icons.AlertCircle className="h-4 w-4" /> Not Configured</span>
+                                                            <span className="inline-flex items-center gap-2 text-muted-foreground"><AlertCircle className="h-4 w-4" /> Not Configured</span>
                                                       )}
                                                 </div>
                                           )}
@@ -258,9 +257,9 @@ useEffect(() => {
                                           ) : (
                                                 <div className="flex items-center gap-2 text-sm">
                                                       {totals.aboutConfigured ? (
-                                                            <span className="inline-flex items-center gap-2 text-green-600"><Icons.CheckCircle2 className="h-4 w-4" /> Configured</span>
+                                                            <span className="inline-flex items-center gap-2 text-success"><CheckCircle2 className="h-4 w-4" /> Configured</span>
                                                       ) : (
-                                                            <span className="inline-flex items-center gap-2 text-muted-foreground"><Icons.AlertCircle className="h-4 w-4" /> Not Configured</span>
+                                                            <span className="inline-flex items-center gap-2 text-muted-foreground"><AlertCircle className="h-4 w-4" /> Not Configured</span>
                                                       )}
                                                 </div>
                                           )}

@@ -9,7 +9,28 @@
       <meta name="keywords"
             content="Samrat Mallick, Full Stack Developer, Web Developer, MERN Developer, React, Node.js, Portfolio" />
       <meta name="author" content="Samrat Mallick" />
-      
+
+      <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+      <meta name="theme-color" content="#020617" media="(prefers-color-scheme: dark)" />
+
+      <!-- Apply the persisted theme before first paint to avoid a flash of the
+           wrong theme. Keep this key and the class name in sync with
+           src/components/common/theme-provider.jsx. -->
+      <script>
+            (function () {
+                  try {
+                        var stored = localStorage.getItem("theme");
+                        var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+                        var isDark = stored === "dark" || ((!stored || stored === "system") && prefersDark);
+                        var root = document.documentElement;
+                        root.classList.toggle("dark", isDark);
+                        root.style.colorScheme = isDark ? "dark" : "light";
+                  } catch (error) {
+                        /* Storage can be unavailable in private mode; fall back to CSS defaults. */
+                  }
+            })();
+      </script>
+
       <link rel="canonical" href="https://myportfolio-io-dusky.vercel.app/" />
 
       <meta property="og:type" content="website" />
@@ -53,10 +74,16 @@
       <link rel="icon" type="image/x-icon" href="/favicon.ico">
       <link rel="manifest" href="/site.webmanifest" />
       
-      <link rel="preconnect" href="https://myportfolio-io-rwmq.onrender.com" crossorigin>
-      <link rel="dns-prefetch" href="https://myportfolio-io-rwmq.onrender.com">
+      <link rel="preconnect" href="https://myportfolio-io-28vb.onrender.com" crossorigin>
+      <link rel="dns-prefetch" href="https://myportfolio-io-28vb.onrender.com">
       <link rel="preconnect" href="https://res.cloudinary.com" crossorigin>
       <link rel="dns-prefetch" href="https://res.cloudinary.com">
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      />
       
       <title>Samrat Mallick | Full Stack Web Developer.</title>
 </head>

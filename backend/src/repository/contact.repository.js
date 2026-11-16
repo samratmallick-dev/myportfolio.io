@@ -7,7 +7,6 @@ class ContactRepository extends BaseRepository {
             this.MessageModel = Message;
       }
 
-      // Contact Details Methods
       async createContactDetails(contactData) {
             return await this.model.create(contactData);
       }
@@ -20,15 +19,21 @@ class ContactRepository extends BaseRepository {
             return await this.model.findOne({ isActive: true }).lean();
       }
 
+      async findActiveContactDetailsPublic() {
+            return await this.model
+                  .findOne({ isActive: true })
+                  .select('name email mobile address contactImage socialLinks')
+                  .lean();
+      }
+
       async updateContactDetails(id, updateData) {
-            return await this.model.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+            return await this.model.findByIdAndUpdate(id, updateData, { returnDocument: 'after', runValidators: true });
       }
 
       async updateOneContactDetails(filter, updateData) {
-            return await this.model.findOneAndUpdate(filter, updateData, { new: true, runValidators: true, upsert: true });
+            return await this.model.findOneAndUpdate(filter, updateData, { returnDocument: 'after', runValidators: true, upsert: true });
       }
 
-      // Message Methods
       async createMessage(messageData) {
             return await this.MessageModel.create(messageData);
       }
@@ -46,7 +51,7 @@ class ContactRepository extends BaseRepository {
       }
 
       async updateMessageById(id, updateData) {
-            return await this.MessageModel.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+            return await this.MessageModel.findByIdAndUpdate(id, updateData, { returnDocument: 'after', runValidators: true });
       }
 
       async deleteMessageById(id) {
@@ -62,7 +67,7 @@ class ContactRepository extends BaseRepository {
       }
 
       async markMessageAsRead(id) {
-            return await this.MessageModel.findByIdAndUpdate(id, { status: "read" }, { new: true });
+            return await this.MessageModel.findByIdAndUpdate(id, { status: "read" }, { returnDocument: 'after' });
       }
 }
 

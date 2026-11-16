@@ -17,6 +17,14 @@ class EducationRepository extends BaseRepository {
       async findLatest() {
             return await this.model.findOne({ isActive: true }).sort({ createdAt: -1 }).lean();
       }
+
+      async findActivePublic() {
+            return await this.model
+                  .find({ isActive: true })
+                  .select('title description certification certificateLink date')
+                  .sort({ createdAt: -1 })
+                  .lean();
+      }
 }
 
 export default new EducationRepository();

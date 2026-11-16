@@ -7,7 +7,7 @@ import cookieParser from "cookie-parser";
 import { errorHandler } from "./middleware/error.middleware.js";
 import apiRoutes from "./routes/api.routes.js";
 import Logger from "./config/logger/logger.config.js";
-import { clearCache } from "./middleware/cache.middleware.js";
+import { invalidateCacheForMutation } from "./middleware/cache.middleware.js";
 import compression from "compression";
 
 const app = express();
@@ -99,8 +99,8 @@ app.use((req, res, next) => {
       if (["POST", "PUT", "DELETE", "PATCH"].includes(req.method)) {
             res.on('finish', () => {
                   if (res.statusCode >= 200 && res.statusCode < 300) {
-                        Logger.info("Mutating request finished successfully, clearing cache", { method: req.method, path: req.path });
-                        clearCache();
+                        Logger.info("Mutating request finished successfully, invalidating affected cache", { method: req.method, path: req.path });
+                        invalidateCacheForMutation(req.originalUrl);
                   }
             });
       }

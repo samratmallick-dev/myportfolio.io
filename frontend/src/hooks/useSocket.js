@@ -1,27 +1,50 @@
 import { useEffect, useRef } from "react";
 import { connectSocket, onSocketEvent, offSocketEvent } from "../config/socket";
+import { whenIdle } from "@/utils/performance";
 
 export const useSocket = (eventName, callback) => {
       const callbackRef = useRef(callback);
       callbackRef.current = callback;
 
       useEffect(() => {
-            connectSocket();
+            let cleanup;
+            let cancelIdle;
+            let disposed = false;
 
-            if (!eventName) return;
+            const start = () => {
+                  if (disposed) return;
 
-            const handler = (payload) => callbackRef.current(payload);
-            onSocketEvent(eventName, handler);
+                  connectSocket();
+                  if (!eventName) return;
+
+                  const handler = (payload) => callbackRef.current(payload);
+                  onSocketEvent(eventName, handler);
+                  cleanup = () => offSocketEvent(eventName, handler);
+            };
+
+            const schedule = () => {
+                  cancelIdle = whenIdle(start);
+            };
+
+            if (document.readyState === "complete") {
+                  schedule();
+            } else {
+                  window.addEventListener("load", schedule, { once: true });
+            }
 
             return () => {
-                  offSocketEvent(eventName, handler);
+                  disposed = true;
+                  cancelIdle?.();
+                  window.removeEventListener("load", schedule);
+                  cleanup?.();
             };
       }, [eventName]);
 };
 
 export const useSocketConnection = () => {
       useEffect(() => {
-            connectSocket();
+            const cancelIdle = whenIdle(() => connectSocket());
+            return () => cancelIdle?.();
       }, []);
 };
 

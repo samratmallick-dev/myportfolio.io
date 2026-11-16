@@ -39,6 +39,16 @@ class AboutService {
             return aboutContent;
       }
 
+      async getPublicAboutContent() {
+            const aboutContent = await aboutRepository.findActivePublic();
+
+            if (!aboutContent) {
+                  throw ApiError.notFound("About content not found");
+            }
+
+            return aboutContent;
+      }
+
       async getAboutContentById(id) {
             const aboutContent = await aboutRepository.findById(id);
 

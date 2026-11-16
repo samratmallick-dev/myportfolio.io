@@ -111,7 +111,7 @@ const AdminViewEducation = () => {
                                                                   <p>{item.description}</p>
                                                                   <p>Date: {item.date}</p>
                                                                   {item.certification && item.certificateLink && (
-                                                                        <Button asChild variant="outline" className="hover:bg-primary text-muted-foreground hover:text-white transition-colors duration-300 ease-out">
+                                                                        <Button asChild variant="outline" className="hover:bg-primary hover:text-primary-foreground transition-colors duration-300 ease-out">
                                                                               <a href={item.certificateLink} target="_blank" rel="noopener noreferrer">
                                                                                     View Certificate
                                                                               </a>
@@ -121,7 +121,7 @@ const AdminViewEducation = () => {
                                                                   <div className="flex gap-2 mt-2">
                                                                         <Button
                                                                               variant="outline"
-                                                                              className="mr-2 hover:bg-primary/60 text-muted-foreground hover:text-white transition-colors duration-300 ease-out"
+                                                                              className="mr-2 hover:bg-primary hover:text-primary-foreground transition-colors duration-300 ease-out"
                                                                               onClick={() => handleEdit(item)}
                                                                         >
                                                                               Edit

@@ -1,6 +1,12 @@
 import { io } from "socket.io-client";
 
-const SOCKET_URL = import.meta.env.DEV ? (import.meta.env.VITE_API_BASE_URL_LOCAL || "http://localhost:8000") : (import.meta.env.VITE_API_BASE_URL || "https://myportfolio-io-28vb.onrender.com");
+const SOCKET_URL = import.meta.env.DEV
+      ? import.meta.env.VITE_SOCKET_URL || "http://localhost:8000"
+      : import.meta.env.VITE_API_BASE_URL;
+
+if (!SOCKET_URL) {
+      throw new Error("Socket URL is not configured. Set VITE_API_BASE_URL.");
+}
 
 let socket = null;
 let isConnecting = false;

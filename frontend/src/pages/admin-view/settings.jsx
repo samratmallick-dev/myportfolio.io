@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { User, Mail, Lock, CheckCircle2, ArrowLeft } from 'lucide-react';
+import { User, Mail, Lock, CheckCircle2, ArrowLeft, Info } from 'lucide-react';
 import CommonForm from '@/components/common/form';
 import {
       adminUpdateEmailFormIndex,
@@ -271,8 +271,9 @@ const AdminSettings = () => {
                                                             <ArrowLeft className="w-4 h-4 mr-2" />
                                                             Back to Email Form
                                                       </Button>
-                                                      <div className="p-4 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
-                                                            <p className="text-sm text-blue-800 dark:text-blue-200">
+                                                      <div className="flex items-start gap-2 p-4 bg-info/10 border border-info/30 rounded-lg">
+                                                            <Info className="mt-0.5 h-4 w-4 shrink-0 text-info" aria-hidden="true" />
+                                                            <p className="text-sm text-foreground">
                                                                   A verification code has been sent to <strong>{emailFormData.newEmail}</strong>
                                                             </p>
                                                       </div>
@@ -290,7 +291,7 @@ const AdminSettings = () => {
 
                                           {emailStep === 'success' && (
                                                 <div className="text-center py-12">
-                                                      <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto mb-4" />
+                                                      <CheckCircle2 className="w-16 h-16 text-success mx-auto mb-4" aria-hidden="true" />
                                                       <h3 className="text-xl font-semibold mb-2">Email Updated Successfully!</h3>
                                                       <p className="text-muted-foreground">
                                                             Your email has been updated. Redirecting to login...
@@ -334,8 +335,9 @@ const AdminSettings = () => {
                                                             <ArrowLeft className="w-4 h-4 mr-2" />
                                                             Back to Password Form
                                                       </Button>
-                                                      <div className="p-4 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
-                                                            <p className="text-sm text-blue-800 dark:text-blue-200">
+                                                      <div className="flex items-start gap-2 p-4 bg-info/10 border border-info/30 rounded-lg">
+                                                            <Info className="mt-0.5 h-4 w-4 shrink-0 text-info" aria-hidden="true" />
+                                                            <p className="text-sm text-foreground">
                                                                   A verification code has been sent to <strong>{user?.email}</strong>
                                                             </p>
                                                       </div>
@@ -353,7 +355,7 @@ const AdminSettings = () => {
 
                                           {passwordStep === 'success' && (
                                                 <div className="text-center py-12">
-                                                      <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto mb-4" />
+                                                      <CheckCircle2 className="w-16 h-16 text-success mx-auto mb-4" aria-hidden="true" />
                                                       <h3 className="text-xl font-semibold mb-2">Password Updated Successfully!</h3>
                                                       <p className="text-muted-foreground">
                                                             Your password has been updated. Redirecting to login...

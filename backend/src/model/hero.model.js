@@ -37,4 +37,6 @@ const heroSchema = new mongoose.Schema({
       timestamps: true,
 });
 
+heroSchema.index({ isActive: 1 });
+
 export const Hero = mongoose.model("Hero", heroSchema);

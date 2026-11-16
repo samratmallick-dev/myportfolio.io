@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import { Button } from '../ui/button';
-import * as Icons from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { ThemeToggle } from '../common/theme-toggle';
 
 const AdminHeader = ({ onMenuClick, isMobile, pageTitle }) => (
@@ -11,7 +11,7 @@ const AdminHeader = ({ onMenuClick, isMobile, pageTitle }) => (
                               <Fragment>
                                     <div className='flex items-center flex-col justify-center'>
                                           <div className='flex items-end px-4 select-none'>
-                                                <span className='text-5xl font-bold text-green-600'>S</span>
+                                                <span className='text-5xl font-bold text-brand'>S</span>
                                                 <span className='font-bold text-3xl'>amrat.</span>
                                           </div>
                                           <span className='text-xs'>Admin Panel</span>
@@ -24,7 +24,7 @@ const AdminHeader = ({ onMenuClick, isMobile, pageTitle }) => (
                                                 className="bg-background/80 backdrop-blur-sm"
                                                 onClick={onMenuClick}
                                           >
-                                                <Icons.Menu className="h-6 w-6" />
+                                                <Menu className="h-6 w-6" />
                                           </Button>
                                     </div>
                               </Fragment>

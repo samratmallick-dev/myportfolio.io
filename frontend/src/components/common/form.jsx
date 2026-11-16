@@ -4,7 +4,7 @@ import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Label } from '../ui/label';
-import { Loader, Eye, EyeOff } from 'lucide-react';
+import { Loader, Eye, EyeOff, AlertCircle } from 'lucide-react';
 
 const types = {
       Input: 'input',
@@ -49,6 +49,8 @@ const CommonForm = ({
             const isPasswordField = type === 'password';
             const showPassword = passwordVisibility[name];
             const inputType = isPasswordField && showPassword ? 'text' : type;
+            const hasError = Boolean(errors && errors[name]);
+            const errorId = `${name}-error`;
 
             return (
                   <div className="grid w-full gap-1.5">
@@ -63,6 +65,8 @@ const CommonForm = ({
                                     value={values[name]}
                                     onChange={handleChange}
                                     disabled={isLoading || disabled}
+                                    aria-invalid={hasError}
+                                    aria-describedby={hasError ? errorId : undefined}
                               />
                         ) : componentType === types.Select ? (
                               <Select
@@ -71,7 +75,11 @@ const CommonForm = ({
                                     value={values[name]}
                                     disabled={isLoading || disabled}
                               >
-                                    <SelectTrigger id={name}>
+                                    <SelectTrigger
+                                          id={name}
+                                          aria-invalid={hasError}
+                                          aria-describedby={hasError ? errorId : undefined}
+                                    >
                                           <SelectValue placeholder={placeholder} />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -94,6 +102,8 @@ const CommonForm = ({
                                           checked={type === 'checkbox' ? values[name] : undefined}
                                           className={`${type === 'number' ? 'hide-number-arrows' : ''} ${type === 'checkbox' ? 'absolute left-25 -top-5 mx-2 w-4 h-4' : ''} ${isPasswordField ? 'pr-10' : ''}`}
                                           disabled={isLoading || disabled}
+                                          aria-invalid={hasError}
+                                          aria-describedby={hasError ? errorId : undefined}
                                     />
                                     {isPasswordField && (
                                           <button
@@ -111,8 +121,11 @@ const CommonForm = ({
                                     )}
                               </div>
                         )}
-                        {errors && errors[name] ? (
-                              <div className="text-red-500 text-sm">{errors[name]}</div>
+                        {hasError ? (
+                              <div id={errorId} role="alert" className="flex items-start gap-1.5 text-sm text-destructive">
+                                    <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                                    <span>{errors[name]}</span>
+                              </div>
                         ) : null}
                   </div>
             );
@@ -134,7 +147,7 @@ const CommonForm = ({
                         }
                   </div>
                   {buttonText && (
-                        <Button type="submit" className="w-full hero-gradient text-muted hover:opacity-90 mt-8" disabled={isLoading}>
+                        <Button type="submit" className="w-full hero-gradient text-on-gradient hover:opacity-90 mt-8" disabled={isLoading}>
                               {isLoading ? <Loader className="animate-spin mx-auto" /> : buttonText}
                         </Button>
                   )}

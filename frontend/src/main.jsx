@@ -6,14 +6,30 @@ import { Toaster } from './components/ui/sonner.jsx';
 import { Provider } from 'react-redux';
 import { store } from './store/store';
 import { HelmetProvider } from 'react-helmet-async';
+import { ThemeProvider } from './components/common/theme-provider';
 
 createRoot(document.getElementById('root')).render(
       <Provider store={store}>
-            <BrowserRouter>
-                  <HelmetProvider>
-                        <App />
-                        <Toaster />
-                  </HelmetProvider>
-            </BrowserRouter>
+            <ThemeProvider
+                  attribute="class"
+                  defaultTheme="system"
+                  enableSystem
+                  storageKey="theme"
+            >
+                  <BrowserRouter>
+                        <HelmetProvider>
+                              <App />
+                              <Toaster />
+                        </HelmetProvider>
+                  </BrowserRouter>
+            </ThemeProvider>
       </Provider>
 );
+
+if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+            navigator.serviceWorker.register("/sw.js").catch(() => {
+                  /* Registration is best-effort; the app works fully online without it. */
+            });
+      });
+}

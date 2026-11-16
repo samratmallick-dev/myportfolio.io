@@ -10,7 +10,7 @@ const ContactMeBtn = ({
                   onClick={handleNavigateToContact}
                   variant="outline"
                   size="lg"
-                  className="hover:bg-primary/60 text-muted-foreground hover:text-white transition-colors duration-300 ease-out"
+                  className="hover:bg-primary hover:text-primary-foreground transition-colors duration-300 ease-out"
             >
                   <Mail className="w-5 h-5 mr-2" />
                   Contact Me

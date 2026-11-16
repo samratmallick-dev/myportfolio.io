@@ -19,6 +19,10 @@ class ServiceService {
             return services;
       }
 
+      async getPublicServices() {
+            return await serviceRepository.findActivePublic();
+      }
+
       async getServiceById(id) {
             const service = await serviceRepository.findById(id);
 

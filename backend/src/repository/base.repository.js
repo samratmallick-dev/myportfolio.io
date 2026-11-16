@@ -28,11 +28,11 @@ class BaseRepository {
       }
 
       async updateById(id, updateData) {
-            return await this.model.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+            return await this.model.findByIdAndUpdate(id, updateData, { returnDocument: 'after', runValidators: true });
       }
 
       async updateOne(filter, updateData) {
-            return await this.model.findOneAndUpdate(filter, updateData, { new: true, runValidators: true, upsert: true });
+            return await this.model.findOneAndUpdate(filter, updateData, { returnDocument: 'after', runValidators: true, upsert: true });
       }
 
       async deleteById(id) {
@@ -40,7 +40,7 @@ class BaseRepository {
       }
 
       async softDeleteById(id) {
-            return await this.model.findByIdAndUpdate(id, { isActive: false }, { new: true });
+            return await this.model.findByIdAndUpdate(id, { isActive: false }, { returnDocument: 'after' });
       }
 
       async count(filter = {}) {

@@ -1,5 +1,5 @@
 import projectService from "../service/project.service.js";
-import { sendSuccess, sendCreated } from "../utilities/response/apiResponse.js";
+import { sendSuccess, sendCreated, sendPaginated } from "../utilities/response/apiResponse.js";
 import { asyncHandler } from "../utilities/error/asyncHandler.js";
 import { broadcastPortfolioUpdate } from "../config/socket/socket.config.js";
 
@@ -15,6 +15,13 @@ class ProjectController {
       });
 
       getAllProjects = asyncHandler(async (req, res) => {
+            // Backward compatible: without page/limit the legacy array response
+            // is returned. With either param, a paginated envelope is used.
+            if (req.query.page !== undefined || req.query.limit !== undefined) {
+                  const { items, pagination } = await projectService.getPublicProjectsPage(req.query);
+                  return sendPaginated(res, "Projects retrieved successfully", items, pagination);
+            }
+
             const projects = await projectService.getAllProjects();
             sendSuccess(res, "Projects retrieved successfully", projects);
       });

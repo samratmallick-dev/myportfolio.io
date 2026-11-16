@@ -45,4 +45,6 @@ const skillSchema = new mongoose.Schema(
       { timestamps: true }
 );
 
+skillSchema.index({ isActive: 1, createdAt: 1 });
+
 export const Skill = mongoose.model("Skill", skillSchema);

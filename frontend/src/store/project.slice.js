@@ -8,8 +8,20 @@ import {
       deleteProjectById,
       fetchAllProjectsAdmin,
       fetchFeaturedProjects,
+      fetchPublicProjects,
       setFeaturedProject,
 } from "@/config/api";
+
+const PUBLIC_PROJECTS_TTL = 60 * 1000;
+
+const emptyPublicPagination = (page = 1, limit = 9) => ({
+      page,
+      limit,
+      total: 0,
+      totalPages: 0,
+      hasNext: false,
+      hasPrev: false,
+});
 
 const initialState = {
       projectsData: [],
@@ -18,6 +30,13 @@ const initialState = {
       isLoading: false,
       error: null,
       success: false,
+      publicProjects: {
+            items: [],
+            pagination: emptyPublicPagination(),
+            status: 'idle',
+            error: null,
+            fetchedAt: 0,
+      },
 };
 
 export const getAllProjects = createAsyncThunk(
@@ -116,6 +135,42 @@ export const getFeaturedProjects = createAsyncThunk(
             } catch (error) {
                   return rejectWithValue(error.response?.data || error.message);
             }
+      }
+);
+
+/**
+ * Paginated, card-only public project list. Kept separate from the admin
+ * `projectsData` state so lazy public loading never disturbs admin CRUD.
+ */
+export const getPublicProjectsPage = createAsyncThunk(
+      "project/fetchPublicProjectsPage",
+      async ({ page = 1, limit = 9, force = false } = {}, { rejectWithValue, signal }) => {
+            try {
+                  const data = await fetchPublicProjects({ page, limit, signal, cache: !force });
+                  return { page, limit, ...data };
+            } catch (error) {
+                  if (signal.aborted) return rejectWithValue({ aborted: true });
+                  return rejectWithValue(error?.message || 'Failed to load projects');
+            }
+      },
+      {
+            condition: ({ page = 1, limit = 9, force = false } = {}, { getState }) => {
+                  const current = getState().project?.publicProjects;
+                  if (!current) return false;
+
+                  if (!force && current.status === 'loading' && current.pagination.page === page && current.pagination.limit === limit) {
+                        return false;
+                  }
+
+                  if (force) return true;
+
+                  const isFresh = current.status === 'succeeded'
+                        && current.pagination.page === page
+                        && current.pagination.limit === limit
+                        && Date.now() - current.fetchedAt < PUBLIC_PROJECTS_TTL;
+
+                  return !isFresh;
+            },
       }
 );
 
@@ -310,6 +365,34 @@ const projectSlice = createSlice({
                         state.isLoading = false;
                         state.error = action.payload;
                         state.success = false;
+                  });
+
+            builder
+                  .addCase(getPublicProjectsPage.pending, (state, action) => {
+                        const { page = 1, limit = 9 } = action.meta.arg || {};
+                        state.publicProjects.status = 'loading';
+                        state.publicProjects.error = null;
+                        state.publicProjects.pagination = {
+                              ...state.publicProjects.pagination,
+                              page,
+                              limit,
+                        };
+                  })
+                  .addCase(getPublicProjectsPage.fulfilled, (state, action) => {
+                        const { page, limit, items, pagination } = action.payload;
+                        state.publicProjects.status = 'succeeded';
+                        state.publicProjects.error = null;
+                        state.publicProjects.items = items;
+                        state.publicProjects.pagination = pagination || emptyPublicPagination(page, limit);
+                        state.publicProjects.fetchedAt = Date.now();
+                  })
+                  .addCase(getPublicProjectsPage.rejected, (state, action) => {
+                        if (action.payload?.aborted) {
+                              state.publicProjects.status = state.publicProjects.items.length ? 'succeeded' : 'idle';
+                              return;
+                        }
+                        state.publicProjects.status = 'failed';
+                        state.publicProjects.error = action.payload || 'Failed to load projects';
                   });
       },
 });

@@ -1,12 +1,13 @@
-import React, { useCallback, Suspense, lazy } from 'react';
+import React, { useCallback, Suspense, lazy, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AnimatedText from './animated-text';
 import { Button } from '../ui/button';
-import { Download, Github, Linkedin, Facebook, Instagram } from 'lucide-react';
+import { Download, Github, Linkedin, Facebook, Instagram, RefreshCw } from 'lucide-react';
 import ContactMeBtn from './contact-btn';
 import OptimizedImage from '../common/OptimizedImage';
+import { shouldRender3D, whenIdle } from '@/utils/performance';
 
-// Lazy load the 3D component to improve initial load performance
+// The 3D scene is loaded only after the page is interactive.
 const Hero3D = lazy(() => import('./Hero3D'));
 
 const SOCIAL_LINKS = [
@@ -26,31 +27,38 @@ const getSocialIcon = (key) => {
       }
 };
 
-const Hero = ({
-      heroImage,
-      data
-}) => {
+const Hero = ({ heroImage, data, error, onRetry }) => {
       const navigate = useNavigate();
+      const [enable3D, setEnable3D] = useState(false);
+
       const handleContactClick = useCallback(() => {
             window.scrollTo(0, 0);
             navigate('/portfolio/contact');
       }, [navigate]);
 
+      // Defer the WebGL canvas until the main thread is idle and only on
+      // devices that can afford it. Reduced-motion users keep the static hero.
+      useEffect(() => {
+            if (!shouldRender3D()) return;
+            return whenIdle(() => setEnable3D(true));
+      }, []);
+
       return (
             <section className="relative min-h-screen flex items-center justify-center overflow-hidden py-4">
                   <div
-                        className="absolute inset-0 z-0 dark:opacity-90 opacity-20"
+                        className="absolute inset-0 z-0 dark:opacity-90 opacity-[0.06]"
                         style={{
                               backgroundImage: `url(${heroImage})`,
                               backgroundSize: "cover",
                               backgroundPosition: "center"
                         }}
                   />
-                  
-                  {/* Lazy-loaded 3D Element */}
-                  <Suspense fallback={null}>
-                        <Hero3D />
-                  </Suspense>
+
+                  {enable3D && (
+                        <Suspense fallback={null}>
+                              <Hero3D />
+                        </Suspense>
+                  )}
 
                   <div className="absolute inset-0 hero-gradient opacity-5 z-0" />
 
@@ -61,7 +69,11 @@ const Hero = ({
                                     alt={data?.name || "Profile"}
                                     width="240"
                                     height="240"
+                                    widths={[200, 240, 320, 400]}
+                                    sizes="240px"
+                                    loading="eager"
                                     fetchPriority="high"
+                                    decoding="async"
                                     className="w-60 h-60 md:object-contain object-cover object-center rounded-full mx-auto mb-8 lg:mt-0 mt-6 border-4 border-primary/20 animate-float"
                               />
                               <h1 className="text-5xl md:text-7xl font-bold mb-6 text-gradient">
@@ -80,7 +92,7 @@ const Hero = ({
                                           target="_blank"
                                           rel="noopener noreferrer"
                                     >
-                                          <Button size="lg" className="hero-gradient text-muted hover:opacity-90 accent-glow">
+                                          <Button size="lg" className="hero-gradient text-on-gradient hover:opacity-90 accent-glow">
                                                 <Download className="w-5 h-5 mr-2" />
                                                 Download Resume
                                           </Button>
@@ -100,6 +112,16 @@ const Hero = ({
                                           </a>
                                     ))}
                               </div>
+                              {error && onRetry && (
+                                    <button
+                                          type="button"
+                                          onClick={onRetry}
+                                          className="mt-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                                    >
+                                          <RefreshCw className="h-4 w-4" />
+                                          Showing default content. Reload hero
+                                    </button>
+                              )}
                         </div>
                   </div>
             </section>

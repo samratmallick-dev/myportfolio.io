@@ -19,7 +19,7 @@ const getInitialUser = () => {
                   return null;
             }
             return parsedUser;
-      } catch (error) {
+      } catch {
             localStorage.removeItem('adminUser');
             return null;
       }
@@ -99,7 +99,7 @@ export const generateOTPThunk = createAsyncThunk(
 
 export const verifyOTPAndUpdateEmailThunk = createAsyncThunk(
       'auth/verifyOTPAndUpdateEmail',
-      async (data, { rejectWithValue, dispatch }) => {
+      async (data, { rejectWithValue }) => {
             try {
                   const response = await verifyOTPAndUpdateEmail(data);
                   // After successful email update, clear authentication
@@ -121,7 +121,7 @@ export const verifyOTPAndUpdateEmailThunk = createAsyncThunk(
 
 export const verifyOTPAndUpdatePasswordThunk = createAsyncThunk(
       'auth/verifyOTPAndUpdatePassword',
-      async (data, { rejectWithValue, dispatch }) => {
+      async (data, { rejectWithValue }) => {
             try {
                   const response = await verifyOTPAndUpdatePassword(data);
                   // After successful password update, clear authentication

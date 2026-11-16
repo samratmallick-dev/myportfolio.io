@@ -45,6 +45,16 @@ class ContactService {
             return contactDetails;
       }
 
+      async getPublicContactDetails() {
+            const contactDetails = await contactRepository.findActiveContactDetailsPublic();
+
+            if (!contactDetails) {
+                  throw ApiError.notFound("Contact details not found");
+            }
+
+            return contactDetails;
+      }
+
       async updateContactDetails(id, contactData, image) {
             const existingContact = await contactRepository.findContactDetails({ _id: id });
 

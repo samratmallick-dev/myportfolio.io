@@ -15,7 +15,7 @@ class AdminRepository extends BaseRepository {
       }
 
       async updateLastLogin(id) {
-            return await this.model.findByIdAndUpdate(id, { lastLogin: new Date() }, { new: true });
+            return await this.model.findByIdAndUpdate(id, { lastLogin: new Date() }, { returnDocument: 'after' });
       }
 
       async findAll(filter = {}) {

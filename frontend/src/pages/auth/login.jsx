@@ -53,7 +53,7 @@ const Login = () => {
                               <div className="space-y-2">
                                     <div className='flex flex-col justify-start'>
                                           <div className='flex items-end select-none'>
-                                                <span className='text-5xl font-bold text-green-600'>S</span>
+                                                <span className='text-5xl font-bold text-brand'>S</span>
                                                 <span className='font-bold text-3xl'>amrat.</span>
                                           </div>
                                           <span className='text-xs text-muted-foreground'>Auth Panel</span>
@@ -63,7 +63,7 @@ const Login = () => {
                               <div className="space-y-4">
                                     <h2 className="text-4xl lg:text-5xl font-bold leading-tight">
                                           Welcome back to your
-                                          <span className="block text-primary mt-2">Creative Space</span>
+                                          <span className="block text-brand mt-2">Creative Space</span>
                                     </h2>
                                     <p className="text-muted-foreground text-lg">
                                           Manage your portfolio, showcase your projects, and connect with your audience.
@@ -92,7 +92,7 @@ const Login = () => {
                         </div>
 
                         <div className="w-full flex items-center justify-center">
-                              <Card className="w-full max-w-md border md:border rounded-2xl shadow-lg md:shadow-2xl bg-background/95 backdrop-blur-xl">
+                              <Card className="w-full max-w-md border md:border rounded-2xl shadow-lg md:shadow-2xl bg-card/95 backdrop-blur-xl">
                                     <CardHeader className="space-y-3 px-8 py-4">
                                           <div className="space-y-2 text-center md:text-left">
                                                 <CardTitle className="text-3xl md:text-2xl font-bold">

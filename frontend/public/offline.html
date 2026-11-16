@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <meta name="robots" content="noindex" />
+      <title>Offline — Samrat Mallick</title>
+      <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+      <script>
+            /* Same key/behaviour as index.html so the offline page follows the
+               visitor's chosen theme (light/dark/system). */
+            (function () {
+                  try {
+                        var stored = localStorage.getItem("theme");
+                        var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+                        var isDark = stored === "dark" || ((!stored || stored === "system") && prefersDark);
+                        document.documentElement.classList.toggle("dark", isDark);
+                        document.documentElement.style.colorScheme = isDark ? "dark" : "light";
+                  } catch (error) {
+                        /* Fall back to the light defaults below. */
+                  }
+            })();
+      </script>
+      <style>
+            :root {
+                  color-scheme: light;
+                  --page: hsl(210 40% 99%);
+                  --card: hsl(0 0% 100%);
+                  --foreground: hsl(222 47% 11%);
+                  --muted-foreground: hsl(215 28% 34%);
+                  --border: hsl(214 32% 91%);
+                  --primary: hsl(222 47% 16%);
+                  --primary-foreground: hsl(210 40% 98%);
+                  --shadow: 0 20px 45px -20px hsl(222 47% 11% / 0.25);
+            }
+
+            .dark {
+                  color-scheme: dark;
+                  --page: hsl(229 85% 5%);
+                  --card: hsl(223 48% 11%);
+                  --foreground: hsl(210 40% 98%);
+                  --muted-foreground: hsl(215 23% 70%);
+                  --border: hsl(0 0% 100% / 0.10);
+                  --primary: hsl(222 77% 53%);
+                  --primary-foreground: hsl(0 0% 100%);
+                  --shadow: 0 20px 45px -20px hsl(0 0% 0% / 0.6);
+            }
+
+            * {
+                  margin: 0;
+                  padding: 0;
+                  box-sizing: border-box;
+            }
+
+            body {
+                  min-height: 100vh;
+                  display: grid;
+                  place-items: center;
+                  padding: 24px;
+                  background: var(--page);
+                  color: var(--foreground);
+                  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+                  line-height: 1.5;
+                  -webkit-font-smoothing: antialiased;
+            }
+
+            .card {
+                  width: 100%;
+                  max-width: 460px;
+                  padding: 40px 36px;
+                  text-align: center;
+                  background: var(--card);
+                  border: 1px solid var(--border);
+                  border-radius: 16px;
+                  box-shadow: var(--shadow);
+            }
+
+            .icon {
+                  display: inline-grid;
+                  place-items: center;
+                  width: 64px;
+                  height: 64px;
+                  margin-bottom: 20px;
+                  border-radius: 999px;
+                  background: color-mix(in srgb, var(--primary) 10%, transparent);
+                  color: var(--primary);
+            }
+
+            h1 {
+                  font-size: 1.5rem;
+                  font-weight: 700;
+                  letter-spacing: -0.02em;
+                  margin-bottom: 10px;
+            }
+
+            p {
+                  color: var(--muted-foreground);
+                  font-size: 0.95rem;
+                  margin-bottom: 24px;
+            }
+
+            .status {
+                  min-height: 1.25em;
+                  margin-bottom: 8px;
+                  color: var(--muted-foreground);
+                  font-size: 0.85rem;
+            }
+
+            .status.online {
+                  color: hsl(152 60% 30%);
+                  font-weight: 600;
+            }
+
+            .dark .status.online {
+                  color: hsl(152 60% 58%);
+            }
+
+            button {
+                  appearance: none;
+                  border: 0;
+                  cursor: pointer;
+                  padding: 10px 22px;
+                  border-radius: 10px;
+                  background: var(--primary);
+                  color: var(--primary-foreground);
+                  font: inherit;
+                  font-size: 0.925rem;
+                  font-weight: 600;
+                  transition: opacity 0.15s ease;
+            }
+
+            button:hover {
+                  opacity: 0.9;
+            }
+
+            button:focus-visible {
+                  outline: 2px solid var(--primary);
+                  outline-offset: 2px;
+            }
+
+            code {
+                  display: inline-block;
+                  margin-top: 18px;
+                  color: var(--muted-foreground);
+                  font-family: 'JetBrains Mono', ui-monospace, monospace;
+                  font-size: 0.75rem;
+                  opacity: 0.75;
+            }
+      </style>
+</head>
+<body>
+      <main class="card">
+            <span class="icon" aria-hidden="true">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m2 2 20 20" />
+                        <path d="M5.782 5.782A7 7 0 0 0 9 19h8.5a4.5 4.5 0 0 0 1.307-.193" />
+                        <path d="M21.532 16.5A4.5 4.5 0 0 0 17.5 10h-1.79A7.008 7.008 0 0 0 10 5.07a7.01 7.01 0 0 0-1.08.135" />
+                  </svg>
+            </span>
+            <h1>You're offline</h1>
+            <p>The portfolio needs an internet connection to load. Check your network and try again &mdash; the page will
+                  reconnect automatically.</p>
+            <div class="status" id="status" role="status" aria-live="polite">Waiting for a connection&hellip;</div>
+            <button type="button" id="retry">Try again</button>
+            <br />
+            <code>ERR_INTERNET_DISCONNECTED</code>
+      </main>
+
+      <script>
+            var status = document.getElementById("status");
+            var retry = document.getElementById("retry");
+
+            /* navigator.onLine only reflects OS connectivity — it stays "true"
+                 when the server or DNS is unreachable, which caused reload loops.
+                 A cross-origin probe (not intercepted by the service worker) is
+                 the source of truth for whether the network actually works. */
+            var PROBE_URL = "https://www.gstatic.com/generate_204";
+
+            var probe = function () {
+                  return fetch(PROBE_URL, { mode: "no-cors", cache: "no-store" })
+                        .then(function () { return true; })
+                        .catch(function () { return false; });
+            };
+
+            var check = function () {
+                  probe().then(function (online) {
+                        if (online) {
+                              status.textContent = "Back online — reloading…";
+                              location.reload();
+                        } else {
+                              status.textContent = "Waiting for a connection…";
+                        }
+                  });
+            };
+
+            status.textContent = "Checking connection…";
+            check();
+            window.addEventListener("online", check);
+            setInterval(check, 5000);
+
+            retry.addEventListener("click", function () {
+                  status.textContent = "Reconnecting…";
+                  location.reload();
+            });
+      </script>
+</body>
+</html>

@@ -4,11 +4,27 @@ const API_BASE_URL = import.meta.env.DEV ? (import.meta.env.VITE_API_BASE_URL_LO
 
 const apiCache = new Map();
 const pendingRequests = new Map();
+const MAX_CLIENT_CACHE_ENTRIES = 120;
 
 const getCacheKey = (config) => {
       const url = config.url || "";
       const params = config.params ? JSON.stringify(config.params) : "";
-      return `${config.method}:${url}?${params}`;
+      return `${config.baseURL || ""}:${config.method}:${url}?${params}`;
+};
+
+const pruneClientCache = () => {
+      while (apiCache.size > MAX_CLIENT_CACHE_ENTRIES) {
+            const oldestKey = apiCache.keys().next().value;
+            apiCache.delete(oldestKey);
+      }
+};
+
+const isCacheableRequest = (config) => {
+      if (config.cache === false) return false;
+      if (config.cache === true) return true;
+      // Default: only anonymous public content is cached. Admin/authenticated
+      // GET responses must never be served from a shared client cache.
+      return String(config.url || "").startsWith("/api/v1/public/");
 };
 
 const api = axios.create({
@@ -17,7 +33,7 @@ const api = axios.create({
             'Content-Type': 'application/json',
       },
       withCredentials: true,
-      timeout: 30000,
+      timeout: 15000,
       maxRedirects: 5,
       maxContentLength: 50 * 1024 * 1024,
 });
@@ -37,26 +53,31 @@ api.defaults.adapter = async (config) => {
             return defaultAdapter(config);
       }
 
-      if (method !== 'get' || config.cache === false) {
+      if (method !== 'get') {
             return defaultAdapter(config);
       }
 
       const key = getCacheKey(config);
-      const cached = apiCache.get(key);
+      const cacheable = isCacheableRequest(config);
+      const allowDedupe = config.cache !== false;
       const now = Date.now();
-      const ttl = config.ttl || 5 * 60 * 1000; 
+      const ttl = config.ttl || 5 * 60 * 1000;
 
-      if (cached && (now - cached.timestamp < ttl)) {
-            return {
-                  data: cached.data,
-                  status: 200,
-                  statusText: 'OK',
-                  headers: { 'x-client-cache': 'HIT' },
-                  config,
-            };
+      if (cacheable) {
+            const cached = apiCache.get(key);
+            if (cached && (now - cached.timestamp < ttl)) {
+                  return {
+                        data: cached.data,
+                        status: 200,
+                        statusText: 'OK',
+                        headers: { 'x-client-cache': 'HIT' },
+                        config,
+                  };
+            }
+            if (cached) apiCache.delete(key);
       }
 
-      if (pendingRequests.has(key)) {
+      if (allowDedupe && pendingRequests.has(key)) {
             const response = await pendingRequests.get(key);
             return {
                   ...response,
@@ -65,34 +86,88 @@ api.defaults.adapter = async (config) => {
       }
 
       const requestPromise = defaultAdapter(config);
-      pendingRequests.set(key, requestPromise);
+      if (allowDedupe) pendingRequests.set(key, requestPromise);
 
       try {
             const response = await requestPromise;
-            apiCache.set(key, {
-                  data: response.data,
-                  timestamp: Date.now(),
-            });
+            if (cacheable && response.status >= 200 && response.status < 300) {
+                  apiCache.set(key, {
+                        data: response.data,
+                        timestamp: Date.now(),
+                  });
+                  pruneClientCache();
+            }
             return response;
       } finally {
-            pendingRequests.delete(key);
+            if (allowDedupe) pendingRequests.delete(key);
       }
 };
 
 export const publicEndpoints = {
       initialData: '/api/v1/public/initial-data',
+      hero: '/api/v1/public/hero',
+      about: '/api/v1/public/about',
+      education: '/api/v1/public/education',
+      skills: '/api/v1/public/skills',
+      featuredProjects: '/api/v1/public/featured-projects',
+      projects: '/api/v1/public/projects',
+      services: '/api/v1/public/services',
+      contact: '/api/v1/public/contact',
 };
 
-export const fetchPublicInitialData = async () => {
+const getPublicData = async (url, { signal, params, ttl = 5 * 60 * 1000, cache = true } = {}) => {
       try {
-            const response = await api.get(publicEndpoints.initialData);
-            return {
-                  data: response.data?.data ?? response.data
-            };
+            const response = await api.get(url, {
+                  signal,
+                  params,
+                  cache,
+                  ttl,
+                  timeout: 10000,
+            });
+            return response.data?.data ?? response.data;
       } catch (error) {
             throw error.response?.data || error;
       }
 };
+
+// Kept for backward compatibility. The homepage no longer calls this.
+export const fetchPublicInitialData = async () => ({
+      data: await getPublicData(publicEndpoints.initialData, { ttl: 5 * 60 * 1000 }),
+});
+
+export const fetchPublicHero = ({ signal, cache = true } = {}) =>
+      getPublicData(publicEndpoints.hero, { signal, cache, ttl: 2 * 60 * 1000 });
+
+export const fetchPublicAbout = ({ signal, cache = true } = {}) =>
+      getPublicData(publicEndpoints.about, { signal, cache });
+
+export const fetchPublicEducation = ({ signal, cache = true } = {}) =>
+      getPublicData(publicEndpoints.education, { signal, cache });
+
+export const fetchPublicSkills = ({ signal, cache = true } = {}) =>
+      getPublicData(publicEndpoints.skills, { signal, cache });
+
+export const fetchPublicFeaturedProjects = ({ signal, cache = true } = {}) =>
+      getPublicData(publicEndpoints.featuredProjects, { signal, cache, ttl: 2 * 60 * 1000 });
+
+export const fetchPublicProjects = async ({ page = 1, limit = 9, signal, cache = true } = {}) => {
+      const data = await getPublicData(publicEndpoints.projects, {
+            signal,
+            params: { page, limit },
+            cache,
+            ttl: 60 * 1000,
+      });
+      return {
+            items: Array.isArray(data?.items) ? data.items : [],
+            pagination: data?.pagination || { page, limit, total: 0, totalPages: 0, hasNext: false, hasPrev: false },
+      };
+};
+
+export const fetchPublicServices = ({ signal, cache = true } = {}) =>
+      getPublicData(publicEndpoints.services, { signal, cache });
+
+export const fetchPublicContact = ({ signal, cache = true } = {}) =>
+      getPublicData(publicEndpoints.contact, { signal, cache });
 
 // Admin authentication endpoints
 export const adminAuthEndpoints = {
@@ -658,6 +733,10 @@ api.interceptors.request.use(
 api.interceptors.response.use(
       (response) => response,
       (error) => {
+            if (axios.isCancel(error) || error.code === 'ERR_CANCELED') {
+                  return Promise.reject(error);
+            }
+
             console.error('API Response Error:', {
                   status: error.response?.status,
                   message: error.response?.data?.message || error.message,
@@ -665,12 +744,12 @@ api.interceptors.response.use(
             });
 
             // Handle 401 Unauthorized
-            if (error.response?.status === 401) {
+            if (error.response?.status === 401 && !String(error.config?.url || '').includes('/public/')) {
                   localStorage.removeItem('adminToken');
                   localStorage.removeItem('adminUser');
                   // Only redirect if not already on login page
                   if (!window.location.pathname.includes('/login')) {
-                        window.location.href = '/admin/login';
+                        window.location.href = '/auth/login';
                   }
             }
 

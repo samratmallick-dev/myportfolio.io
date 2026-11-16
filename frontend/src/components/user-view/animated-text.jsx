@@ -5,9 +5,12 @@ const AnimatedText = ({ texts, className = "" }) => {
       const [currentText, setCurrentText] = useState("");
       const [isDeleting, setIsDeleting] = useState(false);
 
+      const safeTexts = Array.isArray(texts) && texts.length > 0 ? texts : null;
+
       useEffect(() => {
+            if (!safeTexts) return;
             const timeout = setTimeout(() => {
-                  const fullText = texts[currentIndex];
+                  const fullText = safeTexts[currentIndex % safeTexts.length];
 
                   if (!isDeleting) {
                         setCurrentText(fullText.substring(0, currentText.length + 1));
@@ -20,13 +23,15 @@ const AnimatedText = ({ texts, className = "" }) => {
 
                         if (currentText === "") {
                               setIsDeleting(false);
-                              setCurrentIndex((prev) => (prev + 1) % texts.length);
+                              setCurrentIndex((prev) => (prev + 1) % safeTexts.length);
                         }
                   }
             }, isDeleting ? 100 : 150);
 
             return () => clearTimeout(timeout);
-      }, [currentText, currentIndex, isDeleting, texts]);
+      }, [currentText, currentIndex, isDeleting, safeTexts]);
+
+      if (!safeTexts) return <span className={`${className} typing-animation`} />;
 
       return (
             <span className={`${className} typing-animation`}>

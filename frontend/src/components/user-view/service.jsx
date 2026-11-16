@@ -1,22 +1,28 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 import ServiceCard from './service-card';
-import * as Icons from 'lucide-react';
 import ServicesSkeleton from '../loaders/ServicesSkeleton';
+import SectionError from '../loaders/SectionError';
+import { useLazySection } from '@/hooks/useLazySection';
+import { getIconComponent } from '@/config/iconRegistry';
 
 const MyServices = () => {
-      const { services, isLoading } = useSelector((state) => state.public);
+      const { ref, data: services, status, isLoading, isError, error, retry } = useLazySection('services');
+
+      const items = Array.isArray(services) ? services : [];
+      const showSkeleton = isLoading || status === 'idle';
 
       return (
-            <section id="services" className="py-20">
+            <section ref={ref} id="services" className="py-20">
                   <div className="container mx-auto px-4">
                         <h2 className="text-4xl font-bold text-center mb-12 text-gradient">My Services</h2>
                         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
-                              {isLoading ? (
+                              {showSkeleton ? (
                                     <ServicesSkeleton />
-                              ) : services && services.length > 0 ? (
-                                    services.map((service, index) => {
-                                          const IconComp = service?.icon ? Icons[service.icon] : null;
+                              ) : isError ? (
+                                    <SectionError className="col-span-full" message={error || 'Unable to load services.'} onRetry={retry} />
+                              ) : items.length > 0 ? (
+                                    items.map((service, index) => {
+                                          const IconComp = service?.icon ? getIconComponent(service.icon) : null;
                                           const iconEl = IconComp ? <IconComp className="w-8 h-8 text-primary" /> : null;
                                           return (
                                                 <div
@@ -42,4 +48,4 @@ const MyServices = () => {
       );
 }
 
-export default MyServices;
+export default React.memo(MyServices);

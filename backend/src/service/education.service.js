@@ -15,6 +15,10 @@ class EducationService {
             return educationList;
       }
 
+      async getPublicEducation() {
+            return await educationRepository.findActivePublic();
+      }
+
       async getEducationById(id) {
             const education = await educationRepository.findById(id);
 

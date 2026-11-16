@@ -13,6 +13,14 @@ class ServiceRepository extends BaseRepository {
       async findActive(filter = {}) {
             return await this.model.find({ ...filter, isActive: true }).sort({ createdAt: 1 }).lean();
       }
+
+      async findActivePublic() {
+            return await this.model
+                  .find({ isActive: true })
+                  .select('title description icon features')
+                  .sort({ createdAt: 1 })
+                  .lean();
+      }
 };
 
 export default new ServiceRepository();

@@ -7,7 +7,16 @@ class HeroRepository extends BaseRepository {
       }
 
       async updateOne(filter, updateData) {
-            return await this.model.findOneAndUpdate(filter, updateData, { new: true, runValidators: true, upsert: true });
+            return await this.model.findOneAndUpdate(filter, updateData, { returnDocument: 'after', runValidators: true, upsert: true });
+      }
+
+      // Only the fields the public hero needs. Keeps the payload small and
+      // avoids transmitting admin/bookkeeping fields to anonymous visitors.
+      async findActivePublic() {
+            return await this.model
+                  .findOne({ isActive: true })
+                  .select('name title description resumeLink profileImage')
+                  .lean();
       }
 }
 

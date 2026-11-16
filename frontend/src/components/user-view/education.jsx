@@ -1,29 +1,37 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { ExternalLink } from 'lucide-react';
 import EducationSkeleton from '../loaders/EducationSkeleton';
+import SectionError from '../loaders/SectionError';
+import { useLazySection } from '@/hooks/useLazySection';
 
 const MyEducation = () => {
-      const { education, isLoading } = useSelector((state) => state.public);
+      const { ref, data: education, status, isLoading, isError, error, retry } = useLazySection('education');
+
+      const items = Array.isArray(education) ? education : [];
+      const showSkeleton = isLoading || status === 'idle';
 
       return (
-            <section id="education" className="py-20 border-b border-gray-700">
+            <section ref={ref} id="education" className="py-20 border-b border-border">
                   <div className="container mx-auto px-4">
                         <h2 className="text-4xl font-bold text-center mb-12 text-gradient">Education & Certifications</h2>
                         <div className="max-w-4xl mx-auto space-y-8">
-                              {isLoading || !education || education.length === 0 ? (
+                              {showSkeleton ? (
                                     <EducationSkeleton />
+                              ) : isError ? (
+                                    <SectionError message={error || 'Unable to load education.'} onRetry={retry} />
+                              ) : items.length === 0 ? (
+                                    <div className="text-center text-muted-foreground">No education details found.</div>
                               ) : (
-                                    education?.map((item, index) => (
+                                    items.map((item, index) => (
                                           <Card key={item._id || index} className="hover-lift tech-glow animate-slide-up" style={{ animationDelay: `${index * 0.2}s` }}>
                                                 <CardHeader>
                                                       <CardTitle className="flex items-center justify-between">
                                                             <span>{item.title}</span>
                                                             {item.certification && (
-                                                                  <Badge className="hero-gradient text-muted">Certified</Badge>
+                                                                  <Badge className="hero-gradient text-on-gradient">Certified</Badge>
                                                             )}
                                                       </CardTitle>
                                                 </CardHeader>
@@ -55,4 +63,4 @@ const MyEducation = () => {
       );
 };
 
-export default MyEducation;
+export default React.memo(MyEducation);

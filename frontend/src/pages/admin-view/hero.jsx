@@ -121,7 +121,7 @@ const AdminViewHero = () => {
                                                                   >
                                                                         <Button
                                                                               size="lg"
-                                                                              className="hero-gradient text-muted hover:opacity-90 accent-glow"
+                                                                              className="hero-gradient text-on-gradient hover:opacity-90 accent-glow"
                                                                         >
                                                                               <Download className="w-5 h-5 mr-2" />
                                                                               Download Resume

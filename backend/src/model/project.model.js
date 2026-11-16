@@ -122,5 +122,6 @@ const projectSchema = new mongoose.Schema({
 
 projectSchema.index({ isActive: 1, isFeatured: 1, order: 1, createdAt: 1 });
 projectSchema.index({ isActive: 1, createdAt: 1 });
+projectSchema.index({ isActive: 1, order: 1, createdAt: -1 });
 
 export const Project = mongoose.model("Project", projectSchema);

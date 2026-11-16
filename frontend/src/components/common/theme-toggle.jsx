@@ -1,22 +1,13 @@
 import { Moon, Sun } from "lucide-react";
+import { useTheme } from "@/components/common/theme-provider";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
 
 export const ThemeToggle = () => {
-      const [isDark, setIsDark] = useState(false);
-
-      useEffect(() => {
-            const stored = localStorage.getItem("theme");
-            const isDarkMode = stored === "dark" || (!stored && window.matchMedia("(prefers-color-scheme: dark)").matches);
-            setIsDark(isDarkMode);
-            document.documentElement.classList.toggle("dark", isDarkMode);
-      }, []);
+      const { resolvedTheme, setTheme } = useTheme();
+      const isDark = resolvedTheme === "dark";
 
       const toggleTheme = () => {
-            const newTheme = !isDark;
-            setIsDark(newTheme);
-            localStorage.setItem("theme", newTheme ? "dark" : "light");
-            document.documentElement.classList.toggle("dark", newTheme);
+            setTheme(isDark ? "light" : "dark");
       };
 
       return (
@@ -24,9 +15,13 @@ export const ThemeToggle = () => {
                   variant="outline"
                   size="icon"
                   onClick={toggleTheme}
-                  className="bg-background/80 backdrop-blur-sm"
+                  aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+                  title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+                  className="relative bg-background/80 backdrop-blur-sm"
             >
-                  {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                  <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all duration-300 dark:-rotate-90 dark:scale-0" />
+                  <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all duration-300 dark:rotate-0 dark:scale-100" />
+                  <span className="sr-only">Toggle theme</span>
             </Button>
       );
 };

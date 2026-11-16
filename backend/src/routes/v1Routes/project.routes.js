@@ -3,18 +3,19 @@ import projectController from "../../controllers/project.controller.js";
 import { authenticate } from "../../middleware/auth.middleware.js";
 import { validateProject, handleValidationErrors } from "../../middleware/validation.middleware.js";
 import { upload } from "../../middleware/upload.middleware.js";
+import { cacheMiddleware } from "../../middleware/cache.middleware.js";
 
 const router = Router();
 
 router.post("/create-project", authenticate, upload.single("image"), validateProject, handleValidationErrors, projectController.createProject);
-router.get("/get-all-projects", projectController.getAllProjects);
-router.get("/", projectController.getAllProjects); // Standard REST mapping
+router.get("/get-all-projects", cacheMiddleware(60), projectController.getAllProjects);
+router.get("/", cacheMiddleware(60), projectController.getAllProjects); // Standard REST mapping
 router.get("/get-project/:id", projectController.getProjectById);
 router.put("/update-project/:id", authenticate, upload.single("image"), validateProject, handleValidationErrors, projectController.updateProject);
 router.delete("/delete-project/:id", authenticate, projectController.deleteProject);
 router.get("/get-all-projects-admin", authenticate, projectController.getAllProjectsAdmin);
-router.get("/get-featured-projects", projectController.getFeaturedProjects);
+router.get("/get-featured-projects", cacheMiddleware(120), projectController.getFeaturedProjects);
 router.patch("/set-featured-project/:id", authenticate, projectController.setFeaturedProject);
-router.get("/:slug", projectController.getProjectBySlug); // Put at bottom to avoid shadowing standard routes
+router.get("/:slug", cacheMiddleware(120), projectController.getProjectBySlug); // Put at bottom to avoid shadowing standard routes
 
 export default router;

@@ -19,6 +19,10 @@ class SkillService {
             return skillRepository.findAllActive();
       }
 
+      async getPublicCategories() {
+            return skillRepository.findAllActivePublic();
+      }
+
       async getCategoryById(id) {
             const category = await skillRepository.findById(id);
             if (!category) throw ApiError.notFound("Category not found");

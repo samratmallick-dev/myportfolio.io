@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useMemo, useState } from 'react';
+import React, { Fragment, useEffect, useMemo, useCallback, useState } from 'react';
 import CommonForm from '@/components/common/form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -63,18 +63,6 @@ const AdminViewProject = () => {
             }
       }, [featuredProjects]);
 
-      useEffect(() => {
-            if (success) {
-                  toast.success(editMode ? 'Project updated successfully!' : 'Project created successfully!');
-                  dispatch(clearSuccess());
-                  resetForm();
-            }
-            if (error) {
-                  toast.error(error?.message || 'Failed to save project.');
-                  dispatch(clearError());
-            }
-      }, [success, error, dispatch, editMode]);
-
       const handleChange = (name, value) => {
             setFormData((prev) => ({ ...prev, [name]: value }));
       };
@@ -86,17 +74,30 @@ const AdminViewProject = () => {
             setImagePreview(URL.createObjectURL(file));
       };
 
-      const clearImage = () => {
+      const clearImage = useCallback(() => {
             setImageFile(null);
             setImagePreview(null);
-      };
+      }, []);
 
-      const resetForm = () => {
+      const resetForm = useCallback(() => {
             setFormData(initialFormData);
             setEditMode(false);
             setEditId(null);
             clearImage();
-      };
+      }, [clearImage]);
+
+      // Declared after resetForm so the hook dependency list is complete.
+      useEffect(() => {
+            if (success) {
+                  toast.success(editMode ? 'Project updated successfully!' : 'Project created successfully!');
+                  dispatch(clearSuccess());
+                  resetForm();
+            }
+            if (error) {
+                  toast.error(error?.message || 'Failed to save project.');
+                  dispatch(clearError());
+            }
+      }, [success, error, dispatch, editMode, resetForm]);
 
       const parseCommaSeparated = (str) => {
             if (!str) return [];
@@ -229,12 +230,12 @@ const AdminViewProject = () => {
                                                                                     <img
                                                                                           src={item.image.url}
                                                                                           alt={item.title}
-                                                                                          className="w-10 h-10 rounded object-cover border border-white/10 flex-shrink-0"
+                                                                                          className="w-10 h-10 rounded object-cover border border-border flex-shrink-0"
                                                                                     />
                                                                               )}
                                                                               <div className="font-bold">{item.title}</div>
                                                                         </div>
-                                                                        <Badge variant="outline" className={item.status === 'Completed' ? 'bg-green-500/10 text-green-500 border-green-500/30' : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30'}>
+                                                                        <Badge variant="outline" className={item.status === 'Completed' ? 'bg-success/10 text-success border-success/30' : 'bg-warning/10 text-warning border-warning/30'}>
                                                                               {item.status}
                                                                         </Badge>
                                                                   </div>
@@ -249,7 +250,7 @@ const AdminViewProject = () => {
                                                                   <div className="flex flex-wrap gap-2 mt-3">
                                                                         <Button
                                                                               variant={'outline'}
-                                                                              className={'hover:bg-primary/60 text-muted-foreground hover:text-white transition-colors duration-300 ease-out'}
+                                                                              className={'hover:bg-primary hover:text-primary-foreground transition-colors duration-300 ease-out'}
                                                                               onClick={() => handleEdit(item)}
                                                                         >
                                                                               Edit
@@ -283,7 +284,7 @@ const AdminViewProject = () => {
                               </Card>
                               <div className="flex items-center gap-4">
                                     <div className="text-sm text-muted-foreground">Selected Featured: {selectedFeatured.length} / 3</div>
-                                    <Button onClick={saveFeatured} disabled={isLoading} className="ml-auto hero-gradient text-muted hover:opacity-90">Save Featured</Button>
+                                    <Button onClick={saveFeatured} disabled={isLoading} className="ml-auto hero-gradient text-on-gradient hover:opacity-90">Save Featured</Button>
                               </div>
                         </div>
                         <div>
@@ -296,7 +297,7 @@ const AdminViewProject = () => {
                                           <div className="mb-6">
                                                 <Label className="block mb-2 font-medium">Project Image</Label>
                                                 {imagePreview ? (
-                                                      <div className="relative w-full h-48 rounded-lg overflow-hidden border border-white/10 group">
+                                                      <div className="relative w-full h-48 rounded-lg overflow-hidden border border-border group">
                                                             <img
                                                                   src={imagePreview}
                                                                   alt="Project preview"
@@ -305,19 +306,19 @@ const AdminViewProject = () => {
                                                             <button
                                                                   type="button"
                                                                   onClick={clearImage}
-                                                                  className="absolute top-2 right-2 p-1 rounded-full bg-black/60 hover:bg-red-500/80 transition-colors"
+                                                                  className="absolute top-2 right-2 p-1 rounded-full bg-overlay/70 text-on-gradient hover:bg-destructive hover:text-destructive-foreground transition-colors"
                                                             >
-                                                                  <X className="w-4 h-4 text-white" />
+                                                                  <X className="w-4 h-4" />
                                                             </button>
                                                       </div>
                                                 ) : (
                                                       <label
                                                             htmlFor="project-image-upload"
-                                                            className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-white/20 rounded-lg cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors"
+                                                            className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors"
                                                       >
                                                             <ImagePlus className="w-8 h-8 text-muted-foreground mb-2" />
                                                             <p className="text-sm text-muted-foreground">Click to upload project image</p>
-                                                            <p className="text-xs text-muted-foreground/60 mt-1">PNG, JPG, WebP up to 10MB</p>
+                                                            <p className="text-xs text-muted-foreground mt-1">PNG, JPG, WebP up to 10MB</p>
                                                       </label>
                                                 )}
                                                 <input

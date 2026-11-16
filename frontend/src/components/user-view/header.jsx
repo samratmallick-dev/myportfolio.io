@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useMobile } from '../common/useMobileHook';
 import { Menu, X } from 'lucide-react';
 import { ThemeToggle } from '../common/theme-toggle';
@@ -15,17 +15,7 @@ const Header = () => {
 
       const ANIMATION_DURATION = 600;
 
-      const handleNavigateToContact = () => {
-            navigate('/portfolio/contact');
-            if (isMobile && isMenuOpen) {
-                  toggleMenu();
-            }
-            setTimeout(() => {
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-            }, 50);
-      };
-
-      const toggleMenu = () => {
+      const toggleMenu = useCallback(() => {
             if (isMenuOpen) {
                   setIsClosing(true);
                   setTimeout(() => {
@@ -37,7 +27,17 @@ const Header = () => {
                   setShowMenu(true);
                   setIsMenuOpen(true);
             }
-      };
+      }, [isMenuOpen]);
+
+      const handleNavigateToContact = useCallback(() => {
+            navigate('/portfolio/contact');
+            if (isMobile && isMenuOpen) {
+                  toggleMenu();
+            }
+            setTimeout(() => {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 50);
+      }, [navigate, isMobile, isMenuOpen, toggleMenu]);
 
       useEffect(() => {
             if (isMenuOpen) {
@@ -55,13 +55,13 @@ const Header = () => {
             return () => {
                   window.removeEventListener('scroll', handleScroll);
             };
-      }, [isMenuOpen, isMobile]);
+      }, [isMenuOpen, isMobile, toggleMenu]);
 
       return (
-            <header className='w-full border-b bg-background/40 backdrop-blur-lg fixed left-0 right-0 top-0 z-50'>
+            <header className='w-full border-b border-border bg-background/80 backdrop-blur-lg fixed left-0 right-0 top-0 z-50'>
                   <div className='container mx-auto flex items-center justify-between h-20 px-4 md:px-6'>
                         <Link to={'/'} className='flex items-end select-none'>
-                              <span className='text-5xl font-bold text-green-600'>S</span>
+                              <span className='text-5xl font-bold text-brand'>S</span>
                               <span className='font-bold text-3xl'>amrat.</span>
                         </Link>
                         {
@@ -110,7 +110,7 @@ const Header = () => {
                         }
                         {
                               isMobile && showMenu && (
-                                    <div className={`absolute left-0 top-full w-full bg-background/80 shadow-lg border-b
+                                    <div className={`absolute left-0 top-full w-full bg-background/95 backdrop-blur-lg shadow-lg border-b border-border
                                           ${isMenuOpen && !isClosing ? 'animate-slide-up' : ''}
                                           ${!isMenuOpen && isClosing ? 'animate-slide-down' : ''}
                                           z-50`}

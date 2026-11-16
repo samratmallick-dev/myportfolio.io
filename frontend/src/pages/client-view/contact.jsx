@@ -4,14 +4,18 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import ContactDetail from '@/components/user-view/contact-details';
 import { contactFormIndex } from '@/config/allFormIndex';
 import { Facebook, Github, Instagram, Linkedin, Twitter, Youtube, Globe, Mail, Phone } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import profileImage from '@/assets/profileimage.jpg';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
 import { sendMessage } from '@/store/contact.slice';
-import { getPublicInitialData, updatePublicData } from '@/store/public.slice';
+import { updatePublicData } from '@/store/public.slice';
 import { useSocket } from '@/hooks/useSocket';
+import { usePublicSectionData } from '@/hooks/usePublicSectionData';
+import SectionError from '@/components/loaders/SectionError';
+import OptimizedImage from '@/components/common/OptimizedImage';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const initialFormData = {
       name: '',
@@ -22,13 +26,14 @@ const initialFormData = {
 
 const MyContact = () => {
       const dispatch = useDispatch();
-      const { contact: contactDetails, isInitialized } = useSelector((state) => state.public);
       const { messageSubmitting } = useSelector((state) => state.contact);
       const [formData, setFormData] = useState(initialFormData);
 
-      useEffect(() => {
-            if (!isInitialized) dispatch(getPublicInitialData());
-      }, [dispatch, isInitialized]);
+      // Only the contact section is fetched; the rest of the public site is
+      // irrelevant to this route.
+      const { data: contactDetails, isLoading, isIdle, isError, error, retry } = usePublicSectionData("contact", {
+            priority: true,
+      });
 
       useSocket("portfolioUpdated", ({ type, data }) => {
             if (type === "contact") dispatch(updatePublicData({ type, data }));
@@ -78,13 +83,31 @@ const MyContact = () => {
                         </div>
                         <div className='w-full flex flex-col md:flex-row items-center gap-4 mt-8'>
                               <div className='md:w-1/2 w-full flex flex-col items-center justify-center gap-8'>
-                                    <img src={contactDetails?.contactImage?.url || profileImage} alt="Contact" className="w-40 h-40 rounded-full mx-auto border-4 border-primary/20 object-cover" onError={(e) => {e.target.src = profileImage}} />
+                                    <OptimizedImage
+                                          src={contactDetails?.contactImage?.url}
+                                          fallbackSrc={profileImage}
+                                          alt="Contact"
+                                          width="160"
+                                          height="160"
+                                          widths={[160, 240, 320]}
+                                          sizes="160px"
+                                          loading="eager"
+                                          className="w-40 h-40 rounded-full mx-auto border-4 border-primary/20 object-cover"
+                                    />
                                     <Card className="hover-lift tech-glow">
                                           <CardHeader className="text-center text-3xl font-bold text-gradient">
                                                 <CardTitle>Contact & Location</CardTitle>
                                           </CardHeader>
                                           <CardContent className="space-y-4">
-                                                {contactDetails ? (
+                                                {isLoading || isIdle ? (
+                                                      <div className="space-y-4">
+                                                            {[...Array(4)].map((_, index) => (
+                                                                  <Skeleton key={index} className="h-6 w-full" />
+                                                            ))}
+                                                      </div>
+                                                ) : isError ? (
+                                                      <SectionError message={error || 'Unable to load contact details.'} onRetry={retry} />
+                                                ) : contactDetails ? (
                                                       [
                                                             { label: 'Name', value: contactDetails.name || 'Samrat Mallick', link: 'https://myportfolio-io-dusky.vercel.app' },
                                                             { label: 'Email', value: contactDetails.email || 'samratmallick832@gmail.com', link: contactDetails.email ? `mailto:${contactDetails.email}` : `mailto:samratmallick832@gmail.com` },
@@ -104,7 +127,7 @@ const MyContact = () => {
                                                       onClick={() => window.open('https://www.facebook.com/samratmallick.dev/', '_blank')}
                                                       variant="outline"
                                                       size="sm"
-                                                      className="hover:bg-primary text-muted-foreground hover:text-white transition-colors duration-300 ease-out"
+                                                      className="hover:bg-primary hover:text-primary-foreground transition-colors duration-300 ease-out"
                                                 >
                                                       <Facebook className="w-5 h-5 mr-2" />
                                                       Facebook
@@ -113,7 +136,7 @@ const MyContact = () => {
                                                       onClick={() => window.open('https://www.instagram.com/samratmallick.dev/', '_blank')}
                                                       variant="outline"
                                                       size="sm"
-                                                      className="hover:bg-primary text-muted-foreground hover:text-white transition-colors duration-300 ease-out"
+                                                      className="hover:bg-primary hover:text-primary-foreground transition-colors duration-300 ease-out"
                                                 >
                                                       <Instagram className="w-5 h-5 mr-2" />
                                                       Instagram
@@ -122,7 +145,7 @@ const MyContact = () => {
                                                       onClick={() => window.open('https://github.com/samratmallick-dev/', '_blank')}
                                                       variant="outline"
                                                       size="sm"
-                                                      className="hover:bg-primary text-muted-foreground hover:text-white transition-colors duration-300 ease-out"
+                                                      className="hover:bg-primary hover:text-primary-foreground transition-colors duration-300 ease-out"
                                                 >
                                                       <Github className="w-5 h-5 mr-2" />
                                                       GitHub
@@ -131,7 +154,7 @@ const MyContact = () => {
                                                       onClick={() => window.open('https://www.linkedin.com/in/samrat-mallick01', '_blank')}
                                                       variant="outline"
                                                       size="sm"
-                                                      className="hover:bg-primary text-muted-foreground hover:text-white transition-colors duration-300 ease-out"
+                                                      className="hover:bg-primary hover:text-primary-foreground transition-colors duration-300 ease-out"
                                                 >
                                                       <Linkedin className="w-5 h-5 mr-2" />
                                                       LinkedIn
@@ -145,7 +168,7 @@ const MyContact = () => {
                                                                         onClick={() => window.open(item.url, '_blank')}
                                                                         variant="outline"
                                                                         size="sm"
-                                                                        className="hover:bg-primary text-muted-foreground hover:text-white transition-colors duration-300 ease-out"
+                                                                        className="hover:bg-primary hover:text-primary-foreground transition-colors duration-300 ease-out"
                                                                   >
                                                                         <IconComponent className="w-5 h-5 mr-2" />
                                                                         {item.platform}
@@ -157,7 +180,7 @@ const MyContact = () => {
                                     </Card>
                               </div>
                               <div className='md:w-1/2 w-full flex items-center justify-center'>
-                                    <Card className="hover-lift bg-background/30 hover:border-0 tech-glow w-full max-w-lg flex flex-col p-4 md:p-6 lg:p-8">
+                                    <Card className="hover-lift bg-card/80 tech-glow w-full max-w-lg flex flex-col p-4 md:p-6 lg:p-8">
                                           <CardHeader className="text-2xl font-semibold">
                                                 <CardTitle>Send Me a Message</CardTitle>
                                           </CardHeader>

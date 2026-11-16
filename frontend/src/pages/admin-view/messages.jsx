@@ -87,14 +87,14 @@ const AdminMessages = () => {
                                     sortedMessages.map((m) => (
                                           <div
                                                 key={m._id}
-                                                className={`p-4 rounded-lg border transition-colors hover-lift ${m.status === 'unread' ? 'bg-background border-accent/30 hover:tech-glow' : 'card-gradient border-border'
+                                                className={`p-4 rounded-lg border transition-colors hover-lift ${m.status === 'unread' ? 'bg-info/5 border-info/30 hover:tech-glow' : 'card-gradient border-border'
                                                       }`}
                                           >
                                                 <div className="flex items-start justify-between mb-3">
                                                       <div className="flex items-center gap-2">
                                                             <span className="font-semibold text-lg">{m.name}</span>
                                                             {m.status === 'unread' && (
-                                                                  <Badge variant="secondary" className="text-xs bg-accent text-accent-foreground">
+                                                                  <Badge variant="secondary" className="text-xs bg-info text-info-foreground">
                                                                         New
                                                                   </Badge>
                                                             )}

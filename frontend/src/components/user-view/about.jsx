@@ -1,17 +1,25 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 import AboutSkeleton from '../loaders/AboutSkeleton';
+import SectionError from '../loaders/SectionError';
 import OptimizedImage from '../common/OptimizedImage';
+import { useLazySection } from '@/hooks/useLazySection';
 
 const AboutMe = () => {
-      const { about, isLoading } = useSelector((state) => state.public);
+      const { ref, data: about, isLoading, isError, error, retry } = useLazySection('about');
 
-      if (isLoading || !about) {
-            return <AboutSkeleton />;
-      }
-
-      return (
-            <section id="about" className="py-20 border-b border-gray-700 ">
+      let content;
+      if (isLoading || (!about && !isError)) {
+            content = <AboutSkeleton />;
+      } else if (isError) {
+            content = <SectionError message={error || 'Unable to load the about section.'} onRetry={retry} />;
+      } else if (!about) {
+            content = (
+                  <div className="container mx-auto px-4 text-center text-muted-foreground">
+                        About content is not available yet.
+                  </div>
+            );
+      } else {
+            content = (
                   <div className="container mx-auto px-4 flex gap-10 lg:flex-row flex-col items-center">
                         <div className='md:basis-[35%] basis-full mx-auto flex items-center justify-center'>
                               <OptimizedImage
@@ -19,6 +27,8 @@ const AboutMe = () => {
                                     alt="Portrait of Samrat Mallick - About Me"
                                     width="384"
                                     height="384"
+                                    widths={[224, 320, 384, 448]}
+                                    sizes="(min-width: 768px) 384px, 224px"
                                     loading="lazy"
                                     className="md:w-96 md:h-96 w-56 h-56 object-center rounded-full shadow-lg border-4 border-primary/10"
                               />
@@ -30,6 +40,12 @@ const AboutMe = () => {
                               </div>
                         </div>
                   </div>
+            );
+      }
+
+      return (
+            <section ref={ref} id="about" className="py-20 border-b border-border ">
+                  {content}
             </section>
       );
 }

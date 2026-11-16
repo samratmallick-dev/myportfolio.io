@@ -10,7 +10,16 @@ class SkillRepository {
       }
 
       async findAllActive() {
-            return Skill.find({ isActive: true });
+            return Skill.find({ isActive: true })
+                  .select('category skills')
+                  .lean();
+      }
+
+      async findAllActivePublic() {
+            return Skill.find({ isActive: true })
+                  .select('category skills')
+                  .sort({ createdAt: 1 })
+                  .lean();
       }
 
       async findById(id) {
@@ -25,7 +34,7 @@ class SkillRepository {
             return Skill.findByIdAndUpdate(
                   categoryId,
                   { $push: { skills: skillData } },
-                  { new: true }
+                  { returnDocument: 'after' }
             );
       }
 
@@ -40,7 +49,7 @@ class SkillRepository {
                               "skills.$.iconColor": skillData.iconColor,
                         },
                   },
-                  { new: true }
+                  { returnDocument: 'after' }
             );
       }
 
@@ -52,7 +61,7 @@ class SkillRepository {
                               skills: { _id: skillId },
                         },
                   },
-                  { new: true }
+                  { returnDocument: 'after' }
             );
       }
 };

@@ -24,4 +24,6 @@ const aboutSchema = new mongoose.Schema({
       timestamps: true,
 });
 
+aboutSchema.index({ isActive: 1 });
+
 export const About = mongoose.model("About", aboutSchema);

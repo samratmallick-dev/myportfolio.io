@@ -32,4 +32,6 @@ const educationSchema = new mongoose.Schema({
       timestamps: true,
 });
 
+educationSchema.index({ isActive: 1, createdAt: -1 });
+
 export const Education = mongoose.model("Education", educationSchema);

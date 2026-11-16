@@ -36,7 +36,7 @@ const AdminLayout = () => {
                   </div>
 
                   {isMobile && isSidebarOpen && (
-                        <div className="fixed inset-0 bg-black/60 z-10" onClick={() => setSidebarOpen(false)}></div>
+                        <div className="fixed inset-0 bg-overlay/60 z-10" onClick={() => setSidebarOpen(false)}></div>
                   )}
             </div>
       );

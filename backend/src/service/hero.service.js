@@ -46,6 +46,16 @@ class HeroService {
             return heroContent;
       }
 
+      async getPublicHeroContent() {
+            const heroContent = await heroRepository.findActivePublic();
+
+            if (!heroContent) {
+                  throw ApiError.notFound("Hero content not found");
+            }
+
+            return heroContent;
+      }
+
       async getHeroContentById(id) {
             const heroContent = await heroRepository.findById(id);
 

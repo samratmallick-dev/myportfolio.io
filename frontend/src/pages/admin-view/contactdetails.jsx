@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { adminContactFormIndex, socialLinkFormControls } from '@/config/allFormIndex';
-import { addUpdateContactDetails, getContactDetails, resetMessageState } from '@/store/contact.slice';
+import { addUpdateContactDetails, getContactDetails } from '@/store/contact.slice';
 import { Mail, MapPin, Phone, UserRound, Plus, Trash2 } from 'lucide-react';
 
 const initialFormData = {
@@ -202,7 +202,7 @@ const AdminViewContactDetails = () => {
                                                                         type="button"
                                                                         onClick={addSocialLink}
                                                                         size="sm"
-                                                                        className="flex items-center gap-2 hero-gradient text-muted"
+                                                                        className="flex items-center gap-2 hero-gradient text-on-gradient"
                                                                   >
                                                                         <Plus className="h-4 w-4" />
                                                                         Add Link

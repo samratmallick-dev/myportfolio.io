@@ -4,9 +4,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getProjectBySlugThunk } from '@/store/project.slice';
 import PageLoader from '@/components/common/PageLoader';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Github, ExternalLink, Calendar, Tag, CheckCircle2, Layers, Cpu, Code2, Rocket } from 'lucide-react';
+import { ArrowLeft, Github, ExternalLink, Calendar, Tag, CheckCircle2, Layers, Cpu, Code2, Rocket, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import OptimizedImage from '@/components/common/OptimizedImage';
 import { Helmet } from 'react-helmet-async';
 
 const sectionVariants = {
@@ -32,10 +33,10 @@ const ProjectDetails = () => {
 
       if (error || !currentProject) {
             return (
-                  <div className="min-h-screen flex flex-col items-center justify-center text-white bg-[#000511]">
+                  <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground">
                         <h2 className="text-2xl font-bold mb-4">Project Not Found</h2>
                         <Link to="/projects">
-                              <Button variant="outline" className="border-primary text-primary hover:bg-primary/10">
+                              <Button variant="outline">
                                     Return to Projects
                               </Button>
                         </Link>
@@ -64,7 +65,7 @@ const ProjectDetails = () => {
       const techArray = Array.isArray(technologies) ? technologies : [];
 
       return (
-            <div className="min-h-screen bg-[#000511] text-white pt-28 pb-20 selection:bg-primary/30">
+            <div className="min-h-screen bg-background text-foreground pt-28 pb-20">
                   <Helmet>
                         <title>{title} | Samrat Mallick Portfolio</title>
                         <meta name="description" content={shortDescription || description} />
@@ -73,7 +74,7 @@ const ProjectDetails = () => {
                   </Helmet>
                   {/* Hero Section */}
                   <div className="container mx-auto px-4 lg:px-8 mb-16 relative">
-                        <Link to="/projects" className="inline-flex items-center text-muted-foreground hover:text-white transition-colors mb-8 group">
+                        <Link to="/projects" className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors mb-8 group">
                               <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
                               Back to Projects
                         </Link>
@@ -86,36 +87,36 @@ const ProjectDetails = () => {
                         >
                               <div className="flex flex-wrap items-center gap-4 mb-6">
                                     {category && (
-                                          <Badge className="bg-primary/20 text-primary hover:bg-primary/30 border-none px-3 py-1">
+                                          <Badge className="bg-primary/10 text-primary hover:bg-primary/20 border border-primary/25 px-3 py-1">
                                                 <Tag className="w-3 h-3 mr-2" />
                                                 {category}
                                           </Badge>
                                     )}
                                     {year && (
-                                          <Badge variant="outline" className="border-white/10 text-gray-400 px-3 py-1">
+                                          <Badge variant="outline" className="px-3 py-1">
                                                 <Calendar className="w-3 h-3 mr-2" />
                                                 {year}
                                           </Badge>
                                     )}
                                     {status && (
-                                          <Badge variant="outline" className="border-white/10 text-gray-400 px-3 py-1">
+                                          <Badge variant="outline" className="px-3 py-1">
                                                 {status}
                                           </Badge>
                                     )}
                               </div>
                               
-                              <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+                              <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight text-gradient">
                                     {title}
                               </h1>
                               
-                              <p className="text-xl md:text-2xl text-gray-300 leading-relaxed mb-8 max-w-3xl">
+                              <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed mb-8 max-w-3xl">
                                     {shortDescription || description}
                               </p>
 
                               <div className="flex flex-wrap gap-4">
                                     {liveUrl && (
                                           <Link to={liveUrl} target="_blank" rel="noopener noreferrer">
-                                                <Button className="hero-gradient hover:opacity-90 transition-opacity">
+                                                <Button className="hover:opacity-90 transition-opacity">
                                                       <ExternalLink className="w-4 h-4 mr-2" />
                                                       View Live Project
                                                 </Button>
@@ -123,7 +124,7 @@ const ProjectDetails = () => {
                                     )}
                                     {githubUrl && (
                                           <Link to={githubUrl} target="_blank" rel="noopener noreferrer">
-                                                <Button variant="outline" className="border-white/20 hover:bg-white/10">
+                                                <Button variant="outline">
                                                       <Github className="w-4 h-4 mr-2" />
                                                       View Source Code
                                                 </Button>
@@ -140,11 +141,17 @@ const ProjectDetails = () => {
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.6, delay: 0.2 }}
-                                    className="w-full rounded-2xl overflow-hidden border border-white/10 max-h-[500px]"
+                                    className="w-full rounded-2xl overflow-hidden border border-border max-h-[500px]"
                               >
-                                    <img
+                                    <OptimizedImage
                                           src={image.url}
                                           alt={title}
+                                          width="1600"
+                                          height="900"
+                                          widths={[800, 1200, 1600]}
+                                          sizes="(min-width: 1280px) 1024px, 100vw"
+                                          loading="eager"
+                                          fetchPriority="high"
                                           className="w-full h-full object-cover"
                                     />
                               </motion.div>
@@ -168,7 +175,7 @@ const ProjectDetails = () => {
                                                 <Layers className="w-6 h-6 mr-3 text-primary" />
                                                 About The Project
                                           </h2>
-                                          <div className="prose prose-invert prose-lg max-w-none text-gray-300">
+                                          <div className="max-w-none text-muted-foreground">
                                                 <p className="leading-loose whitespace-pre-line">{description}</p>
                                           </div>
                                     </motion.section>
@@ -187,8 +194,8 @@ const ProjectDetails = () => {
                                                 </h2>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                       {features.map((feature, idx) => (
-                                                            <div key={idx} className="bg-white/5 border border-white/10 rounded-xl p-5 hover:bg-white/10 transition-colors">
-                                                                  <p className="text-gray-200">{feature}</p>
+                                                            <div key={idx} className="bg-card border border-border rounded-xl p-5 hover:bg-muted/60 transition-colors">
+                                                                  <p className="text-card-foreground">{feature}</p>
                                                             </div>
                                                       ))}
                                                 </div>
@@ -213,7 +220,7 @@ const ProjectDetails = () => {
                                                                   <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-sm">
                                                                         {idx + 1}
                                                                   </div>
-                                                                  <p className="text-gray-300 mt-1 leading-relaxed">{step}</p>
+                                                                  <p className="text-muted-foreground mt-1 leading-relaxed">{step}</p>
                                                             </div>
                                                       ))}
                                                 </div>
@@ -231,10 +238,13 @@ const ProjectDetails = () => {
                                           >
                                                 {challenges.length > 0 && (
                                                       <div>
-                                                            <h2 className="text-2xl font-semibold mb-6 text-red-400">Challenges</h2>
+                                                            <h2 className="text-2xl font-semibold mb-6 flex items-center text-destructive">
+                                                                  <AlertTriangle className="w-6 h-6 mr-3" />
+                                                                  Challenges
+                                                            </h2>
                                                             <ul className="space-y-3">
                                                                   {challenges.map((challenge, idx) => (
-                                                                        <li key={idx} className="text-gray-300 bg-red-500/5 border border-red-500/10 rounded-lg p-4">
+                                                                        <li key={idx} className="text-foreground bg-destructive/10 border border-destructive/25 rounded-lg p-4">
                                                                               {challenge}
                                                                         </li>
                                                                   ))}
@@ -243,13 +253,13 @@ const ProjectDetails = () => {
                                                 )}
                                                 {results.length > 0 && (
                                                       <div>
-                                                            <h2 className="text-2xl font-semibold mb-6 flex items-center text-green-400">
+                                                            <h2 className="text-2xl font-semibold mb-6 flex items-center text-success">
                                                                   <Rocket className="w-6 h-6 mr-3" />
                                                                   Outcomes
                                                             </h2>
                                                             <ul className="space-y-3">
                                                                   {results.map((result, idx) => (
-                                                                        <li key={idx} className="text-gray-300 bg-green-500/5 border border-green-500/10 rounded-lg p-4">
+                                                                        <li key={idx} className="text-foreground bg-success/10 border border-success/25 rounded-lg p-4">
                                                                               {result}
                                                                         </li>
                                                                   ))}
@@ -268,15 +278,15 @@ const ProjectDetails = () => {
                                           whileInView="visible"
                                           viewport={{ once: true }}
                                           variants={sectionVariants}
-                                          className="bg-white/[0.02] border border-white/10 rounded-2xl p-6 backdrop-blur-sm"
+                                          className="bg-card border border-border rounded-2xl p-6 backdrop-blur-sm"
                                     >
-                                          <h3 className="text-lg font-semibold mb-4 flex items-center border-b border-white/10 pb-4">
+                                          <h3 className="text-lg font-semibold mb-4 flex items-center border-b border-border pb-4">
                                                 <Cpu className="w-5 h-5 mr-2 text-primary" />
                                                 Technologies Used
                                           </h3>
                                           <div className="flex flex-wrap gap-2 mt-4">
                                                 {techArray.map((tech, idx) => (
-                                                      <Badge key={idx} variant="secondary" className="bg-white/5 text-gray-200 hover:bg-white/10 border-none py-1.5 px-3">
+                                                      <Badge key={idx} variant="secondary" className="py-1.5 px-3">
                                                             {tech}
                                                       </Badge>
                                                 ))}
@@ -290,12 +300,12 @@ const ProjectDetails = () => {
                                                 whileInView="visible"
                                                 viewport={{ once: true }}
                                                 variants={sectionVariants}
-                                                className="bg-white/[0.02] border border-white/10 rounded-2xl p-6 backdrop-blur-sm"
+                                                className="bg-card border border-border rounded-2xl p-6 backdrop-blur-sm"
                                           >
-                                                <h3 className="text-lg font-semibold mb-4 border-b border-white/10 pb-4">
+                                                <h3 className="text-lg font-semibold mb-4 border-b border-border pb-4">
                                                       Architecture
                                                 </h3>
-                                                <ul className="space-y-3 mt-4 text-gray-300 text-sm">
+                                                <ul className="space-y-3 mt-4 text-muted-foreground text-sm">
                                                       {architecture.map((item, idx) => (
                                                             <li key={idx} className="flex items-start">
                                                                   <span className="text-primary mr-2">•</span>

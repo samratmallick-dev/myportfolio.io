@@ -79,7 +79,7 @@ const AdminViewSkills = () => {
             e.preventDefault();
             const selectedCategory = categories.find(cat => cat.category === skillFormData.category);
             if (selectedCategory) {
-                  const { category, ...skillDetails } = skillFormData;
+                  const { category: _category, ...skillDetails } = skillFormData;
                   dispatch(addSkill({ categoryId: selectedCategory._id, skillData: skillDetails })).then(() => {
                         setSkillFormData(initialSkillFormData);
                   });
