@@ -165,7 +165,7 @@ const Hero = ({
           <div className="
             relative
             shrink-0
-            w-56 sm:w-64 md:w-72 lg:w-80
+            w-56 sm:w-64 md:w-80 lg:w-96
             max-w-full
             mx-auto
             mb-6 sm:mb-8
@@ -178,17 +178,17 @@ const Hero = ({
             animate-float
             [&>*]:block [&>*]:h-full [&>*]:w-full
             [&_img]:h-full [&_img]:w-full
-            [&_img]:object-cover [&_img]:object-center
+            [&_img]:object-cover [&_img]:object-top
           ">
             <OptimizedImage
               src={data?.profileImage?.url}
               alt={`${data?.name || 'Samrat Mallick'} - Full Stack Developer`}
-              width="320"
-              height="320"
-              widths={[224, 256, 288, 320, 448, 640]}
+              width="384"
+              height="384"
+              widths={[224, 256, 320, 384, 448, 768]}
               sizes="
-                (min-width: 1024px) 320px,
-                (min-width: 768px) 288px,
+                (min-width: 1024px) 384px,
+                (min-width: 768px) 320px,
                 (min-width: 640px) 256px,
                 224px
               "
