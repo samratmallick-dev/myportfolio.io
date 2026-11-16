@@ -229,41 +229,48 @@ const MyContact = () => {
             w-full
             flex flex-col
             items-center
-            gap-8
+            gap-6 sm:gap-8
           ">
 
-            {/* Contact Profile Image */}
+            {/* Contact Profile Image
+                Same frame as the About and Hero profile images:
+                same sizes, border and shadow, with the wrapper and the
+                image both filling the circle. */}
             <div className="
-              relative
-              w-36 h-36
-              sm:w-40 sm:h-40
+              relative shrink-0
+              w-56 sm:w-64 md:w-80 lg:w-96
+              max-w-full
+              mx-auto
               aspect-square
               overflow-hidden
               rounded-full
-              border-4 border-primary/20
-              ring-4 ring-primary/10
+              border-[3px] border-primary/20
               shadow-xl
-              mx-auto
+              [&>*]:block [&>*]:h-full [&>*]:w-full
+              [&_img]:h-full [&_img]:w-full
+              [&_img]:object-cover [&_img]:object-bottom
+              [&_img]:origin-bottom [&_img]:scale-[1.12]
             ">
               <OptimizedImage
                 src={contactDetails?.contactImage?.url}
                 fallbackSrc={profileImage}
                 alt="Samrat Mallick - Contact Profile"
-                width="160"
-                height="160"
-                widths={[144, 160, 240, 320]}
+                width="384"
+                height="384"
+                widths={[224, 256, 320, 384, 448]}
                 sizes="
-                  (min-width: 640px) 160px,
-                  144px
+                  (min-width: 1024px) 384px,
+                  (min-width: 768px) 320px,
+                  (min-width: 640px) 256px,
+                  224px
                 "
                 loading="lazy"
                 decoding="async"
                 className="
                   block
-                  w-full h-full
+                  h-full w-full
                   rounded-full
                   object-cover
-                  object-center
                 "
               />
             </div>
