@@ -90,7 +90,7 @@ const AboutMe = () => {
                 block
                 w-full h-full
                 rounded-full
-                object-cover
+                object-fill
                 object-center
               "
             />
