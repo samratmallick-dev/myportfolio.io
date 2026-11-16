@@ -54,49 +54,44 @@ const AboutMe = () => {
       ">
 
         {/* Profile Image */}
-        <div className="
-          w-full
-          lg:flex-[0_0_35%]
-          flex items-center justify-center
-          shrink-0
-        ">
-          <div className="
-            relative
-            w-56 h-56
-            sm:w-64 sm:h-64
-            md:w-80 md:h-80
-            lg:w-96 lg:h-96
-            aspect-square
-            overflow-hidden
-            rounded-full
-            border-[3px] border-primary/20
-            shadow-xl
-          ">
-            <OptimizedImage
-              src={about?.aboutImage?.url}
-              alt="Portrait of Samrat Mallick - Full Stack Developer"
-              width={384}
-              height={384}
-              widths={[224, 256, 320, 384, 448]}
-              sizes="
-                (min-width: 1024px) 384px,
-                (min-width: 768px) 320px,
-                (min-width: 640px) 256px,
-                224px
-              "
-              loading="lazy"
-              decoding="async"
-              className="
-                block
-                w-full h-full
-                rounded-full
-                object-fill
-                object-center
-              "
-            />
-          </div>
-        </div>
-
+<div className="
+  flex justify-center
+  w-full lg:w-auto
+  lg:flex-[0_0_35%]
+  shrink-0
+">
+  <div className="
+    relative shrink-0
+    w-56 sm:w-64 md:w-80 lg:w-96
+    max-w-full
+    aspect-square
+    overflow-hidden
+    rounded-full
+    border-[3px] border-primary/20
+    shadow-xl
+    [&>*]:h-full [&>*]:w-full
+    [&_img]:h-full [&_img]:w-full
+    [&_img]:object-cover [&_img]:object-center
+  ">
+    <OptimizedImage
+      src={about?.aboutImage?.url}
+      alt="Portrait of Samrat Mallick - Full Stack Developer"
+      width={384}
+      height={384}
+      widths={[224, 256, 320, 384, 448]}
+      sizes="
+        (min-width: 1024px) 384px,
+        (min-width: 768px) 320px,
+        (min-width: 640px) 256px,
+        224px
+      "
+      loading="lazy"
+      decoding="async"
+      className="block h-full w-full rounded-full object-cover object-center"
+    />
+  </div>
+</div>
+        
         {/* About Information */}
         <div className="
           w-full
