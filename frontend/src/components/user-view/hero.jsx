@@ -180,7 +180,6 @@ const Hero = ({
             [&_img]:h-full [&_img]:w-full
             [&_img]:object-cover [&_img]:object-bottom
             [&_img]:origin-bottom [&_img]:scale-[1.12]
-            md:[&_img]:object-top md:[&_img]:scale-100
           ">
             <OptimizedImage
               src={data?.profileImage?.url}
