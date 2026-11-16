@@ -164,7 +164,8 @@ const Hero = ({
           {/* Profile Image */}
           <div className="
             relative
-            w-48 sm:w-56 md:w-60
+            shrink-0
+            w-56 sm:w-64 md:w-72 lg:w-80
             max-w-full
             mx-auto
             mb-6 sm:mb-8
@@ -172,24 +173,24 @@ const Hero = ({
             aspect-square
             rounded-full
             overflow-hidden
-            border-4 border-primary/20
-            ring-4 ring-primary/10
-            shadow-2xl
+            border-[3px] border-primary/20
+            shadow-xl
             animate-float
             [&>*]:block [&>*]:h-full [&>*]:w-full
             [&_img]:h-full [&_img]:w-full
-            [&_img]:object-cover [&_img]:object-top
+            [&_img]:object-cover [&_img]:object-center
           ">
             <OptimizedImage
               src={data?.profileImage?.url}
               alt={`${data?.name || 'Samrat Mallick'} - Full Stack Developer`}
-              width="240"
-              height="240"
-              widths={[192, 224, 240, 320, 480]}
+              width="320"
+              height="320"
+              widths={[224, 256, 288, 320, 448, 640]}
               sizes="
-                (min-width: 768px) 240px,
-                (min-width: 640px) 224px,
-                192px
+                (min-width: 1024px) 320px,
+                (min-width: 768px) 288px,
+                (min-width: 640px) 256px,
+                224px
               "
               loading="eager"
               fetchPriority="high"
