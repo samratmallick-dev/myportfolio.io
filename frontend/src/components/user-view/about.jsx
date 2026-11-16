@@ -44,15 +44,19 @@ const AboutMe = () => {
   else {
     content = (
       <div className="
-        container mx-auto px-4
+        container mx-auto
+        w-full max-w-7xl
+        px-4 sm:px-6 lg:px-8
         flex flex-col lg:flex-row
-        items-center justify-center
-        gap-10 lg:gap-16
+        items-center
+        justify-center
+        gap-8 sm:gap-10 lg:gap-14
       ">
 
         {/* Profile Image */}
         <div className="
-          w-full lg:w-[38%]
+          w-full
+          lg:flex-[0_0_35%]
           flex items-center justify-center
           shrink-0
         ">
@@ -65,15 +69,14 @@ const AboutMe = () => {
             aspect-square
             overflow-hidden
             rounded-full
-            border-4 border-primary/20
-            ring-4 ring-primary/5
-            shadow-2xl
+            border-[3px] border-primary/20
+            shadow-xl
           ">
             <OptimizedImage
               src={about?.aboutImage?.url}
-              alt="Samrat Mallick - Full Stack Developer"
-              width="384"
-              height="384"
+              alt="Portrait of Samrat Mallick - Full Stack Developer"
+              width={384}
+              height={384}
               widths={[224, 256, 320, 384, 448]}
               sizes="
                 (min-width: 1024px) 384px,
@@ -87,7 +90,8 @@ const AboutMe = () => {
                 block
                 w-full h-full
                 rounded-full
-                object-cover object-center
+                object-cover
+                object-center
               "
             />
           </div>
@@ -95,24 +99,28 @@ const AboutMe = () => {
 
         {/* About Information */}
         <div className="
-          w-full lg:w-[62%]
+          w-full
+          min-w-0
+          lg:flex-1
           flex flex-col
           items-center lg:items-start
           text-center lg:text-left
         ">
 
+          {/* Section Heading */}
           <h2 className="
             text-3xl
             sm:text-4xl
             md:text-5xl
             font-bold
-            mb-6
+            mb-4 sm:mb-5
             text-gradient
             animate-slide-up
           ">
             About Me
           </h2>
 
+          {/* About Description */}
           <div className="
             w-full max-w-3xl
             text-base sm:text-lg md:text-xl
@@ -124,6 +132,7 @@ const AboutMe = () => {
               text-left
               whitespace-pre-line
               break-words
+              [overflow-wrap:anywhere]
             ">
               {about?.paragraphs}
             </p>
@@ -140,9 +149,11 @@ const AboutMe = () => {
       id="about"
       className="
         relative
-        py-16 sm:py-20 lg:py-24
+        w-full
+        py-10 sm:py-14 lg:py-20
         border-b border-border
         overflow-hidden
+        scroll-mt-20
       "
     >
       {content}
