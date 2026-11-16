@@ -185,7 +185,7 @@ const Hero = ({
               alt={`${data?.name || 'Samrat Mallick'} - Full Stack Developer`}
               width="384"
               height="384"
-              widths={[224, 256, 320, 384, 448, 768]}
+              widths={[224, 256, 320, 384, 448]}
               sizes="
                 (min-width: 1024px) 384px,
                 (min-width: 768px) 320px,
