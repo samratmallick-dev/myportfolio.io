@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from 'react';
-import { Route, Routes, Navigate } from 'react-router-dom';
+import { Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import MyPortfoliopageLayout from './components/user-view/layout';
 import AuthLayout from './components/auth/layout';
 import AdminLayout from './components/admin-view/layout';
@@ -27,6 +27,8 @@ const AdminViewContactDetails = lazy(() => import('./pages/admin-view/contactdet
 const AdminMessages = lazy(() => import('./pages/admin-view/messages'));
 
 const App = () => {
+      const { pathname } = useLocation();
+      const isAdminRoute = pathname === '/admin' || pathname.startsWith('/admin/');
       useDisableContextMenuAndCopy(!isAdminRoute);
 
       return (
