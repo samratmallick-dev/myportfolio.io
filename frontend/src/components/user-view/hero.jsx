@@ -19,10 +19,8 @@ import OptimizedImage from "../common/OptimizedImage";
 
 import { shouldRender3D, whenIdle } from "@/utils/performance";
 
-// Load the 3D scene only when the browser is idle.
 const Hero3D = lazy(() => import("./Hero3D"));
 
-// Social media configuration.
 const SOCIAL_LINKS = [
   {
     key: "github",
@@ -46,7 +44,6 @@ const SOCIAL_LINKS = [
   },
 ];
 
-// Resolve social media icons.
 const getSocialIcon = (key) => {
   switch (key) {
     case "github":
@@ -71,7 +68,6 @@ const Hero = ({ heroImage, data, error, onRetry }) => {
 
   const [enable3D, setEnable3D] = useState(false);
 
-  // Navigate to contact section.
   const handleContactClick = useCallback(() => {
     window.scrollTo({
       top: 0,
@@ -81,7 +77,6 @@ const Hero = ({ heroImage, data, error, onRetry }) => {
     navigate("/portfolio/contact");
   }, [navigate]);
 
-  // Defer 3D rendering until the main thread is idle.
   useEffect(() => {
     if (!shouldRender3D()) return;
 
@@ -91,18 +86,15 @@ const Hero = ({ heroImage, data, error, onRetry }) => {
   }, []);
 
   return (
-    // Full-screen height only from tablet up. On mobile the section
-    // hugs its content, so no empty space is added below the social icons.
     <section
       className="
       relative
       md:min-h-screen
       flex items-center justify-center
       overflow-hidden
-      py-10 sm:py-16
+      py-10 sm:py-16 lg:py-10
     "
     >
-      {/* Hero Background */}
       <div
         aria-hidden="true"
         className="
@@ -120,14 +112,12 @@ const Hero = ({ heroImage, data, error, onRetry }) => {
         }}
       />
 
-      {/* Deferred 3D Background */}
       {enable3D && (
         <Suspense fallback={null}>
           <Hero3D />
         </Suspense>
       )}
 
-      {/* Background Gradient */}
       <div
         className="
         absolute inset-0
@@ -138,7 +128,6 @@ const Hero = ({ heroImage, data, error, onRetry }) => {
       "
       />
 
-      {/* Hero Content */}
       <div
         className="
         container mx-auto
@@ -148,12 +137,11 @@ const Hero = ({ heroImage, data, error, onRetry }) => {
       "
       >
         <div className="animate-fade-in">
-          {/* Profile Image */}
           <div
             className="
             relative
             shrink-0
-            w-56 sm:w-64 md:w-80 lg:w-96
+            w-56 sm:w-64 md:w-80 lg:w-[clamp(16rem,36vh,24rem)]
             max-w-full
             mx-auto
             mb-6 sm:mb-8
@@ -167,7 +155,7 @@ const Hero = ({ heroImage, data, error, onRetry }) => {
             [&>*]:block [&>*]:h-full [&>*]:w-full
             [&_img]:h-full [&_img]:w-full
             [&_img]:object-cover [&_img]:object-bottom
-            [&_img]:origin-bottom [&_img]:scale-[1.12]
+            [&_img]:origin-[50%_40%] [&_img]:scale-[1.22]
           "
           >
             <OptimizedImage
@@ -194,7 +182,6 @@ const Hero = ({ heroImage, data, error, onRetry }) => {
             />
           </div>
 
-          {/* Name */}
           <h1
             className="
             text-4xl
@@ -210,7 +197,6 @@ const Hero = ({ heroImage, data, error, onRetry }) => {
             {data?.name || "Samrat Mallick"}
           </h1>
 
-          {/* Animated Professional Title */}
           <div
             className="
             text-xl
@@ -226,7 +212,6 @@ const Hero = ({ heroImage, data, error, onRetry }) => {
             />
           </div>
 
-          {/* Description */}
           <p
             className="
             text-base
@@ -244,7 +229,6 @@ const Hero = ({ heroImage, data, error, onRetry }) => {
               "I am a passionate Full Stack Developer with expertise in building dynamic and responsive web applications. I love turning ideas into reality using code."}
           </p>
 
-          {/* Action Buttons */}
           <div
             className="
             flex flex-col
@@ -315,7 +299,6 @@ const Hero = ({ heroImage, data, error, onRetry }) => {
             ))}
           </div>
 
-          {/* Retry Hero Data */}
           {error && onRetry && (
             <button
               type="button"

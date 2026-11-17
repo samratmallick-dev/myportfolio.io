@@ -26,7 +26,6 @@ const Login = () => {
                         description: error || 'Invalid email or password. Please check your credentials.',
                         duration: 5000,
                   });
-                  // Clear error after showing toast
                   dispatch(clearError());
             }
       }, [error, dispatch]);

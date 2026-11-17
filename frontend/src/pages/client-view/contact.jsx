@@ -41,7 +41,6 @@ import OptimizedImage from "@/components/common/OptimizedImage";
 import { Skeleton } from "@/components/ui/skeleton";
 
 
-// Initial form state.
 const initialFormData = {
   name: "",
   email: "",
@@ -49,7 +48,6 @@ const initialFormData = {
   message: "",
 };
 
-// Available social media icons.
 const SOCIAL_ICONS = {
   Facebook,
   Github,
@@ -69,7 +67,6 @@ const MyContact = () => {
 
   const [formData, setFormData] = useState(initialFormData);
 
-  // Fetch only the contact section.
   const {
     data: contactDetails,
     isLoading,
@@ -81,7 +78,6 @@ const MyContact = () => {
     priority: true,
   });
 
-  // Update contact information when the server broadcasts changes.
   const handlePortfolioUpdate = useCallback(
     ({ type, data }) => {
       if (type === "contact") {
@@ -98,7 +94,6 @@ const MyContact = () => {
 
   useSocket("portfolioUpdated", handlePortfolioUpdate);
 
-  // Update form values.
   const handleChange = useCallback((name, value) => {
     setFormData((previous) => ({
       ...previous,
@@ -106,7 +101,6 @@ const MyContact = () => {
     }));
   }, []);
 
-  // Submit contact message.
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -125,12 +119,10 @@ const MyContact = () => {
     }
   };
 
-  // Resolve social media icon.
   const getIconComponent = (iconName) => {
     return SOCIAL_ICONS[iconName] || Globe;
   };
 
-  // Contact information.
   const contactItems = [
     {
       label: "Name",
@@ -172,7 +164,6 @@ const MyContact = () => {
         px-4 sm:px-6
       "
       >
-        {/* Section Heading */}
         <div
           className="
           flex flex-col
@@ -227,7 +218,7 @@ const MyContact = () => {
             <div
               className="
               relative shrink-0
-              w-56 sm:w-64 md:w-80 lg:w-96
+              w-36 sm:w-44 md:w-52 lg:w-64
               max-w-full
               mx-auto
               aspect-square
@@ -237,21 +228,21 @@ const MyContact = () => {
               shadow-xl
               [&>*]:block [&>*]:h-full [&>*]:w-full
               [&_img]:h-full [&_img]:w-full
-              [&_img]:object-cover [&_img]:object-bottom
-              [&_img]:origin-bottom [&_img]:scale-[1.12]
+              [&_img]:object-cover [&_img]:object-center
+              [&_img]:origin-[50%_40%] [&_img]:scale-[1.22]
             "
             >
               <OptimizedImage
                 src={contactDetails?.contactImage?.url}
                 alt="Samrat Mallick - Contact Profile"
-                width="384"
-                height="384"
-                widths={[224, 256, 320, 384, 448]}
+                width="256"
+                height="256"
+                widths={[144, 176, 208, 256, 320]}
                 sizes="
-                  (min-width: 1024px) 384px,
-                  (min-width: 768px) 320px,
-                  (min-width: 640px) 256px,
-                  224px
+                  (min-width: 1024px) 256px,
+                  (min-width: 768px) 208px,
+                  (min-width: 640px) 176px,
+                  144px
                 "
                 loading="lazy"
                 decoding="async"
@@ -264,7 +255,6 @@ const MyContact = () => {
               />
             </div>
 
-            {/* Contact Details Card */}
             <Card
               className="
               w-full
@@ -291,7 +281,6 @@ const MyContact = () => {
               </CardHeader>
 
               <CardContent className="space-y-5">
-                {/* Loading State */}
                 {(isLoading || isIdle) && (
                   <div className="space-y-5">
                     {[...Array(4)].map((_, index) => (
@@ -303,7 +292,6 @@ const MyContact = () => {
                   </div>
                 )}
 
-                {/* Error State */}
                 {!isLoading && !isIdle && isError && (
                   <SectionError
                     message={error || "Unable to load contact details."}
@@ -311,7 +299,6 @@ const MyContact = () => {
                   />
                 )}
 
-                {/* Contact Information */}
                 {!isLoading && !isIdle && !isError && contactDetails && (
                   <div
                     className="
@@ -344,7 +331,6 @@ const MyContact = () => {
                   </div>
                 )}
 
-                {/* Empty State */}
                 {!isLoading && !isIdle && !isError && !contactDetails && (
                   <div
                     className="
@@ -357,7 +343,6 @@ const MyContact = () => {
                 )}
               </CardContent>
 
-              {/* Social Media Links */}
               {contactDetails?.socialLinks?.length > 0 && (
                 <CardFooter
                   className="
@@ -401,7 +386,6 @@ const MyContact = () => {
             </Card>
           </div>
 
-          {/* Right: Contact Form */}
           <div
             className="
             w-full
