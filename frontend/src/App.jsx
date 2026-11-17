@@ -5,6 +5,7 @@ import AuthLayout from './components/auth/layout';
 import AdminLayout from './components/admin-view/layout';
 import CheckAuth from './components/common/CheckAuth';
 import PageLoader from './components/common/PageLoader';
+import { useDisableContextMenuAndCopy } from './components/common/useDisableContextMenuAndCopy';
 
 // Lazy-loaded client views
 const MyPortfolio = lazy(() => import('./pages/client-view/portfolio'));
