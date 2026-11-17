@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 const cache = new Map();
 const MAX_CACHE_ENTRIES = 250;
 
@@ -8,11 +10,23 @@ const pruneCache = () => {
             if (now >= value.expiry) cache.delete(key);
       }
 
-      // Map preserves insertion order, so this evicts the oldest entries first.
       while (cache.size > MAX_CACHE_ENTRIES) {
             const oldestKey = cache.keys().next().value;
             cache.delete(oldestKey);
       }
+};
+
+const stableEtag = (payload) => {
+      let serializable = payload;
+      if (payload && typeof payload === "object" && !Array.isArray(payload) && "timestamp" in payload) {
+            const { timestamp, ...rest } = payload;
+            serializable = rest;
+      }
+
+      const digest = createHash("sha256")
+            .update(JSON.stringify(serializable))
+            .digest("base64url");
+      return `W/"${digest}"`;
 };
 
 export const cacheMiddleware = (duration = 300) => {
@@ -23,13 +37,27 @@ export const cacheMiddleware = (duration = 300) => {
 
             const key = req.originalUrl || req.url;
             const cachedResponse = cache.get(key);
+            const isHit = Boolean(cachedResponse && Date.now() < cachedResponse.expiry);
 
-            // Browser/CDN caches can revalidate cheaply; server cache is the
-            // shared fallback for the single-instance deployment.
-            res.set('Cache-Control', `public, max-age=${duration}, s-maxage=${duration}, stale-while-revalidate=60`);
+            res.set('Cache-Control', 'public, no-cache, must-revalidate');
             res.set('Vary', 'Accept-Encoding');
 
-            if (cachedResponse && Date.now() < cachedResponse.expiry) {
+            const originalJson = res.json.bind(res);
+            res.json = (data) => {
+                  if (res.statusCode >= 200 && res.statusCode < 400) {
+                        res.set('ETag', stableEtag(data));
+                        if (!isHit) {
+                              cache.set(key, {
+                                    data,
+                                    expiry: Date.now() + duration * 1000,
+                              });
+                              pruneCache();
+                        }
+                  }
+                  return originalJson(data);
+            };
+
+            if (isHit) {
                   res.set('X-Cache', 'HIT');
                   return res.json(cachedResponse.data);
             }
@@ -37,21 +65,6 @@ export const cacheMiddleware = (duration = 300) => {
             if (cachedResponse) cache.delete(key);
 
             res.set('X-Cache', 'MISS');
-            const originalJson = res.json.bind(res);
-
-            res.json = (data) => {
-                  // Never cache error payloads: a transient 404/500 must not
-                  // stick around after the underlying data is fixed.
-                  if (res.statusCode >= 200 && res.statusCode < 400) {
-                        cache.set(key, {
-                              data,
-                              expiry: Date.now() + duration * 1000,
-                        });
-                        pruneCache();
-                  }
-                  return originalJson(data);
-            };
-
             next();
       };
 };
@@ -68,10 +81,6 @@ export const clearCache = (pattern) => {
       }
 };
 
-/**
- * Pattern groups for targeted invalidation. The aggregate /initial-data
- * endpoint depends on every section, so it is always invalidated too.
- */
 export const PUBLIC_CACHE_PATTERNS = {
       hero: ['/api/v1/public/hero', '/api/v1/hero'],
       about: ['/api/v1/public/about', '/api/v1/about'],
@@ -90,13 +99,9 @@ export const invalidatePublicSection = (section) => {
 
 const PUBLIC_CONTENT_ROUTE = /^\/api\/v1\/(hero|about|education|skills|projects|services|contact)\//;
 
-// These endpoints change messages/read state only — public content is intact.
 const NON_CONTENT_PATHS = /^\/api\/v1\/contact\/(send-message|mark-as-read|delete-message|get-message|get-all-messages|get-unread-count)/;
 
-/**
- * Called after a successful mutation. Invalidates the caches for the
- * affected public section instead of flushing every cached response.
- */
+
 export const invalidateCacheForMutation = (originalUrl = '') => {
       const path = (originalUrl.split('?')[0] || '').toLowerCase();
 
@@ -116,12 +121,9 @@ export const invalidateCacheForMutation = (originalUrl = '') => {
             return;
       }
 
-      // Unknown content mutation: still drop public payloads, but leave
-      // unrelated admin caches untouched.
       if (PUBLIC_CONTENT_ROUTE.test(path)) {
             clearCache('/api/v1/public');
       }
 };
 
-// Exposed for tests and operational diagnostics.
 export const getCacheSize = () => cache.size;

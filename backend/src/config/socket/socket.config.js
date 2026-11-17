@@ -1,6 +1,7 @@
 import { Server } from "socket.io";
 import Logger from "../logger/logger.config.js";
 import getAllowedOrigins from "../cors/cors.config.js";
+import { invalidatePublicSection } from "../../middleware/cache.middleware.js";
 
 let io;
 
@@ -73,11 +74,28 @@ export const getIO = () => {
       return io;
 };
 
+const BROADCAST_SECTIONS = new Set([
+      "hero",
+      "about",
+      "education",
+      "skills",
+      "projects",
+      "services",
+      "contact",
+]);
+
 export const broadcastPortfolioUpdate = (type, data = null) => {
+      if (BROADCAST_SECTIONS.has(type)) {
+            invalidatePublicSection(type);
+      }
+
+      const version = Date.now();
+
       if (!io) {
             Logger.warn("Socket.io not initialized — skipping broadcastPortfolioUpdate");
             return;
       }
-      io.emit("portfolioUpdated", { type, data });
-      Logger.info("Portfolio update broadcast via Socket.IO", { type });
+
+      io.emit("portfolioUpdated", { type, data, version, updatedAt: new Date(version).toISOString() });
+      Logger.info("Portfolio update broadcast via Socket.IO", { type, version });
 };

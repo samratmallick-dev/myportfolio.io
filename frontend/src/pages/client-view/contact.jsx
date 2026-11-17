@@ -30,9 +30,7 @@ import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 
 import { sendMessage } from "@/store/contact.slice";
-import { updatePublicData } from "@/store/public.slice";
 
-import { useSocket } from "@/hooks/useSocket";
 import { usePublicSectionData } from "@/hooks/usePublicSectionData";
 
 import SectionError from "@/components/loaders/SectionError";
@@ -77,22 +75,6 @@ const MyContact = () => {
   } = usePublicSectionData("contact", {
     priority: true,
   });
-
-  const handlePortfolioUpdate = useCallback(
-    ({ type, data }) => {
-      if (type === "contact") {
-        dispatch(
-          updatePublicData({
-            type,
-            data,
-          }),
-        );
-      }
-    },
-    [dispatch],
-  );
-
-  useSocket("portfolioUpdated", handlePortfolioUpdate);
 
   const handleChange = useCallback((name, value) => {
     setFormData((previous) => ({

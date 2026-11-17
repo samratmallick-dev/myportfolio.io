@@ -4,11 +4,14 @@ import { Outlet, useLocation } from 'react-router-dom';
 import AdminSidebar from './sidebar';
 import AdminHeader from './header';
 import { adminSidebarMenu } from '@/config/menu';
+import { usePortfolioSync } from '@/hooks/usePortfolioSync';
 
 const AdminLayout = () => {
       const [isSidebarOpen, setSidebarOpen] = useState(false);
       const isMobile = useMobile();
       const location = useLocation();
+
+      usePortfolioSync();
 
       const currentPage = adminSidebarMenu.find(item => item.path === location.pathname) || { label: 'Admin' };
 

@@ -36,6 +36,7 @@ const initialState = {
             status: 'idle',
             error: null,
             fetchedAt: 0,
+            updatedAt: 0,
       },
 };
 
@@ -138,19 +139,16 @@ export const getFeaturedProjects = createAsyncThunk(
       }
 );
 
-/**
- * Paginated, card-only public project list. Kept separate from the admin
- * `projectsData` state so lazy public loading never disturbs admin CRUD.
- */
 export const getPublicProjectsPage = createAsyncThunk(
       "project/fetchPublicProjectsPage",
       async ({ page = 1, limit = 9, force = false } = {}, { rejectWithValue, signal }) => {
+            const startedAt = Date.now();
             try {
                   const data = await fetchPublicProjects({ page, limit, signal, cache: !force });
-                  return { page, limit, ...data };
+                  return { page, limit, startedAt, ...data };
             } catch (error) {
-                  if (signal.aborted) return rejectWithValue({ aborted: true });
-                  return rejectWithValue(error?.message || 'Failed to load projects');
+                  if (signal.aborted) return rejectWithValue({ aborted: true, startedAt });
+                  return rejectWithValue({ message: error?.message || 'Failed to load projects', startedAt });
             }
       },
       {
@@ -221,6 +219,10 @@ const projectSlice = createSlice({
             },
             setProjects: (state, action) => {
                   state.projectsData = action.payload;
+            },
+            markPublicProjectsUpdated: (state) => {
+                  state.publicProjects.updatedAt = Date.now();
+                  state.publicProjects.fetchedAt = 0;
             },
       },
       extraReducers: (builder) => {
@@ -379,7 +381,18 @@ const projectSlice = createSlice({
                         };
                   })
                   .addCase(getPublicProjectsPage.fulfilled, (state, action) => {
-                        const { page, limit, items, pagination } = action.payload;
+                        const { page, limit, items, pagination, startedAt } = action.payload;
+
+                        if (startedAt < state.publicProjects.updatedAt) {
+                              if (state.publicProjects.fetchedAt < state.publicProjects.updatedAt) {
+                                    state.publicProjects.fetchedAt = 0;
+                              }
+                              if (state.publicProjects.status !== 'loading') {
+                                    state.publicProjects.status = state.publicProjects.items.length ? 'succeeded' : 'idle';
+                              }
+                              return;
+                        }
+
                         state.publicProjects.status = 'succeeded';
                         state.publicProjects.error = null;
                         state.publicProjects.items = items;
@@ -387,15 +400,29 @@ const projectSlice = createSlice({
                         state.publicProjects.fetchedAt = Date.now();
                   })
                   .addCase(getPublicProjectsPage.rejected, (state, action) => {
-                        if (action.payload?.aborted) {
+                        const payload = action.payload;
+                        if (payload?.aborted) {
                               state.publicProjects.status = state.publicProjects.items.length ? 'succeeded' : 'idle';
                               return;
                         }
+
+                        const startedAt = typeof payload === 'object' ? payload.startedAt : undefined;
+                        if (Number.isFinite(startedAt) && startedAt < state.publicProjects.updatedAt) {
+                              if (state.publicProjects.status !== 'loading') {
+                                    state.publicProjects.status = state.publicProjects.items.length ? 'succeeded' : 'idle';
+                                    if (state.publicProjects.fetchedAt < state.publicProjects.updatedAt) {
+                                          state.publicProjects.fetchedAt = 0;
+                                    }
+                              }
+                              return;
+                        }
+
                         state.publicProjects.status = 'failed';
-                        state.publicProjects.error = action.payload || 'Failed to load projects';
+                        state.publicProjects.error =
+                              (typeof payload === 'object' ? payload.message : payload) || 'Failed to load projects';
                   });
       },
 });
 
-export const { clearError, clearSuccess, resetProjectState, setProjects } = projectSlice.actions;
+export const { clearError, clearSuccess, resetProjectState, setProjects, markPublicProjectsUpdated } = projectSlice.actions;
 export default projectSlice.reducer;

@@ -1,10 +1,11 @@
 import axios from 'axios';
+import { createHttpCache, sectionForUrl, isPublicUrl, ALL_SECTIONS } from '@/utils/httpCache';
+import { SECTIONS, publishSectionUpdate, getRecentServerVersion, markLocalMutation } from '@/utils/sectionCache';
 
 const API_BASE_URL = import.meta.env.DEV ? (import.meta.env.VITE_API_BASE_URL_LOCAL || "http://localhost:8000") : import.meta.env.VITE_API_BASE_URL;
 
-const apiCache = new Map();
-const pendingRequests = new Map();
-const MAX_CLIENT_CACHE_ENTRIES = 120;
+
+const httpCache = createHttpCache({ maxEntries: 120 });
 
 const getCacheKey = (config) => {
       const url = config.url || "";
@@ -12,20 +13,8 @@ const getCacheKey = (config) => {
       return `${config.baseURL || ""}:${config.method}:${url}?${params}`;
 };
 
-const pruneClientCache = () => {
-      while (apiCache.size > MAX_CLIENT_CACHE_ENTRIES) {
-            const oldestKey = apiCache.keys().next().value;
-            apiCache.delete(oldestKey);
-      }
-};
-
-const isCacheableRequest = (config) => {
-      if (config.cache === false) return false;
-      if (config.cache === true) return true;
-      // Default: only anonymous public content is cached. Admin/authenticated
-      // GET responses must never be served from a shared client cache.
-      return String(config.url || "").startsWith("/api/v1/public/");
-};
+const isCacheableUrl = (config) =>
+      config.cache === true || isPublicUrl(config.url || "");
 
 const api = axios.create({
       baseURL: API_BASE_URL,
@@ -39,67 +28,99 @@ const api = axios.create({
 });
 
 export const clearClientCache = () => {
-      apiCache.clear();
-      pendingRequests.clear();
+      httpCache.clear();
+};
+
+export const invalidateSectionHttpCache = (section = ALL_SECTIONS) => {
+      if (section === undefined) return 0;
+      return httpCache.invalidate(section);
+};
+
+const notifyMutationPersisted = (config) => {
+      const section = sectionForUrl(config.url || "");
+      if (section === undefined) return;
+
+      httpCache.invalidate(section);
+
+      const targets = section === ALL_SECTIONS ? SECTIONS : [section];
+      const mutationStartedAt = config.__mutationStartedAt || 0;
+
+      targets.forEach((target) => {
+            markLocalMutation(target);
+            const version = getRecentServerVersion(target, mutationStartedAt) ?? Date.now();
+            publishSectionUpdate({ section: target, version });
+      });
 };
 
 const defaultAdapter = axios.getAdapter(axios.defaults.adapter);
 
 api.defaults.adapter = async (config) => {
-      const method = config.method?.toLowerCase();
-
-      if (['post', 'put', 'delete', 'patch'].includes(method)) {
-            apiCache.clear();
-            return defaultAdapter(config);
-      }
+      const method = (config.method || 'get').toLowerCase();
 
       if (method !== 'get') {
-            return defaultAdapter(config);
+            config.__mutationStartedAt = Date.now();
+            const response = await defaultAdapter(config);
+
+            if (response.status >= 200 && response.status < 300) {
+                  notifyMutationPersisted(config);
+            }
+            return response;
       }
 
       const key = getCacheKey(config);
-      const cacheable = isCacheableRequest(config);
+      const url = config.url || '';
+      const section = sectionForUrl(url);
+      const cacheSection = isPublicUrl(url) ? (section ?? ALL_SECTIONS) : section;
+
+      const allowCacheWrite = isCacheableUrl(config);
+      const allowCacheRead = allowCacheWrite && config.cache !== false;
       const allowDedupe = config.cache !== false;
-      const now = Date.now();
+
+      const seq = httpCache.captureSeq(cacheSection);
       const ttl = config.ttl || 5 * 60 * 1000;
 
-      if (cacheable) {
-            const cached = apiCache.get(key);
-            if (cached && (now - cached.timestamp < ttl)) {
+      if (allowCacheRead) {
+            const cached = httpCache.get(key);
+            if (cached !== undefined) {
                   return {
-                        data: cached.data,
+                        data: cached,
                         status: 200,
                         statusText: 'OK',
                         headers: { 'x-client-cache': 'HIT' },
                         config,
                   };
             }
-            if (cached) apiCache.delete(key);
       }
 
-      if (allowDedupe && pendingRequests.has(key)) {
-            const response = await pendingRequests.get(key);
-            return {
-                  ...response,
-                  config,
-            };
+      if (allowDedupe) {
+            const pendingRequest = httpCache.getPending(key);
+            if (pendingRequest) {
+                  const response = await pendingRequest;
+                  return {
+                        ...response,
+                        config,
+                  };
+            }
       }
 
       const requestPromise = defaultAdapter(config);
-      if (allowDedupe) pendingRequests.set(key, requestPromise);
+      if (allowDedupe) {
+            httpCache.setPending(key, { promise: requestPromise, section: cacheSection, seq });
+      }
 
       try {
             const response = await requestPromise;
-            if (cacheable && response.status >= 200 && response.status < 300) {
-                  apiCache.set(key, {
+            if (allowCacheWrite && response.status >= 200 && response.status < 300) {
+                  httpCache.set(key, {
                         data: response.data,
-                        timestamp: Date.now(),
+                        section: cacheSection,
+                        seq,
+                        ttl,
                   });
-                  pruneClientCache();
             }
             return response;
       } finally {
-            if (allowDedupe) pendingRequests.delete(key);
+            if (allowDedupe) httpCache.deletePending(key);
       }
 };
 
@@ -130,7 +151,6 @@ const getPublicData = async (url, { signal, params, ttl = 5 * 60 * 1000, cache =
       }
 };
 
-// Kept for backward compatibility. The homepage no longer calls this.
 export const fetchPublicInitialData = async () => ({
       data: await getPublicData(publicEndpoints.initialData, { ttl: 5 * 60 * 1000 }),
 });
@@ -169,7 +189,6 @@ export const fetchPublicServices = ({ signal, cache = true } = {}) =>
 export const fetchPublicContact = ({ signal, cache = true } = {}) =>
       getPublicData(publicEndpoints.contact, { signal, cache });
 
-// Admin authentication endpoints
 export const adminAuthEndpoints = {
       login: '/api/v1/admin/login',
       logout: '/api/v1/admin/logout',
@@ -747,7 +766,6 @@ api.interceptors.response.use(
             if (error.response?.status === 401 && !String(error.config?.url || '').includes('/public/')) {
                   localStorage.removeItem('adminToken');
                   localStorage.removeItem('adminUser');
-                  // Only redirect if not already on login page
                   if (!window.location.pathname.includes('/login')) {
                         window.location.href = '/auth/login';
                   }

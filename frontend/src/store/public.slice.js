@@ -9,9 +9,8 @@ import {
       fetchPublicServices,
       fetchPublicContact,
 } from "@/config/api";
+import { normalizeSection, isVersionNewer } from "@/utils/sectionCache";
 
-// How long successfully fetched section data stays fresh in Redux. Socket
-// updates bypass this and refresh the affected section immediately.
 export const PUBLIC_SECTION_TTL = 5 * 60 * 1000;
 
 const SECTION_DEFAULTS = {
@@ -42,6 +41,9 @@ const createSectionState = (fallback) => ({
       error: null,
       fetchedAt: 0,
       lastUpdatedAt: 0,
+      version: 0,
+      versionAt: 0,
+      isRefreshing: false,
 });
 
 const createInitialState = () =>
@@ -59,10 +61,6 @@ const normalizeError = (error) => {
       };
 };
 
-/**
- * Fetch one public section. `condition` deduplicates concurrent and
- * StrictMode double-invoked requests, and reuses fresh Redux data.
- */
 export const fetchPublicSection = createAsyncThunk(
       "public/fetchSection",
       async ({ section, params, force = false } = {}, { rejectWithValue, signal }) => {
@@ -108,8 +106,6 @@ export const fetchPublicSection = createAsyncThunk(
       }
 );
 
-// Legacy aggregate loader. Kept only for backward compatibility; the
-// homepage no longer dispatches it.
 export const getPublicInitialData = createAsyncThunk(
       "public/fetchInitialData",
       async (_, { rejectWithValue }) => {
@@ -122,13 +118,32 @@ export const getPublicInitialData = createAsyncThunk(
       }
 );
 
-const applySection = (state, section, data) => {
+const applySection = (state, section, data, version) => {
       if (!state[section]) return;
       state[section].data = data ?? SECTION_DEFAULTS[section];
       state[section].status = "succeeded";
       state[section].error = null;
       state[section].fetchedAt = Date.now();
       state[section].lastUpdatedAt = Date.now();
+      if (Number.isFinite(version) && version > state[section].version) {
+            state[section].version = version;
+            state[section].versionAt = Date.now();
+      }
+};
+
+const hasLoadedData = (sectionState) =>
+      sectionState && sectionState.status === "succeeded";
+
+const markStale = (sectionState, version) => {
+      if (Number.isFinite(version) && version > sectionState.version) {
+            sectionState.version = version;
+            sectionState.versionAt = Date.now();
+      }
+      sectionState.fetchedAt = 0;
+      sectionState.error = null;
+      if (sectionState.status === "failed") {
+            sectionState.status = "idle";
+      }
 };
 
 const publicSlice = createSlice({
@@ -145,22 +160,43 @@ const publicSlice = createSlice({
                         state[key].error = null;
                   });
             },
-            // Real-time updates from Socket.IO / admin mutations.
             updatePublicData: (state, action) => {
-                  const { type, data } = action.payload || {};
-                  if (!type) return;
+                  const { type, data, version } = action.payload || {};
+                  const section = normalizeSection(type);
+                  if (!section || !state[section]) return;
 
-                  if (type === "projects") {
+                  const current = state[section];
+                  const incoming = Number.isFinite(version) ? version : Date.now();
+
+                  if (!isVersionNewer(incoming, current.version) && hasLoadedData(current) && !current.error) {
+                        return;
+                  }
+
+                  if (section === "projects") {
                         const featured = Array.isArray(data) ? data : data?.featured;
                         if (Array.isArray(featured)) {
-                              applySection(state, "projects", featured);
+                              applySection(state, "projects", featured, incoming);
+                        } else if (data === undefined) {
+                              markStale(current, incoming);
                         }
                         return;
                   }
 
-                  const section = type === "service" ? "services" : type;
-                  if (!state[section]) return;
-                  applySection(state, section, data);
+                  if (data === undefined) {
+                        markStale(current, incoming);
+                        return;
+                  }
+
+                  applySection(state, section, data, incoming);
+            },
+            externalSectionUpdated: (state, action) => {
+                  const { section, version } = action.payload || {};
+                  if (!section || !state[section]) return;
+
+                  const current = state[section];
+                  if (!isVersionNewer(version, current.version)) return;
+
+                  markStale(current, version);
             },
             invalidatePublicSection: (state, action) => {
                   const section = action.payload;
@@ -180,43 +216,63 @@ const publicSlice = createSlice({
                   .addCase(fetchPublicSection.pending, (state, action) => {
                         const section = action.meta.arg.section;
                         if (!state[section]) return;
-                        state[section].status = "loading";
-                        state[section].error = null;
+                        const current = state[section];
+                        current.error = null;
+                        if (hasLoadedData(current)) {
+                              current.isRefreshing = true;
+                        } else {
+                              current.status = "loading";
+                        }
                   })
                   .addCase(fetchPublicSection.fulfilled, (state, action) => {
                         const { section, data, startedAt } = action.payload;
                         if (!state[section]) return;
+                        const current = state[section];
+                        current.isRefreshing = false;
 
-                        // A Socket.IO update landed after this request started.
-                        // Keep the newer data rather than overwriting it.
-                        if (state[section].lastUpdatedAt > startedAt) {
-                              state[section].status = "succeeded";
+                        if (current.lastUpdatedAt > startedAt || current.versionAt > startedAt) {
+                              if (!hasLoadedData(current)) {
+                                    current.status = "idle";
+                                    current.fetchedAt = 0;
+                              }
                               return;
                         }
 
-                        state[section].data = data ?? SECTION_DEFAULTS[section];
-                        state[section].status = "succeeded";
-                        state[section].error = null;
-                        state[section].fetchedAt = Date.now();
+                        current.data = data ?? SECTION_DEFAULTS[section];
+                        current.status = "succeeded";
+                        current.error = null;
+                        current.fetchedAt = Date.now();
                   })
                   .addCase(fetchPublicSection.rejected, (state, action) => {
                         const { section, error, startedAt, aborted } = action.payload || {};
                         if (!section || !state[section]) return;
+                        const current = state[section];
+                        current.isRefreshing = false;
 
                         if (aborted) {
-                              state[section].status = state[section].data
-                                    ? "succeeded"
-                                    : "idle";
+                              current.status = hasLoadedData(current) ? "succeeded" : "idle";
                               return;
                         }
 
-                        if (state[section].lastUpdatedAt > startedAt) {
-                              state[section].status = "succeeded";
+                        if (current.lastUpdatedAt > startedAt || current.versionAt > startedAt) {
+                              if (!hasLoadedData(current)) {
+                                    current.status = "idle";
+                                    current.fetchedAt = 0;
+                              }
                               return;
                         }
 
-                        state[section].status = "failed";
-                        state[section].error = error?.message || "Unable to load this section";
+                        const message = error?.message || "Unable to load this section";
+
+                        if (hasLoadedData(current)) {
+                              current.status = "succeeded";
+                              current.error = message;
+                              current.fetchedAt = Date.now();
+                              return;
+                        }
+
+                        current.status = "failed";
+                        current.error = message;
                   })
                   .addCase(getPublicInitialData.fulfilled, (state, action) => {
                         const payload = action.payload?.data ?? action.payload ?? {};
@@ -234,6 +290,7 @@ const publicSlice = createSlice({
 export const {
       clearError,
       updatePublicData,
+      externalSectionUpdated,
       invalidatePublicSection,
       resetPublicSections,
 } = publicSlice.actions;

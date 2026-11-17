@@ -1,13 +1,6 @@
-/* Offline support for the portfolio SPA. Serves the cached app shell when the
- * network is unavailable and falls back to a branded offline page otherwise.
- * Keep CACHE_NAME in sync whenever offline.html or the shell strategy changes,
- * so an updated service worker replaces the previous cache. */
-
-const CACHE_NAME = "portfolio-shell-v4";
+const CACHE_NAME = "portfolio-shell-v5";
 const OFFLINE_URL = "/offline.html";
 
-/* Dev-only URLs are never cached: caching Vite's dev modules would serve stale
- * code while developing, so in development the offline page is the fallback. */
 const DEV_PREFIXES = ["/@vite", "/@react-refresh", "/@fs", "/node_modules/", "/src/"];
 const isDevDocument = (html) => html.includes("/src/main.jsx") || html.includes("/@vite/client");
 
@@ -25,21 +18,17 @@ self.addEventListener("install", (event) => {
                         if (isDevDocument(html)) return;
 
                         await cache.put("/", clone);
-                        // Cache every hashed asset the shell references...
                         const assets = [...new Set(html.match(/\/assets\/[^"'\s()]+?\.(?:js|css)/g) ?? [])];
-                        // ...plus the full build manifest (covers lazily-loaded
-                        // chunks the HTML never references).
                         try {
                               const manifest = await (await fetch("/sw-manifest.json", { cache: "no-store" })).json();
                               assets.push(...manifest);
                         } catch {
-                              /* Older builds have no manifest; HTML references only. */
                         }
                         await Promise.all(
                               [...new Set(assets)].map((asset) => cache.add(asset.startsWith("assets/") ? `/${asset}` : asset))
                         );
                   } catch {
-                        /* First visit with no network: only offline.html is cached. */
+                        
                   }
             })()
       );
@@ -63,6 +52,8 @@ self.addEventListener("fetch", (event) => {
       const url = new URL(request.url);
       if (url.origin !== self.location.origin) return;
       if (DEV_PREFIXES.some((prefix) => url.pathname.startsWith(prefix))) return;
+
+      if (url.pathname.startsWith("/api/")) return;
 
       if (request.mode === "navigate") {
             event.respondWith(
@@ -91,7 +82,8 @@ self.addEventListener("fetch", (event) => {
             return;
       }
 
-      // Stale-while-revalidate for hashed, versioned assets.
+      if (!url.pathname.startsWith("/assets/")) return;
+
       event.respondWith(
             (async () => {
                   const cache = await caches.open(CACHE_NAME);

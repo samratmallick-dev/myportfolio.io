@@ -4,8 +4,6 @@ import { useDispatch, useSelector } from "react-redux";
 import ProjectsSkeleton from "@/components/loaders/ProjectsSkeleton";
 import SectionError from "@/components/loaders/SectionError";
 import { getPublicProjectsPage } from "@/store/project.slice";
-import { updatePublicData } from "@/store/public.slice";
-import { useSocket } from "@/hooks/useSocket";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
@@ -27,7 +25,7 @@ const itemVariants = {
 
 const MyAllProjectList = () => {
       const dispatch = useDispatch();
-      const { items, pagination, status, error } = useSelector((state) => state.project.publicProjects);
+      const { items, pagination, status, error, fetchedAt } = useSelector((state) => state.project.publicProjects);
 
       const page = pagination.page || 1;
       const limit = pagination.limit || 9;
@@ -36,13 +34,7 @@ const MyAllProjectList = () => {
 
       useEffect(() => {
             dispatch(getPublicProjectsPage({ page, limit }));
-      }, [dispatch, page, limit]);
-
-      useSocket("portfolioUpdated", ({ type, data }) => {
-            if (type !== "projects") return;
-            if (data) dispatch(updatePublicData({ type: "projects", data }));
-            dispatch(getPublicProjectsPage({ page, limit, force: true }));
-      });
+      }, [dispatch, page, limit, fetchedAt]);
 
       const goToPage = (nextPage) => {
             if (nextPage < 1 || nextPage > pagination.totalPages || nextPage === page) return;
