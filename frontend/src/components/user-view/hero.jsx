@@ -1,15 +1,9 @@
-import React, {
-  useCallback,
-  Suspense,
-  lazy,
-  useEffect,
-  useState
-} from 'react';
+import React, { useCallback, Suspense, lazy, useEffect, useState } from "react";
 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
-import AnimatedText from './animated-text';
-import { Button } from '../ui/button';
+import AnimatedText from "./animated-text";
+import { Button } from "../ui/button";
 
 import {
   Download,
@@ -17,57 +11,54 @@ import {
   Linkedin,
   Facebook,
   Instagram,
-  RefreshCw
-} from 'lucide-react';
+  RefreshCw,
+} from "lucide-react";
 
-import ContactMeBtn from './contact-btn';
-import OptimizedImage from '../common/OptimizedImage';
+import ContactMeBtn from "./contact-btn";
+import OptimizedImage from "../common/OptimizedImage";
 
-import {
-  shouldRender3D,
-  whenIdle
-} from '@/utils/performance';
+import { shouldRender3D, whenIdle } from "@/utils/performance";
 
 // Load the 3D scene only when the browser is idle.
-const Hero3D = lazy(() => import('./Hero3D'));
+const Hero3D = lazy(() => import("./Hero3D"));
 
 // Social media configuration.
 const SOCIAL_LINKS = [
   {
-    key: 'github',
-    href: 'https://github.com/samratmallick-dev',
-    label: 'GitHub'
+    key: "github",
+    href: "https://github.com/samratmallick-dev",
+    label: "GitHub",
   },
   {
-    key: 'linkedin',
-    href: 'https://www.linkedin.com/in/samrat-mallick01',
-    label: 'LinkedIn'
+    key: "linkedin",
+    href: "https://www.linkedin.com/in/samrat-mallick01",
+    label: "LinkedIn",
   },
   {
-    key: 'facebook',
-    href: 'https://www.facebook.com/samratmallick.dev',
-    label: 'Facebook'
+    key: "facebook",
+    href: "https://www.facebook.com/samratmallick.dev",
+    label: "Facebook",
   },
   {
-    key: 'instagram',
-    href: 'https://www.instagram.com/samratmallick.dev',
-    label: 'Instagram'
-  }
+    key: "instagram",
+    href: "https://www.instagram.com/samratmallick.dev",
+    label: "Instagram",
+  },
 ];
 
 // Resolve social media icons.
 const getSocialIcon = (key) => {
   switch (key) {
-    case 'github':
+    case "github":
       return <Github />;
 
-    case 'linkedin':
+    case "linkedin":
       return <Linkedin />;
 
-    case 'facebook':
+    case "facebook":
       return <Facebook />;
 
-    case 'instagram':
+    case "instagram":
       return <Instagram />;
 
     default:
@@ -75,12 +66,7 @@ const getSocialIcon = (key) => {
   }
 };
 
-const Hero = ({
-  heroImage,
-  data,
-  error,
-  onRetry
-}) => {
+const Hero = ({ heroImage, data, error, onRetry }) => {
   const navigate = useNavigate();
 
   const [enable3D, setEnable3D] = useState(false);
@@ -89,10 +75,10 @@ const Hero = ({
   const handleContactClick = useCallback(() => {
     window.scrollTo({
       top: 0,
-      behavior: 'smooth'
+      behavior: "smooth",
     });
 
-    navigate('/portfolio/contact');
+    navigate("/portfolio/contact");
   }, [navigate]);
 
   // Defer 3D rendering until the main thread is idle.
@@ -107,14 +93,15 @@ const Hero = ({
   return (
     // Full-screen height only from tablet up. On mobile the section
     // hugs its content, so no empty space is added below the social icons.
-    <section className="
+    <section
+      className="
       relative
       md:min-h-screen
       flex items-center justify-center
       overflow-hidden
       py-10 sm:py-16
-    ">
-
+    "
+    >
       {/* Hero Background */}
       <div
         aria-hidden="true"
@@ -126,12 +113,10 @@ const Hero = ({
           pointer-events-none
         "
         style={{
-          backgroundImage: heroImage
-            ? `url("${heroImage}")`
-            : 'none',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
+          backgroundImage: heroImage ? `url("${heroImage}")` : "none",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
         }}
       />
 
@@ -143,26 +128,29 @@ const Hero = ({
       )}
 
       {/* Background Gradient */}
-      <div className="
+      <div
+        className="
         absolute inset-0
         hero-gradient
         opacity-5
         z-0
         pointer-events-none
-      " />
+      "
+      />
 
       {/* Hero Content */}
-      <div className="
+      <div
+        className="
         container mx-auto
         px-4 sm:px-6
         relative z-10
         text-center
-      ">
-
+      "
+      >
         <div className="animate-fade-in">
-
           {/* Profile Image */}
-          <div className="
+          <div
+            className="
             relative
             shrink-0
             w-56 sm:w-64 md:w-80 lg:w-96
@@ -180,10 +168,11 @@ const Hero = ({
             [&_img]:h-full [&_img]:w-full
             [&_img]:object-cover [&_img]:object-bottom
             [&_img]:origin-bottom [&_img]:scale-[1.12]
-          ">
+          "
+          >
             <OptimizedImage
               src={data?.profileImage?.url}
-              alt={`${data?.name || 'Samrat Mallick'} - Full Stack Developer`}
+              alt={`${data?.name || "Samrat Mallick"} - Full Stack Developer`}
               width="384"
               height="384"
               widths={[224, 256, 320, 384, 448]}
@@ -206,7 +195,8 @@ const Hero = ({
           </div>
 
           {/* Name */}
-          <h1 className="
+          <h1
+            className="
             text-4xl
             sm:text-5xl
             md:text-6xl
@@ -215,18 +205,21 @@ const Hero = ({
             mb-5 sm:mb-6
             text-gradient
             break-words
-          ">
-            {data?.name || 'Samrat Mallick'}
+          "
+          >
+            {data?.name || "Samrat Mallick"}
           </h1>
 
           {/* Animated Professional Title */}
-          <div className="
+          <div
+            className="
             text-xl
             sm:text-2xl
             md:text-3xl
             mb-6
             min-h-12
-          ">
+          "
+          >
             <AnimatedText
               texts={data?.title || []}
               className="text-muted-foreground"
@@ -234,7 +227,8 @@ const Hero = ({
           </div>
 
           {/* Description */}
-          <p className="
+          <p
+            className="
             text-base
             sm:text-lg
             md:text-xl
@@ -244,20 +238,22 @@ const Hero = ({
             mb-8
             leading-relaxed
             px-2
-          ">
+          "
+          >
             {data?.description ||
-              'I am a passionate Full Stack Developer with expertise in building dynamic and responsive web applications. I love turning ideas into reality using code.'}
+              "I am a passionate Full Stack Developer with expertise in building dynamic and responsive web applications. I love turning ideas into reality using code."}
           </p>
 
           {/* Action Buttons */}
-          <div className="
+          <div
+            className="
             flex flex-col
             sm:flex-row
             gap-4
             justify-center
             items-center
-          ">
-
+          "
+          >
             {/* Resume Download */}
             {data?.resumeLink && (
               <a
@@ -282,20 +278,19 @@ const Hero = ({
             )}
 
             {/* Contact Button */}
-            <ContactMeBtn
-              handleNavigateToContact={handleContactClick}
-            />
-
+            <ContactMeBtn handleNavigateToContact={handleContactClick} />
           </div>
 
           {/* Social Media Links */}
-          <div className="
+          <div
+            className="
             flex
             justify-center
             items-center
             gap-4
             mt-8
-          ">
+          "
+          >
             {SOCIAL_LINKS.map((link) => (
               <a
                 key={link.key}
@@ -340,7 +335,6 @@ const Hero = ({
               Showing default content. Reload hero
             </button>
           )}
-
         </div>
       </div>
     </section>
