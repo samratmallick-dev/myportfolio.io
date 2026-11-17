@@ -26,7 +26,7 @@ const AdminViewContactDetails = lazy(() => import('./pages/admin-view/contactdet
 const AdminMessages = lazy(() => import('./pages/admin-view/messages'));
 
 const App = () => {
-      // useDisableContextMenuAndCopy(!isAdminRoute);
+      useDisableContextMenuAndCopy(!isAdminRoute);
 
       return (
             <div className="flex flex-col overflow-hidden bg-background min-h-screen">
