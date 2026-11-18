@@ -1,56 +1,134 @@
 import adminService from "../service/admin.service.js";
 import { sendCreated, sendSuccess } from "../utilities/response/apiResponse.js";
 import { asyncHandler } from "../utilities/error/asyncHandler.js";
+import ApiError from "../utilities/error/apiError.js";
 import Logger from "../config/logger/logger.config.js";
+import {
+      clearLegacyTokenCookie,
+      clearRefreshTokenCookie,
+      getRawRefreshToken,
+      setRefreshTokenCookie,
+} from "../utilities/cookie.utility.js";
+import { verifyAccessToken } from "../utilities/token.utility.js";
 
 class AdminController {
-      initializeAdmin = asyncHandler(async (req, res) => {
-            const adminData = req.body;
-            const admin = await adminService.initializeAdmin(adminData);
-            sendCreated(res, "Admin initialized successfully", admin);
+      bootstrap = asyncHandler(async (req, res) => {
+            const secret = req.get("X-Admin-Bootstrap-Secret");
+            const admin = await adminService.bootstrap(req.body, secret, req);
+
+            clearRefreshTokenCookie(res);
+
+            return sendCreated(res, "Initial admin created successfully", {
+                  admin: admin.toJSON(),
+            });
       });
 
       login = asyncHandler(async (req, res) => {
-            const loginData = req.body;
-            const { admin, token } = await adminService.login(loginData);
+            const { admin, accessToken, refreshToken } = await adminService.login(
+                  req.body,
+                  req
+            );
 
-            const isProduction = process.env.NODE_ENV === "production";
+            setRefreshTokenCookie(res, refreshToken);
+            clearLegacyTokenCookie(res);
 
-            const options = {
-                  httpOnly: true,
-                  secure: isProduction,
-                  sameSite: isProduction ? "none" : "lax",
-                  maxAge: 12 * 60 * 60 * 1000
-            };
+            return sendSuccess(res, "Login successful", {
+                  admin: admin.toJSON ? admin.toJSON() : admin,
+                  accessToken,
+            });
+      });
 
-            res.cookie("token", token, options);
-            sendSuccess(res, "Login successful", { admin, token });
+      refresh = asyncHandler(async (req, res) => {
+            const rawRefreshToken = getRawRefreshToken(req);
+
+            if (!rawRefreshToken) {
+                  throw ApiError.unauthorized("Refresh token is required");
+            }
+
+            const { admin, accessToken, refreshToken } = await adminService.refresh(
+                  rawRefreshToken,
+                  req
+            );
+
+            setRefreshTokenCookie(res, refreshToken);
+
+            return sendSuccess(res, "Session refreshed", {
+                  admin: admin.toJSON ? admin.toJSON() : admin,
+                  accessToken,
+            });
       });
 
       logout = asyncHandler(async (req, res) => {
-            const isProduction = process.env.NODE_ENV === "production";
+            let sessionId = null;
 
-            const options = {
-                  httpOnly: true,
-                  secure: isProduction,
-                  sameSite: isProduction ? "none" : "lax",
-                  maxAge: 12 * 60 * 60 * 1000
-            };
+            const authorization = req.get("authorization") || "";
+            if (authorization.startsWith("Bearer ")) {
+                  try {
+                        sessionId = verifyAccessToken(authorization.slice(7).trim()).sid;
+                  } catch {
+                        sessionId = null;
+                  }
+            }
 
-            res.clearCookie("token", options);
-            sendSuccess(res, "Logout successful");
+            try {
+                  await adminService.logout(
+                        { rawRefreshToken: getRawRefreshToken(req), sessionId },
+                        req
+                  );
+            } finally {
+                  clearRefreshTokenCookie(res);
+            }
+
+            return sendSuccess(res, "Logout successful");
+      });
+
+      logoutAll = asyncHandler(async (req, res) => {
+            try {
+                  await adminService.logoutAll(req.admin.id, req);
+            } finally {
+                  clearRefreshTokenCookie(res);
+            }
+
+            return sendSuccess(res, "Logged out of all sessions");
       });
 
       getAdminUser = asyncHandler(async (req, res) => {
-            const adminId = req.admin.id;
-            const admin = await adminService.getAdminUser(adminId);
-            sendSuccess(res, "Admin user retrieved successfully", admin);
+            const admin = await adminService.getAdminUser(req.admin.id);
+            return sendSuccess(res, "Admin user retrieved successfully", { admin });
+      });
+
+      listSessions = asyncHandler(async (req, res) => {
+            const sessions = await adminService.listSessions(
+                  req.admin.id,
+                  req.admin.sessionId
+            );
+            return sendSuccess(res, "Active sessions retrieved successfully", { sessions });
+      });
+
+      revokeSession = asyncHandler(async (req, res) => {
+            const session = await adminService.revokeSession(
+                  req.admin.id,
+                  req.params.id,
+                  req.admin.sessionId
+            );
+            return sendSuccess(res, "Session revoked successfully", { session });
+      });
+
+      changePassword = asyncHandler(async (req, res) => {
+            const result = await adminService.changePassword(req.admin.id, req.body, req);
+            clearRefreshTokenCookie(res);
+            return sendSuccess(res, "Password changed. Please sign in again.", result);
+      });
+
+      createAdmin = asyncHandler(async (req, res) => {
+            const admin = await adminService.createAdmin(req.body, req.admin.id, req);
+            return sendCreated(res, "Admin created successfully", { admin });
       });
 
       generateOTP = asyncHandler(async (req, res) => {
             const { purpose, newEmail } = req.body;
             const adminId = req.admin.id;
-            Logger.info('OTP generation request', { adminId, purpose, newEmail });
+            Logger.info('OTP generation request', { adminId, purpose });
             const result = await adminService.generateOTPForEmailUpdate({
                   adminId,
                   purpose,
@@ -71,9 +149,9 @@ class AdminController {
             const { otp, newPassword } = req.body;
             const adminId = req.admin.id;
             const admin = await adminService.verifyOTPAndUpdatePassword(adminId, otp, newPassword);
+            clearRefreshTokenCookie(res);
             sendSuccess(res, "Password updated successfully", admin);
       });
 };
 
 export default new AdminController();
-

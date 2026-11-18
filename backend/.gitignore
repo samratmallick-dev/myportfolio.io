@@ -2,7 +2,7 @@ node_modules/
 .env
 *.log
 logs/
-**/__tests__/
-**/test/
-**/*.test.js
-**/*.spec.js
+coverage/
+# NOTE: test files are intentionally tracked — they are part of the deliverable.
+# (Previously **/*.test.js / **/test/ were ignored, which silently dropped the
+# entire test suite from version control.)

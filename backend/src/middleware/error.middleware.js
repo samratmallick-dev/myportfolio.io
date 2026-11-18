@@ -3,60 +3,65 @@ import { ApiResponse } from "../utilities/response/apiResponse.js";
 import Logger from "../config/logger/logger.config.js";
 import { StatusCodes } from "http-status-codes";
 
+const isOperational = (err) => err instanceof ApiError || err?.isOperational === true;
+
 const errorHandler = (err, req, res, next) => {
-      let error = { ...err };
-      error.message = err.message;
-
-      Logger.error("Error:", {
-            message: err.message,
-            stack: err.stack,
-            url: req.url,
-            method: req.method,
-            ip: req.ip,
-      });
-
-      if (err.name === "ValidationError") {
-            const message = Object.values(err.errors).map(val => val.message).join(", ");
-            error = new ApiError(message, StatusCodes.BAD_REQUEST);
+      if (res.headersSent) {
+            return next(err);
       }
 
-      if (err.code === 11000) {
-            const message = "Duplicate field value entered";
-            error = new ApiError(message, StatusCodes.BAD_REQUEST);
-      }
+      let message = err?.message || "Internal Server Error";
+      let statusCode = err?.statusCode;
 
-      if (err.name === "CastError") {
-            const message = "Resource not found";
-            error = new ApiError(message, StatusCodes.NOT_FOUND);
-      }
-
-      if (err.name === "JsonWebTokenError") {
-            const message = "Invalid token";
-            error = new ApiError(message, StatusCodes.UNAUTHORIZED);
-      }
-
-      if (err.name === "TokenExpiredError") {
-            const message = "Token expired";
-            error = new ApiError(message, StatusCodes.UNAUTHORIZED);
-      }
-
-      if (err.name === "MulterError") {
+      if (err?.name === "ValidationError") {
+            message = Object.values(err.errors || {}).map((val) => val.message).join(", ") || "Invalid data";
+            statusCode = StatusCodes.BAD_REQUEST;
+      } else if (err?.code === 11000) {
+            message = "Duplicate value for a unique field";
+            statusCode = StatusCodes.CONFLICT;
+      } else if (err?.name === "CastError") {
+            message = "Resource not found";
+            statusCode = StatusCodes.NOT_FOUND;
+      } else if (err?.name === "JsonWebTokenError") {
+            message = "Invalid token";
+            statusCode = StatusCodes.UNAUTHORIZED;
+      } else if (err?.name === "TokenExpiredError") {
+            message = "Token expired";
+            statusCode = StatusCodes.UNAUTHORIZED;
+      } else if (err?.name === "MulterError") {
             if (err.code === "LIMIT_FILE_SIZE") {
-                  error = new ApiError("File size too large. Maximum size is 5MB.", StatusCodes.BAD_REQUEST);
+                  message = "File size too large. Maximum size is 5MB.";
             } else if (err.code === "LIMIT_FILE_COUNT") {
-                  error = new ApiError("Too many files uploaded. Maximum is 10 files.", StatusCodes.BAD_REQUEST);
+                  message = "Too many files uploaded. Maximum is 10 files.";
             } else {
-                  error = new ApiError(`File upload error: ${err.message}`, StatusCodes.BAD_REQUEST);
+                  message = `File upload error: ${err.message}`;
             }
+            statusCode = StatusCodes.BAD_REQUEST;
+      } else if (statusCode === undefined) {
+            statusCode = StatusCodes.INTERNAL_SERVER_ERROR;
+            message = "Internal Server Error";
       }
 
-      res.status(error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR).json(
-            ApiResponse.error(
-                  error.message || "Internal Server Error",
-                  process.env.NODE_ENV === "development" ? [error.stack] : [],
-                  error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR
-            ).toJSON()
-      );
+      if (statusCode >= 500) {
+            Logger.error(
+                  `Unhandled server error: ${err?.name || "Error"} - ${err?.message || "unknown"} ` +
+                  `(${req.method} ${req.originalUrl || req.url})\n${err?.stack || ""}`
+            );
+      } else {
+            Logger.warn(
+                  `Request failed [${statusCode}]: ${message} (${req.method} ${req.originalUrl || req.url})`
+            );
+      }
+
+      const responseBody = ApiResponse.error(
+            message,
+            process.env.NODE_ENV === "development" && statusCode >= 500 && isOperational(err)
+                  ? [err.stack]
+                  : [],
+            statusCode
+      ).toJSON();
+
+      return res.status(statusCode).json(responseBody);
 };
 
 export { errorHandler };

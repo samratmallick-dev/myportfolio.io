@@ -4,6 +4,24 @@ import { SECTIONS, publishSectionUpdate, getRecentServerVersion, markLocalMutati
 
 const API_BASE_URL = import.meta.env.DEV ? (import.meta.env.VITE_API_BASE_URL_LOCAL || "http://localhost:8000") : import.meta.env.VITE_API_BASE_URL;
 
+const authBridge = {
+      getAccessToken: () => null,
+      refreshSession: () => Promise.reject(new Error("Authentication bridge is not configured")),
+      onAuthFailure: () => {},
+};
+
+export const configureAuthApi = ({
+      getAccessToken,
+      refreshSession,
+      onAuthFailure,
+} = {}) => {
+      if (typeof getAccessToken === "function") authBridge.getAccessToken = getAccessToken;
+      if (typeof refreshSession === "function") authBridge.refreshSession = refreshSession;
+      if (typeof onAuthFailure === "function") authBridge.onAuthFailure = onAuthFailure;
+};
+
+export const getAccessToken = () => authBridge.getAccessToken();
+
 
 const httpCache = createHttpCache({ maxEntries: 120 });
 
@@ -191,40 +209,69 @@ export const fetchPublicContact = ({ signal, cache = true } = {}) =>
 
 export const adminAuthEndpoints = {
       login: '/api/v1/admin/login',
+      refresh: '/api/v1/admin/refresh',
       logout: '/api/v1/admin/logout',
-      checkAuth: '/api/v1/admin/get-admin-user',
+      logoutAll: '/api/v1/admin/logout-all',
+      me: '/api/v1/admin/me',
+      sessions: '/api/v1/admin/sessions',
+      revokeSession: '/api/v1/admin/sessions/:id',
+      changePassword: '/api/v1/admin/change-password',
+      createAdmin: '/api/v1/admin/create',
+      checkAuth: '/api/v1/admin/me',
       generateOTP: '/api/v1/admin/generate-otp',
       verifyOTPUpdateEmail: '/api/v1/admin/verify-otp-update-email',
       verifyOTPUpdatePassword: '/api/v1/admin/verify-otp-update-password',
 };
 
-// Admin Api function
-export const loginAdmin = async (credentials) => {
+const AUTH_URLS_SKIP_INTERCEPTOR = [
+      adminAuthEndpoints.login,
+      adminAuthEndpoints.refresh,
+      adminAuthEndpoints.logout,
+      adminAuthEndpoints.logoutAll,
+];
+
+const unwrapAuth = async (request) => {
       try {
-            const response = await api.post(adminAuthEndpoints.login, credentials);
+            const response = await request;
             return response.data;
       } catch (error) {
             throw error.response?.data || error;
       }
 };
 
-export const logoutAdmin = async () => {
-      try {
-            const response = await api.post(adminAuthEndpoints.logout);
-            return response.data;
-      } catch (error) {
-            throw error.response?.data || error;
-      }
-};
+// --- Authentication API ----------------------------------------------------
 
-export const checkAdminAuth = async () => {
-      try {
-            const response = await api.get(adminAuthEndpoints.checkAuth);
-            return response.data;
-      } catch (error) {
-            throw error.response?.data || error;
-      }
-};
+export const loginAdmin = (credentials) =>
+      unwrapAuth(api.post(adminAuthEndpoints.login, credentials));
+
+export const refreshAdminSession = () =>
+      unwrapAuth(api.post(adminAuthEndpoints.refresh, undefined, { cache: false }));
+
+export const logoutAdmin = () =>
+      unwrapAuth(api.post(adminAuthEndpoints.logout, undefined, { cache: false }));
+
+export const logoutAllAdminSessions = () =>
+      unwrapAuth(api.post(adminAuthEndpoints.logoutAll, undefined, { cache: false }));
+
+export const checkAdminAuth = () =>
+      unwrapAuth(api.get(adminAuthEndpoints.me, { cache: false }));
+
+export const fetchAdminSessions = () =>
+      unwrapAuth(api.get(adminAuthEndpoints.sessions, { cache: false }));
+
+export const revokeAdminSession = (sessionId) =>
+      unwrapAuth(
+            api.delete(
+                  adminAuthEndpoints.revokeSession.replace(':id', encodeURIComponent(sessionId)),
+                  { cache: false }
+            )
+      );
+
+export const changeAdminPassword = (payload) =>
+      unwrapAuth(api.patch(adminAuthEndpoints.changePassword, payload, { cache: false }));
+
+export const createAdminAccount = (payload) =>
+      unwrapAuth(api.post(adminAuthEndpoints.createAdmin, payload, { cache: false }));
 
 export const generateOTP = async (data) => {
       try {
@@ -733,12 +780,16 @@ export const fetchAllMessagesAdmin = async () => {
       }
 };
 
-// Request interceptor to add auth token if available
 api.interceptors.request.use(
       (config) => {
-            const token = localStorage.getItem('adminToken');
-            if (token) {
-                  config.headers.Authorization = `Bearer ${token}`;
+            const token = authBridge.getAccessToken();
+            if (token && !config.__skipAuthHeader) {
+                  config.headers = config.headers || {};
+                  if (typeof config.headers.set === "function") {
+                        config.headers.set('Authorization', `Bearer ${token}`);
+                  } else {
+                        config.headers.Authorization = `Bearer ${token}`;
+                  }
             }
             return config;
       },
@@ -748,30 +799,80 @@ api.interceptors.request.use(
       }
 );
 
-// Response interceptor to handle common errors
+let refreshInFlight = null;
+
+const refreshOnce = () => {
+      if (!refreshInFlight) {
+            refreshInFlight = Promise.resolve()
+                  .then(() => authBridge.refreshSession())
+                  .finally(() => {
+                        refreshInFlight = null;
+                  });
+      }
+      return refreshInFlight;
+};
+
+const redirectToLogin = () => {
+      if (typeof window === 'undefined') return;
+      const path = window.location.pathname || '';
+      if (path.startsWith('/auth/login')) return;
+      window.location.assign('/auth/login');
+};
+
 api.interceptors.response.use(
       (response) => response,
-      (error) => {
+      async (error) => {
             if (axios.isCancel(error) || error.code === 'ERR_CANCELED') {
                   return Promise.reject(error);
             }
 
-            console.error('API Response Error:', {
-                  status: error.response?.status,
-                  message: error.response?.data?.message || error.message,
-                  url: error.config?.url,
-            });
+            const config = error.config || {};
+            const status = error.response?.status;
+            const url = String(config.url || '');
+            const isPublicRequest = url.includes('/public/');
+            const isAuthRequest = AUTH_URLS_SKIP_INTERCEPTOR.some((endpoint) => url.includes(endpoint));
 
-            // Handle 401 Unauthorized
-            if (error.response?.status === 401 && !String(error.config?.url || '').includes('/public/')) {
-                  localStorage.removeItem('adminToken');
-                  localStorage.removeItem('adminUser');
-                  if (!window.location.pathname.includes('/login')) {
-                        window.location.href = '/auth/login';
+            const canAttemptRefresh =
+                  status === 401 &&
+                  !config.__retriedAfterRefresh &&
+                  !isPublicRequest &&
+                  !isAuthRequest;
+
+            if (canAttemptRefresh) {
+                  config.__retriedAfterRefresh = true;
+
+                  try {
+                        await refreshOnce();
+                        const token = authBridge.getAccessToken();
+
+                        if (token) {
+                              config.headers = config.headers || {};
+                              if (typeof config.headers.set === 'function') {
+                                    config.headers.set('Authorization', `Bearer ${token}`);
+                              } else {
+                                    config.headers.Authorization = `Bearer ${token}`;
+                              }
+                              return api(config);
+                        }
+                  } catch {
+                        // The refresh failed: the session is gone.
+                        authBridge.onAuthFailure();
+                        redirectToLogin();
+                        return Promise.reject(error);
                   }
             }
 
-            // Handle network errors
+            if (status === 401 && !isPublicRequest && !isAuthRequest) {
+                  authBridge.onAuthFailure();
+                  redirectToLogin();
+            }
+
+            console.error('API Response Error:', {
+                  status,
+                  message: error.response?.data?.message || error.message,
+                  url,
+            });
+
             if (!error.response) {
                   console.error('Network error - no response received');
                   error.message = 'Network error. Please check your internet connection.';

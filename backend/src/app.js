@@ -5,6 +5,7 @@ import rateLimit from "express-rate-limit";
 import getAllowedOrigins from "./config/cors/cors.config.js";
 import cookieParser from "cookie-parser";
 import { errorHandler } from "./middleware/error.middleware.js";
+import ApiError from "./utilities/error/apiError.js";
 import apiRoutes from "./routes/api.routes.js";
 import Logger from "./config/logger/logger.config.js";
 import { invalidateCacheForMutation } from "./middleware/cache.middleware.js";
@@ -54,7 +55,8 @@ const corsOptions = {
             }
 
             Logger.warn("CORS request blocked", { origin, allowedOrigins });
-            return callback(new Error(`CORS blocked: ${origin}`));
+            // 403 (not 500): a rejected origin is a policy decision, not a crash.
+            return callback(ApiError.forbidden(`CORS blocked: ${origin}`));
       },
       credentials: true,
       methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
@@ -65,6 +67,7 @@ const corsOptions = {
             "Expires",
             "Pragma",
             "X-Requested-With",
+            "X-Admin-Bootstrap-Secret",
       ],
       exposedHeaders: ["X-Cache"],
 };

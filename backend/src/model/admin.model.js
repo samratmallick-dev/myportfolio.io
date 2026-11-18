@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import bcrypt from "bcryptjs";
+import { comparePassword } from "../utilities/password.utility.js";
 
 const adminSchema = new mongoose.Schema(
       {
@@ -22,6 +22,7 @@ const adminSchema = new mongoose.Schema(
                   type: String,
                   required: true,
                   minlength: 6,
+                  select: false,
             },
             role: {
                   type: String,
@@ -35,26 +36,43 @@ const adminSchema = new mongoose.Schema(
             lastLogin: {
                   type: Date,
             },
+            passwordChangedAt: {
+                  type: Date,
+            },
+            bootstrapKey: {
+                  type: String,
+                  unique: true,
+                  sparse: true,
+                  select: false,
+            },
             otp: {
                   type: String,
+                  select: false,
             },
             otpExpiry: {
                   type: Date,
+                  select: false,
             },
             newEmail: {
                   type: String,
+                  select: false,
             },
       },
       { timestamps: true }
 );
 
 adminSchema.methods.comparePassword = function (candidatePassword) {
-      return bcrypt.compare(candidatePassword, this.password);
+      return comparePassword(candidatePassword, this.password);
 };
 
 adminSchema.methods.toJSON = function () {
       const adminObject = this.toObject();
       delete adminObject.password;
+      delete adminObject.otp;
+      delete adminObject.otpExpiry;
+      delete adminObject.newEmail;
+      delete adminObject.bootstrapKey;
+      delete adminObject.__v;
       return adminObject;
 };
 

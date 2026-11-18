@@ -1,4 +1,4 @@
-import { body, param, validationResult } from "express-validator";
+import { body, header, param, validationResult } from "express-validator";
 import ApiError from "../utilities/error/apiError.js";
 
 const handleValidationErrors = (req, res, next) => {
@@ -21,14 +21,69 @@ const otpRule = () => body("otp")
 
 const validateLogin = [
       body("email").isEmail().normalizeEmail().withMessage("Please provide a valid email"),
-      body("password").isLength({ min: 6 }).withMessage("Password must be at least 6 characters long"),
+      body("password").isLength({ min: 1 }).withMessage("Password is required")
+            .isLength({ max: 72 }).withMessage("Password must not exceed 72 characters"),
+      body("*").optional().trim(),
 ];
 
 const validateAdminInitialization = [
-      body("username").isLength({ min: 3, max: 50 }).withMessage("Username must be between 3 and 50 characters"),
+      body("username").isLength({ min: 3, max: 50 }).withMessage("Username must be between 3 and 50 characters")
+            .matches(/^[a-zA-Z0-9._-]+$/).withMessage("Username may only contain letters, numbers, dot, underscore and dash"),
       body("email").isEmail().normalizeEmail().withMessage("Please provide a valid email"),
-      body("password").isLength({ min: 6 }).withMessage("Password must be at least 6 characters long"),
+      body("password").isLength({ min: 8 }).withMessage("Password must be at least 8 characters long")
+            .isLength({ max: 72 }).withMessage("Password must not exceed 72 characters"),
 ];
+
+const passwordRule = (field = "password", label = "Password") =>
+      body(field)
+            .isLength({ min: 8 }).withMessage(`${label} must be at least 8 characters long`)
+            .isLength({ max: 72 }).withMessage(`${label} must not exceed 72 characters`);
+
+const validateBootstrap = [
+      ...validateAdminInitialization,
+      header("X-Admin-Bootstrap-Secret").notEmpty().withMessage("Bootstrap secret header is required"),
+];
+
+const validateChangePassword = [
+      body("currentPassword").isLength({ min: 1 }).withMessage("Current password is required")
+            .isLength({ max: 72 }).withMessage("Current password must not exceed 72 characters"),
+      passwordRule("newPassword", "New password"),
+      body("confirmPassword").optional()
+            .custom((value, { req }) => {
+                  if (value !== undefined && value !== req.body.newPassword) {
+                        throw new Error("Passwords do not match");
+                  }
+                  return true;
+            }),
+];
+
+const validateCreateAdmin = [
+      body("username").isLength({ min: 3, max: 50 }).withMessage("Username must be between 3 and 50 characters")
+            .matches(/^[a-zA-Z0-9._-]+$/).withMessage("Username may only contain letters, numbers, dot, underscore and dash"),
+      body("email").isEmail().normalizeEmail().withMessage("Please provide a valid email"),
+      passwordRule("password", "Password"),
+      body("role").optional().custom(() => {
+            throw new Error("Role cannot be assigned when creating an administrator");
+      }),
+];
+
+const validateSessionId = [
+      param("id").isMongoId().withMessage("Invalid session id"),
+];
+
+const rejectUnknownFields = (...allowed) => (req, res, next) => {
+      const body = req.body && typeof req.body === "object" && !Array.isArray(req.body) ? req.body : {};
+      const unknown = Object.keys(body).filter((key) => !allowed.includes(key));
+
+      if (unknown.length > 0) {
+            return next(
+                  ApiError.badRequest(`Unexpected field(s): ${unknown.join(", ")}`)
+            );
+      }
+
+      return next();
+};
+
 
 const validateMongoId = [
       param("id").isMongoId().withMessage("Invalid ID format"),
@@ -71,7 +126,7 @@ const validateGenerateOTP = [
 ];
 
 const validatePasswordUpdate = [
-      body("newPassword").isLength({ min: 6 }).withMessage("New password must be at least 6 characters long"),
+      passwordRule("newPassword", "New password"),
       otpRule(),
 ];
 
@@ -100,14 +155,12 @@ const validateProject = [
       body("description").notEmpty().withMessage("Description is required"),
       body("category").optional().isString().trim(),
       body("year").optional(),
-      // image is handled by multer, not body
       body("technologies").custom((value) => {
             if (!value) return false;
             if (typeof value === 'string' && value.trim()) return true;
             if (Array.isArray(value) && value.length > 0) return true;
             return false;
       }).withMessage("Technologies is required"),
-      // These fields can arrive as JSON-stringified arrays (FormData) or native arrays (JSON body)
       body("features").optional(),
       body("problem").optional().isString(),
       body("solution").optional().isString(),
@@ -126,6 +179,11 @@ export {
       handleValidationErrors,
       validateLogin,
       validateAdminInitialization,
+      validateBootstrap,
+      validateChangePassword,
+      validateCreateAdmin,
+      validateSessionId,
+      rejectUnknownFields,
       validateMongoId,
       validateSkillIds,
       validateEducation,

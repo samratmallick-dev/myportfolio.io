@@ -18,8 +18,12 @@ const AdminSidebar = ({ onLinkClick }) => {
                   toast.success('Logged Out', {
                         description: 'You have been successfully logged out',
                   });
-                  navigate('/auth/login');
+            } else {
+                  toast.info('Signed out locally', {
+                        description: 'The server could not be reached, please check your connection.',
+                  });
             }
+            navigate('/auth/login');
       };
       return (
             <aside className="h-full flex flex-col overflow-y-auto relative" style={{ backgroundColor: 'var(--sidebar)', borderRight: '1px solid var(--sidebar-border)' }}>

@@ -5,8 +5,10 @@ import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from './components/ui/sonner.jsx';
 import { Provider } from 'react-redux';
 import { store } from './store/store';
+import { ensureAuthInitialized } from './store/auth.slice';
 import { HelmetProvider } from 'react-helmet-async';
 import { ThemeProvider } from './components/common/theme-provider';
+ensureAuthInitialized(store.dispatch);
 
 createRoot(document.getElementById('root')).render(
       <Provider store={store}>

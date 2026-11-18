@@ -17,7 +17,7 @@ Modern MERN-based platform powering Samrat Mallick’s public-facing portfolio a
 1. **Frontend call** (React + Axios) → `VITE_API_BASE_URL` (`/api/v1/...`).
 2. **Routing**: Express v5 mounts versioned routers (`/admin`, `/hero`, `/about`, `/education`, `/projects`, `/services`, `/contact`, `/skills`) @ backend/src/routes/v1Routes/v1.routes.js.
 3. **Middleware**:
-   - `authenticate` (JWT httpOnly cookie) protects admin-only routes.
+   - `authenticate` (short-lived Bearer access token + active session check) protects admin-only routes.
    - `validation.middleware` validates payloads (e.g., contact message, CRUD forms).
    - `upload.middleware` handles Multer file buffers for media uploads.
 4. **Controllers → Services → Repositories → MongoDB**:
@@ -31,8 +31,8 @@ Modern MERN-based platform powering Samrat Mallick’s public-facing portfolio a
 - Content fetch: `/hero/get-hero-content`, `/about/get-about`, `/services/get-all-services`, `/skills/get-all-skills`, `/education/get-all-education`, `/projects/get-all-projects`, `/projects/get-featured-projects`, `/contact/get-contact-details`.
 - Contact form submit: POST `/contact/send-message` (validation, email notifications).
 
-### Admin-side calls (JWT required)
-- Auth: `/admin/initialize` (one-time), `/admin/login`, `/admin/logout`, OTP endpoints for email/password updates.
+### Admin-side calls (access token required)
+- Auth: `/admin/bootstrap` (one-time, secret header), `/admin/login`, `/admin/refresh`, `/admin/logout`, `/admin/logout-all`, `/admin/me`, `/admin/sessions`, `/admin/change-password`, OTP endpoints for email/password updates.
 - Content CRUD: hero, about, services, skills, education, projects (including set featured), contact details, message management (read/delete/count).
 - File uploads: Multer + Cloudinary for hero/profile, project images, service/contact images.
 
@@ -43,11 +43,14 @@ Modern MERN-based platform powering Samrat Mallick’s public-facing portfolio a
 ---
 
 ## Authentication Flow
-1. **Admin Initialization**: POST `/api/v1/admin/initialize` (one-time).
-2. **Login**: POST `/api/v1/admin/login` (returns JWT in httpOnly cookie).
-3. **Protected Routes**: `authenticate` middleware guards admin endpoints.
-4. **Token Storage**: httpOnly cookie named `token`.
-5. **OTP System**: Email-based OTP for password/email changes.
+1. **One-time bootstrap**: POST `/api/v1/admin/bootstrap` with the `X-Admin-Bootstrap-Secret` header (creates the first admin exactly once; no public registration exists).
+2. **Login**: POST `/api/v1/admin/login` → returns a 15-minute access token (stored in Redux memory only) and sets an HTTP-only, SHA-256-hashed refresh cookie.
+3. **Refresh**: POST `/api/v1/admin/refresh` exchanges the cookie for a new access token and rotates the refresh token (reuse revokes the session).
+4. **Protected routes**: `authenticate` middleware validates the access token, the admin account, and the backing session.
+5. **Logout**: `/admin/logout` (current device) and `/admin/logout-all` (every device).
+6. **OTP System**: Email-based OTP for password/email changes.
+
+Full details: [docs/auth-architecture.md](docs/auth-architecture.md).
 
 ---
 
@@ -55,10 +58,16 @@ Modern MERN-based platform powering Samrat Mallick’s public-facing portfolio a
 **Base URL**: `http://localhost:8000/api/v1`
 
 ### Admin Routes (`/admin`)
-- POST `/initialize` - Create first admin
-- POST `/login` - Admin login
+- POST `/bootstrap` - Create the first admin (one-time, `X-Admin-Bootstrap-Secret` header)
+- POST `/login` - Admin login (sets HTTP-only refresh cookie)
+- POST `/refresh` - Rotate refresh token + new access token (cookie only)
 - POST `/logout` - Admin logout (Auth)
-- GET `/get-admin-user` - Get current admin (Auth)
+- POST `/logout-all` - Revoke every session (Auth)
+- GET `/me` / GET `/get-admin-user` - Get current admin (Auth)
+- GET `/sessions` - List active sessions (Auth)
+- DELETE `/sessions/:id` - Revoke a session (Auth)
+- PATCH `/change-password` - Change password with current password (Auth)
+- POST `/create` - Create an additional admin (Auth)
 - POST `/generate-otp` - Generate OTP (Auth)
 - POST `/verify-otp-update-email` - Update email (Auth)
 - POST `/verify-otp-update-password` - Update password (Auth)
@@ -110,9 +119,10 @@ Routes → Controllers → Services → Repositories → Models → Database
 
 ### Authentication Flow
 ```
-1. Admin login → JWT generated → Stored in httpOnly cookie
-2. Protected route → Middleware checks JWT → Attaches admin to req
-3. Controller accesses req.admin for user info
+1. Login → short-lived access token (memory) + HTTP-only refresh cookie (opaque, SHA-256 hashed in DB)
+2. Access token expires → POST /admin/refresh rotates the refresh cookie and issues a new token
+3. Protected route → authenticate middleware verifies JWT + admin + live session → req.admin
+4. Controller accesses req.admin for user info
 ```
 
 ---
@@ -126,7 +136,7 @@ Routes → Controllers → Services → Repositories → Models → Database
 ### Admin
 - Content management for hero, about, services, skills, education, projects, and contact details.
 - Media upload pipeline (Multer + Cloudinary) with URL storage.
-- Auth with JWT (httpOnly cookie), OTP flows for sensitive changes, and role-locked routes.
+- Auth with rotating refresh tokens (HTTP-only cookie) + in-memory access tokens, session management, OTP flows for sensitive changes, and role-locked routes.
 - Dashboard analytics cards, list/detail views, and inline editing forms.
 
 ### Platform
@@ -219,15 +229,18 @@ npm install
 npm run dev            # development
 npm start              # production
 ```
-Initialize the first admin (one-time):
+Initialize the first admin (one-time, backend-only secret from `ADMIN_BOOTSTRAP_SECRET`):
 ```bash
-POST http://localhost:8000/api/v1/admin/initialize
+POST http://localhost:8000/api/v1/admin/bootstrap
+X-Admin-Bootstrap-Secret: <your ADMIN_BOOTSTRAP_SECRET value>
+
 {
   "username": "admin",
   "email": "your@email.com",
-  "password": "yourpassword"
+  "password": "a-password-of-at-least-8-characters"
 }
 ```
+The endpoint permanently disables itself after the first admin exists (409 afterwards).
 
 ### Frontend
 ```bash
@@ -248,9 +261,12 @@ npm run preview        # preview build
 
 ## Environment Variables
 ### Backend (`backend/.env`)
+See [backend/.env.example](backend/.env.example) for the complete, commented template.
 ```
 PORT=8000
+NODE_ENV=development
 CLIENT_URL=http://localhost:5173
+ALLOWED_ORIGINS=http://localhost:5173
 MONGO_URL=mongodb+srv://<username>:<password>@<cluster>.mongodb.net
 MONGO_NAME=myportfolio
 CLOUD_NAME=<your_cloud_name>
@@ -260,8 +276,17 @@ GMAIL_CLIENT_ID=<your_gmail_client_id>
 GMAIL_CLIENT_SECRET=<your_gmail_client_secret>
 GMAIL_REFRESH_TOKEN=<your_gmail_refresh_token>
 GMAIL_SENDER=<your_gmail_address>
-JWT_SECRET=<your_jwt_secret>
-NODE_ENV=development
+
+# --- Auth (required; no hardcoded fallbacks) ---
+JWT_ACCESS_SECRET=<32+ random characters>
+JWT_ISSUER=portfolio-backend
+JWT_AUDIENCE=portfolio-admin
+JWT_ACCESS_EXPIRES_IN=15m
+REFRESH_TOKEN_TTL_DAYS=7
+COOKIE_SECURE=true
+COOKIE_SAME_SITE=none
+ADMIN_BOOTSTRAP_SECRET=<32+ random characters, backend only>
+BCRYPT_ROUNDS=12
 ```
 
 ### Frontend (`frontend/.env`)
@@ -277,7 +302,7 @@ VITE_APP_NAME=Samrat Mallick Portfolio
 - Validation and error handling centralized in middleware.
 - Media pipeline: Multer buffer → Cloudinary upload → stored URL + public_id.
 - Email service: Gmail API with OAuth2 for sending emails and OTPs.
-- Authentication: JWT in httpOnly cookie; guard protected routes server-side and client-side.
+- Authentication: rotating refresh tokens in an HTTP-only cookie + 15-minute access tokens in memory; guard protected routes server-side (session validated on every request) and client-side (`CheckAuth`).
 
 ---
 

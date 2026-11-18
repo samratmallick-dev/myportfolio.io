@@ -10,8 +10,18 @@ class AdminRepository extends BaseRepository {
             return await this.model.findOne({ email });
       }
 
+      async findByEmailWithPassword(email) {
+            return await this.model.findOne({ email }).select("+password");
+      }
+
       async findByUsername(username) {
             return await this.model.findOne({ username });
+      }
+
+      async findByIdWithSecrets(id) {
+            return await this.model
+                  .findById(id)
+                  .select("+otp +otpExpiry +newEmail +password");
       }
 
       async updateLastLogin(id) {
@@ -20,6 +30,18 @@ class AdminRepository extends BaseRepository {
 
       async findAll(filter = {}) {
             return await this.model.find(filter).select("-password");
+      }
+
+      async countAdmins() {
+            return await this.model.countDocuments({});
+      }
+
+      async adminExists() {
+            return Boolean(await this.model.exists({}));
+      }
+
+      async createInitialAdmin(data) {
+            return await this.model.create({ ...data, bootstrapKey: "primary" });
       }
 }
 

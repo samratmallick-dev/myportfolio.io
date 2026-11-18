@@ -1,37 +1,16 @@
 import mongoose from "mongoose";
-import Logger from "../logger/logger.config.js";
 
-const url = process.env.MONGO_URL;
-const name = process.env.MONGO_NAME;
-
-if (!(url && name)) {
-  console.error("Please provide MONGO_URL and MONGO_NAME in the environment variables");
-  Logger.error("Please provide MONGO_URL and MONGO_NAME in the environment variables");
-  throw new Error("Please provide MONGO_URL and MONGO_NAME in the environment variables");
+if (!process.env.MONGO_URL) {
+  throw new Error("MONGO_URL is not defined in the environment variables");
 }
 
-const connectDb = async () => {
+export const connectDb = async () => {
+  const url = `${process.env.MONGO_URL}/${process.env.MONGO_NAME}`;
   try {
-    const maxPoolSize = parseInt(process.env.MONGO_MAX_POOL_SIZE || "10", 10);
-    const minPoolSize = parseInt(process.env.MONGO_MIN_POOL_SIZE || "2", 10);
-    
-    const [base, query] = url.split("?");
-    const cleanBase = base.endsWith("/") ? base.slice(0, -1) : base;
-    const mongoUri = query ? `${cleanBase}/${name}?${query}` : `${cleanBase}/${name}`;
-    const connection = await mongoose.connect(mongoUri, {
-      maxPoolSize,
-      minPoolSize,
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
-    });
-    console.log(`MongoDB connected: ${connection.connection.host} (pool: ${minPoolSize}-${maxPoolSize})`);
-    Logger.info(`MongoDB connected: ${connection.connection.host} (pool: ${minPoolSize}-${maxPoolSize})`);
-    return connection;
+    const connect = await mongoose.connect(url, { serverSelectionTimeoutMS: 10000 });
+    console.log("Connected to MongoDB host:", connect.connection.host);
   } catch (error) {
-    console.error(`MongoDB connection error: ${error.message}`);
-    Logger.error(`MongoDB connection error: ${error.message}`);
-    process.exit(1);
+    console.error("Error connecting to MongoDB:", error);
+    throw error;
   }
-}
-
-export default connectDb;
+}; 
